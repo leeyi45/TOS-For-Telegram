@@ -8,8 +8,6 @@ using System.Windows.Forms;
 
 using Console_API;
 
-using NDesk.Options;
-
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types;
