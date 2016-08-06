@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+//This contains all the console window information
 
 namespace QuizBot
 {
