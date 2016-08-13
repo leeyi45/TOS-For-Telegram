@@ -3,3 +3,5 @@ join - Join a game
 leave - Leave a game
 forcestart - Admin command, force start the game
 config - Admin command, open up configuration options
+ping - Send the ping message
+roles - Shows the roles available in the currently selected role list
