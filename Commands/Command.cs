@@ -89,7 +89,7 @@ namespace QuizBot
 			string[] args = cmd.Split(' ');
 			//Remove the @quiztestbot
 			args[0] = args[0].Substring(0, args[0].Length - GameData.WeirdThing.Length);
-			Console.WriteLine("The arg is " + args[0]);
+			//Console.WriteLine("The arg is " + args[0]);
 			switch (args[0])
 			{
 				case "start":
@@ -111,14 +111,16 @@ namespace QuizBot
 					}
 				case "forcestart":
 					{
+						if (!admin) NotAdmin(msg);
+						else
+						{
+
+						}
 						break;
 					}
 				case "config":
 					{ //PM the config menu
-						if (!admin) 
-						{
-							Program.Bot.SendTextMessageAsync(msg.Chat.Id, msg.From.FirstName + ", you are not an admin!");
-						}
+						if (!admin) NotAdmin(msg);
 						else
 						{
 							//Send the config menu to the player
@@ -142,7 +144,30 @@ namespace QuizBot
 						Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Markdown);
 						break;
 					}
+				#region Ping
+				case "ping":
+					{
+            var ts = DateTime.UtcNow - msg.Date;
+            var send = DateTime.UtcNow;
+						/*
+						var message = "PingInfo\n" + ts.ToString("mm\\:ss\\.ff") + "\n" +
+								System.Diagnostics..AvgCpuTime.ToString("F0") +
+								Program.MessageRxPerSecond.ToString("F0") + " MAX IN\n" +
+								Program.MessageTxPerSecond.ToString("F0") + "MAX OUT";*/
+            var result = Program.Bot.SendTextMessageAsync(msg.Chat.Id, "*Ping Info*", 
+							parseMode: ParseMode.Markdown).Result;
+            ts = DateTime.UtcNow - send;
+            Program.Bot.EditMessageTextAsync(msg.Chat.Id, result.MessageId,"*Ping Info*\nTime to send ping message: " +
+							ts.ToString("ffff") + "ms", parseMode: ParseMode.Markdown);
+						break;
+					}
+				#endregion
 			}
+		}
+
+		public static void NotAdmin(Message msg)
+		{
+			Program.Bot.SendTextMessageAsync(msg.Chat.Id, msg.From.FirstName + ", you are not an admin!");
 		}
 
 		#region Join Game Logic
