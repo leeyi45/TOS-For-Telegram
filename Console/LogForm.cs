@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-
+//Event Data for the Console
 namespace QuizBot
 {
 	partial class LogForm : Form
@@ -19,21 +19,41 @@ namespace QuizBot
 
 		private void CloseButton_Click(object sender, EventArgs e)
 		{
-			Program.Bot.StopReceiving();
+			try { Program.Bot.StopReceiving(); }
+			catch { }
 			Application.Exit();
 		}
 
-		public void CancelKey(object sender, KeyPressEventArgs e)
+		private void CancelKey2(object sender, KeyPressEventArgs e)
 		{
 			e.Handled = true;
 		}
 
-		public void TextBoxPress(object sender, KeyEventArgs e)
+		private void CancelKey(object sender, KeyEventArgs e)
+		{
+			if (!e.Control) return;
+			switch (e.KeyCode)
+			{
+				case Keys.A:
+					{
+						logBox.SelectAll();
+						break;
+					}
+				case Keys.C:
+					{
+						try { Clipboard.SetText(logBox.SelectedText); }
+						catch { }
+						break;
+					}
+			}
+		}
+
+		private void TextBoxPress(object sender, KeyEventArgs e)
 		{
 			switch (e.KeyCode)
 			{
-				#region Delete
-				case Keys.Delete:
+				#region Escape
+				case Keys.Escape:
 					{
 						commandBox.Clear();
 						break;
@@ -91,17 +111,29 @@ namespace QuizBot
 						break;
 					}
 				#endregion
+				#region A
+				//For some reason control a stopped working so I needed to reimplement this
+				case Keys.A: 
+					{
+						if (e.Control)
+						{
+							commandBox.SelectAll();
+						}
+						break;
+					}
+				#endregion
 			}
 		}
 
-		public void Log(string text)
+		public void Log(string text, bool timestamp = true)
 		{
-			logBox.AppendText(text);
+			if (timestamp) logBox.AppendText(DateTime.Now.ToString("[HH:mm:ss] ") + text);
+			else logBox.AppendText(text);
 		}
 
-		public void LogLine(string text)
+		public void LogLine(string text, bool timestamp = true)
 		{
-			logBox.AppendText(text + "\n");
+			Log(text + "\n", timestamp);
 		}
 
 		public void StartBot()
@@ -110,7 +142,7 @@ namespace QuizBot
 			Log("Starting...");
 			Thread.Sleep(600);
 			Program.Bot.StartReceiving();
-			LogLine("Bot started receving messages");
+			LogLine("Bot started receving messages", false);
 			StatusLabel.Text = "Running";
 			StatusLabel.ForeColor = Color.ForestGreen;
 		}
@@ -121,7 +153,7 @@ namespace QuizBot
 			Log("Stopping... ");
 			Thread.Sleep(600);
 			Program.Bot.StopReceiving();
-			LogLine("Bot stopped receving messages");
+			LogLine("Bot stopped receving messages", false);
 			StatusLabel.Text = "Stopped";
 			StatusLabel.ForeColor = Color.Red;
 			return;
@@ -129,7 +161,7 @@ namespace QuizBot
 
 		public async void DebugMenu(string input)
 		{
-			if (input == null) return;
+			if (string.IsNullOrWhiteSpace(input)) return;
 			string[] args = input.Split(' ');
 			switch (args[0])
 			{
@@ -148,11 +180,28 @@ namespace QuizBot
 				case "say":
 					{
 						await Program.Bot.SendTextMessageAsync(Chats.WFPChat, input.Substring(4, input.Length-4));
+						LogLine("Message sent");
 						break;
 					}
 				case "xml":
 					{
 						GameData.InitializeRoles();
+						break;
+					}
+				case "roles":
+					{
+						foreach (var each in GameData.RoleLists["Default"])
+						{
+							Console.WriteLine(each.Key.Name);
+						}
+						Console.ReadLine();
+						break;
+					}
+				case "parseSay":
+					{
+						await Program.Bot.SendTextMessageAsync(Chats.WFPChat, input.Substring(9, input.Length - 9), 
+							parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
+						LogLine("Message sent");
 						break;
 					}
 				default:
@@ -171,6 +220,13 @@ namespace QuizBot
 		private void StopButton_Click(object sender, EventArgs e)
 		{
 			StopBot();
+		}
+
+		private AutoCompleteStringCollection AddSuggestStrings()
+		{
+			var col = new AutoCompleteStringCollection();
+			col.AddRange(new string[] { "test" });
+			return col;
 		}
 	}
 }

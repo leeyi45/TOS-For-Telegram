@@ -33,7 +33,8 @@ namespace QuizBot
 			this.logBox.Name = "logBox";
 			this.logBox.Size = new System.Drawing.Size(340, 261);
 			this.logBox.TabIndex = 1;
-			this.logBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.CancelKey);
+			this.logBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.CancelKey);
+			this.logBox.KeyPress += new KeyPressEventHandler(this.CancelKey2);
 			// 
 			// commandBox
 			// 
@@ -42,6 +43,9 @@ namespace QuizBot
 			this.commandBox.Size = new System.Drawing.Size(340, 20);
 			this.commandBox.TabIndex = 0;
 			this.commandBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.TextBoxPress);
+			//this.commandBox.AutoCompleteMode = AutoCompleteMode.Suggest;
+			//this.commandBox.AutoCompleteSource = AutoCompleteSource.CustomSource;
+			//this.commandBox.AutoCompleteCustomSource = AddSuggestStrings();
 			// 
 			// label1
 			// 

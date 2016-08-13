@@ -1,0 +1,5 @@
+﻿start - Start a new game
+join - Join a game
+leave - Leave a game
+forcestart - Admin command, force start the game
+config - Admin command, open up configuration options

@@ -35,6 +35,15 @@ namespace QuizBot
 				return false;
 			}
 		}
+
+		public static bool HasJoined(Player x)
+		{
+			foreach (var each in GameData.Joined)
+			{
+				if (x == each.Value) return true;
+			}
+			return false;
+		}
 	}
 
 	public class Command : Attribute
@@ -67,14 +76,140 @@ namespace QuizBot
         public bool InGroupOnly { get; set; }
     }
 
+	//Okay this is my work
 	public class Commands
 	{
 		//The default parser
-		public static void Parse(string cmd)
+		public static void Parse(Message msg)
 		{
+			string cmd = msg.Text;
+			bool admin = UpdateHelper.IsGroupAdmin(msg.From.Id, msg.Chat.Id);
 			//remove the slash as necessary
-			cmd = cmd.Substring(1, cmd.Length - 1);
+			cmd = cmd.ToLower().Substring(1, cmd.Length - 1);
 			string[] args = cmd.Split(' ');
+			//Remove the @quiztestbot
+			args[0] = args[0].Substring(0, args[0].Length - GameData.WeirdThing.Length);
+			Console.WriteLine("The arg is " + args[0]);
+			switch (args[0])
+			{
+				case "start":
+					{
+						if (GameData.GamePhase == GamePhase.Joining)
+						{
+							Program.Bot.SendTextMessageAsync(msg.Chat.Id, "Game has already started. Use /join to join!");
+							return;
+						}
+						GameData.CurrentGroup = msg.Chat.Id;
+						Program.ConsoleLog("Game started!");
+						StartJoinGame(msg);
+						break;
+					}
+				case "join":
+					{
+						JoinPlayer(msg.From);
+						break;
+					}
+				case "forcestart":
+					{
+						break;
+					}
+				case "config":
+					{ //PM the config menu
+						if (!admin) 
+						{
+							Program.Bot.SendTextMessageAsync(msg.Chat.Id, msg.From.FirstName + ", you are not an admin!");
+						}
+						else
+						{
+							//Send the config menu to the player
+							Program.Bot.SendTextMessageAsync(msg.Chat.Id, msg.From.FirstName + ", I have sent you the config via PM");
+							Config.SendInline(msg.From);
+						}
+						break;
+					}
+				case "leave":
+					{
+						
+						break;
+					}
+				case "roles":
+					{
+						StringBuilder output = new StringBuilder( "*" + Settings.CurrentRoleList + "*" + "\n\n");
+						foreach (var each in Settings.CurrentRoles)
+						{
+							output.Append(each.Key.Name + ", Count: " + each.Value.ToString() + "\n");
+						}
+						Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Markdown);
+						break;
+					}
+			}
 		}
+
+		#region Join Game Logic
+		public static void JoinPlayer(Player player)
+		{
+			if (UpdateHelper.HasJoined(player))
+			{
+				Program.BotMessage(player.Username + ", you have already joined the game!");
+				return;
+			}
+			Program.BotMessage(player.Username + " has joined the game!");
+			GameData.Joined.Add(GameData.PlayerCount, player);
+		}
+
+		public static void StartJoinGame(Message msg)
+		{
+			if (Settings.JoinTime > 60) Time.Tick += new EventHandler(TickHandler1);
+			else Time.Tick += new EventHandler(TickHandler2);
+
+			Time.Interval = 10000; //10 seconds by default
+			GameData.CurrentGroup = msg.Chat.Id;
+			GameData.GameStarted = true;
+			Program.BotMessage(msg.From.Username + " has started a game! /join to join! \n" +
+				Settings.JoinTime + " seconds left to /join!");
+			GameData.GamePhase = GamePhase.Joining;
+			GameData.Joined.Add(GameData.PlayerCount, msg.From);
+			Time.Start();
+		}
+
+		public static int TimeLeft = Settings.JoinTime;
+
+		static System.Windows.Forms.Timer Time = new System.Windows.Forms.Timer();
+
+		public static void TickHandler1(object sender, EventArgs e) 
+		{ //Less than 1 minute join time
+			TimeLeft -= Time.Interval/1000;
+			if (TimeLeft % 30 == 0 || TimeLeft == 10)
+			{
+				Program.BotMessage(Settings.JoinTime + " seconds left to /join!");
+			}
+			else if (TimeLeft == 0)
+			{
+				Program.BotMessage("Game started. Please switch over to message the bot to begin");
+				StartRolesAssign();
+			}
+		}
+
+		public static void TickHandler2(object sender, EventArgs e)
+		{ //More than 1 minute join time
+
+		}
+		#endregion
+
+		#region Assign Roles
+		public static void StartRolesAssign()
+		{
+			var noroles = GameData.Joined;
+			var hasroles = new Dictionary<int, Player>();
+			var random = new org.random.JSONRPC.RandomJSONRPC("bbcfa0f8-dbba-423a-8798-c8984c4fc5c5");
+			int totaltoassign = 0;
+			foreach (var each in Settings.CurrentRoles)
+			{
+				totaltoassign += each.Value;
+			}
+			GameData.GamePhase = GamePhase.Assigning;
+			int[] randoms = random.GenerateIntegers(totaltoassign, 0, noroles.Count, false);
+		}
+		#endregion
 	}
 }
