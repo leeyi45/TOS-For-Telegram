@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<strings> <!--This system is based off the werewolf language system-->
+	<!--Administration events-->
+	<string key="PlayerJoin">
+		<value>{0} has joined the game! {1} players, {2} minimum, {3} maximum</value>
+	</string>
+
+	<string key="Leave">
+		<value>{0} has left the game!</value>
+	</string>
+
+	<string key="AlreadyJoin">
+		<value>You have already joined!</value>
+	</string>
+
+	<string key="GameRunningJoin">
+		<value>You cannot join now, a game is already in progress!</value>
+	</string>
+
+	<string key="NoGameJoin">
+		<value>There is no game in progress, use /start to start one!</value>
+	</string>
+
+	<string key="GameStart">
+		<value>{0} has started a game, /join to join!</value>
+	</string>
+
+	<string key="RunningGameStart">
+		<value>A game has already been started! /join to join!</value>
+	</string>
+
+	<string key="BeginGame">
+		<value>Game started. Please switch over to message the bot to begin</value>
+	</string>
+
+	<string key="NotAdminError">
+		<value>{0}, you are not an admin!</value>
+	</string>
+
+	<string key="JoinSeconds">
+		<value>{0} seconds left to /join</value>
+	</string>
+</strings>

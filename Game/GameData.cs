@@ -18,6 +18,8 @@ namespace QuizBot
 		#region Intialization
 		public const string xmlFile = @"C:\Users\Lee Yi\Desktop\Everything, for the moment\Coding\C# Bot\QuizBot\QuizBot\Game\Roles.xml";
 
+		public const string messageFile = @"C:\Users\Lee Yi\Desktop\Everything, for the moment\Coding\C# Bot\QuizBot\QuizBot\Game\Messages.xml";
+
 		public static void RoleInitialErr(Exception e)
 		{
 			MessageBox.Show("Failed to initialize roles, check file\nCheck for " + e.Message, "Error",
@@ -36,7 +38,8 @@ namespace QuizBot
 			Attributes = new Triptionary<Team, int, string>();
 
 			//This whole function can be optimized (lots of repetitive code)
-
+			try { Program.ConsoleLog("Loading roles"); }
+			catch { }
 			#region XML File Processing
 			//Locate the xml file
 			if (!File.Exists(xmlFile))
@@ -199,11 +202,41 @@ namespace QuizBot
 			{
 				RoleInitialErr(e);
 			}
+			try { Program.ConsoleLog("Roles loaded"); }
+			catch { }
+		}
+
+		public static void InitializeMessages()
+		{
+			try { Program.ConsoleLog("Loading messages"); }
+			catch { }
+			Messages = new Dictionary<string, string>();
+			XmlTextReader reader = new XmlTextReader(messageFile);
+			reader.WhitespaceHandling = WhitespaceHandling.None;
+			while (reader.Read())
+			{
+				if (reader.Name == "string" && reader.NodeType == XmlNodeType.Element)
+				{
+					string key = reader.GetAttribute("key");
+					reader.Read();
+					if (reader.Name == "value" && reader.NodeType == XmlNodeType.Element)
+					{
+						reader.Read();
+						Messages.Add(key, reader.Value);
+						//Program.PrintWait("Element name is " + reader.Name + " and value is " + reader.Value);
+					}
+				}
+				else if (reader.Name == "strings" && reader.NodeType == XmlNodeType.EndElement)
+				{
+					break;
+				}
+			}
+			try { Program.ConsoleLog("Loaded messages"); }
+			catch { }
 		}
 		#endregion
 
-		public static Dictionary<int, Player> Joined = new Dictionary<int, Player>();
-
+		#region The Properties of Data
 		public static int PlayerCount { get { return Joined.Count; } }
 
 		public static bool GameStarted { get; set; }
@@ -216,6 +249,7 @@ namespace QuizBot
 
 		//Need this to remove stuff for the commands
 		public const string WeirdThing = "@quiztestbot";
+		#endregion
 
 		#region The Dictionaries of Data
 		public static Dictionary<string, Role> Roles;
@@ -227,6 +261,10 @@ namespace QuizBot
 		public static Dictionary<string, Action> DayRoleActions;
 
 		public static Dictionary<string, Action> NightRoleActions;
+
+		public static Dictionary<int, Player> Joined = new Dictionary<int, Player>();
+
+		public static Dictionary<string, string> Messages;
 		#endregion
 	}
 
