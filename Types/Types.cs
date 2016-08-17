@@ -27,6 +27,7 @@ namespace QuizBot
 
 	public enum GamePhase
 	{
+		Inactive,
 		Joining,
 		Assigning,
 		Running
@@ -65,6 +66,12 @@ namespace QuizBot
 			}
 		}
 
+		public V this[T x, U y]
+		{
+			get { return store[x][y]; }
+			set { store[x][y] = value; }
+		}
+
 		public int Count
 		{
 			get { return store.Count; }
@@ -73,6 +80,11 @@ namespace QuizBot
 		public IEnumerator GetEnumerator()
 		{
 			return store.GetEnumerator();
+		}
+
+		private void IniCheck(T x)
+		{
+			//if(store.)
 		}
 
 		/*
@@ -250,9 +262,51 @@ namespace QuizBot
 		}
 	}*/
 
-	public class Role
+  //This class is here so I can store both attributes and roles in the same dictionary
+  public class Wrapper
+  {
+    public virtual Team team { get; set; }
+
+    public virtual string Name { get; set; }
+  }
+
+  public class Attribute : Wrapper
+  {
+    public Attribute()
+    {
+      Name = "Any";
+    }
+
+    public Attribute(string name, Team team)
+    {
+      this.team = team;
+      this.name = name;
+    }
+
+    public static Attribute Parse(string input)
+    {
+      string[] args = input.Split(' ');
+      if (args.Length > 2) throw new FormatException();
+      return new Attribute(args[1], (Team)Enum.Parse(typeof(Team), args[0]));
+    }
+
+    private string name;
+
+    public override string Name
+    {
+      get
+      {
+        if (name != "Any") return team.ToString() + " " + name;
+        else return "Any";
+      }
+      set { name = value; }
+    }
+
+  }
+
+	public class Role : Wrapper
 	{
-		public Role(string _name, Team _team, string d, string a, bool n, bool day)
+		public Role(string _name, Team _team, string d, Attribute a, bool n, bool day)
 		{
 			Name = _name;
 			team = _team;
@@ -265,13 +319,10 @@ namespace QuizBot
 		public Role() { }
 
 		#region Properties
-		public string Name { get; set; }
-
-		public Team team { get; set; }
 
 		public string description { get; set; }
 
-		public string attribute { get; set; }
+		public Attribute attribute { get; set; }
 
 		public bool HasNightAction { get; set; }
 
@@ -311,6 +362,7 @@ namespace QuizBot
 
 		public Role role { get; set; }
 
+		#region User Fields
 		public string FirstName { get; private set; }
 
 		public string LastName { get; private set; }
@@ -318,7 +370,18 @@ namespace QuizBot
 		public string Username { get; private set; }
 
 		public int Id { get; private set; }
+		#endregion
 
+		public bool IsAlive { get; set; }
+
+		public string Name
+		{
+			get { return FirstName + " " + LastName; }
+		}
+
+		public string Nickname { get; set; }
+
+		#region Operators
 		public static implicit operator Player(User x) 
 		{
 			return new Player(x);
@@ -343,5 +406,6 @@ namespace QuizBot
 		{
 			return base.GetHashCode();
 		}
+		#endregion
 	}
 }
