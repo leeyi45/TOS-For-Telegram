@@ -102,6 +102,7 @@ namespace QuizBot
 			NormalCommands.Add("say", (x, y) => Say(x, (string)y[0]));
 			NormalCommands.Add("players", (x, y) => Players(x));
 			AdminCommands.Add("ping", (x, y) => Ping(x));
+      NormalCommands.Add("listroles", (x, y) => ListRoles(x));
 		}
 
 		//The default parser
@@ -370,6 +371,7 @@ namespace QuizBot
 				output.Append(each.Key.Name + ", Count: " + each.Value.ToString() + "\n");
 			}
 			Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Markdown);
+      
       /*
 			else if (args.Length == 2) // /role + rolename
 			{
@@ -388,6 +390,17 @@ namespace QuizBot
 				catch { }
 			}*/
 		}
+
+    [Command(Trigger = "listroles")]
+    public static void ListRoles(Message msg)
+    {
+      StringBuilder output = new StringBuilder("<b>Currently Registered Roles:</b>\n\n");
+      foreach(var each in GameData.Roles)
+      {
+        output.AppendLine(each.Value.Name + ": <i>" + each.Value.description + "</i>");
+      }
+      Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Html);
+    }
 		#endregion
 	}
 }
