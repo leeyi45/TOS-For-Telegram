@@ -46,7 +46,7 @@ namespace QuizBot
 	  }
 	}
 
-	public class Command : Attribute
+	public class Command : System.Attribute
   {
     /// <summary>
     /// The string to trigger the command
@@ -210,12 +210,42 @@ namespace QuizBot
 			var hasroles = new Dictionary<int, Player>();
 			var random = new org.random.JSONRPC.RandomJSONRPC("bbcfa0f8-dbba-423a-8798-c8984c4fc5c5");
 			int totaltoassign = 0;
-			foreach (var each in Settings.CurrentRoles)
+      int totalattris = 0;
+      GameData.GamePhase = GamePhase.Assigning;
+      foreach (var each in Settings.CurrentRoles)
 			{
 				totaltoassign += each.Value;
+        if (each.Key is Attribute) totalattris += 1 * each.Value;
 			}
-			GameData.GamePhase = GamePhase.Assigning;
-			int[] randoms = random.GenerateIntegers(totaltoassign, 0, noroles.Count, false);
+
+      int[] randoms = random.GenerateIntegers(totaltoassign, 0, noroles.Count, false);
+
+      if (totaltoassign > GameData.PlayerCount)
+      { //If there are fewer players than defined by the rolelist
+        for(int i = 0; i < Settings.CurrentRoles.Count; i++)
+        { //based on priority assign
+          var role = Settings.CurrentRoles.ToArray();
+          Player player = new Player();
+          for(; i < i + role[i].Value; i++)
+          {
+            player = noroles[randoms[i]];
+            if(role[i].Key is Role) player.role = role[i].Key as Role;
+            else if (role[i].Key is Attribute)
+            {
+
+            }
+
+            hasroles.Add(hasroles.Count, player);
+            noroles.Remove(i);
+          }
+          if (noroles.Count == 0) break;
+        }
+      }
+      else
+      { //If there are equal or more players than defined by the rolelist
+
+      }
+
 		}
 		#endregion
 		
@@ -334,15 +364,13 @@ namespace QuizBot
 		[Command(Trigger = "roles")]
 		private static void Roles(Message msg, string[] args)
 		{
-			if (args.Length == 1)
+			StringBuilder output = new StringBuilder("*" + Settings.CurrentRoleList + "*" + "\n\n");
+			foreach (var each in Settings.CurrentRoles)
 			{
-				StringBuilder output = new StringBuilder("*" + Settings.CurrentRoleList + "*" + "\n\n");
-				foreach (var each in Settings.CurrentRoles)
-				{
-					output.Append(each.Key.Name + ", Count: " + each.Value.ToString() + "\n");
-				}
-				Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Markdown);
+				output.Append(each.Key.Name + ", Count: " + each.Value.ToString() + "\n");
 			}
+			Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Markdown);
+      /*
 			else if (args.Length == 2) // /role + rolename
 			{
 				string r = "";
@@ -358,7 +386,7 @@ namespace QuizBot
 					Program.BotMessage(msg.Chat.Id, "RoleNotFound", r);
 				}
 				catch { }
-			}
+			}*/
 		}
 		#endregion
 	}
