@@ -34,7 +34,7 @@ namespace QuizBot
 		public static void InitializeRoles()
 		{
 			Roles = new Dictionary<string, Role>();
-			RoleLists = new Triptionary<string, Role, int>();
+			RoleLists = new Triptionary<string, Wrapper, int>();
 			Attributes = new Triptionary<Team, int, string>();
 
 			//This whole function can be optimized (lots of repetitive code)
@@ -116,10 +116,15 @@ namespace QuizBot
 				{
 					if (reader.Name == "Role" && reader.NodeType == XmlNodeType.Element)
 					{
-						Roles.Add(reader.GetAttribute(0), new Role(reader.GetAttribute(0), (Team)Enum.Parse(typeof(Team), reader.GetAttribute(1)), 
-							reader.GetAttribute(2), reader.GetAttribute(3), 
-							Boolean.Parse(reader.GetAttribute(4)), 
-							Boolean.Parse(reader.GetAttribute(5))));
+          var team = (Team)Enum.Parse(typeof(Team), reader.GetAttribute("Team"));
+
+            Roles.Add(reader.GetAttribute("Name"), new Role(
+              reader.GetAttribute("Name"), 
+              team, 
+							reader.GetAttribute("Description"), 
+              new Attribute(reader.GetAttribute("Attribute"), team), 
+							Boolean.Parse(reader.GetAttribute("HasDayAction")), 
+							Boolean.Parse(reader.GetAttribute("HasNightAction"))));
 					}
 					else if (reader.Name == "Roles" && reader.NodeType == XmlNodeType.EndElement)
 					{
@@ -179,16 +184,25 @@ namespace QuizBot
 					if (reader.Name == "Rolelist" && reader.NodeType == XmlNodeType.Element)
 					{
 						string listname = reader.GetAttribute("Name");
+          Wrapper To_Add;
 						while (reader.Read())
 						{
-							if (reader.Name == "Role" && reader.NodeType == XmlNodeType.Element)
-							{
-								RoleLists[listname].Add(Roles[reader.GetAttribute("Name")], int.Parse(reader.GetAttribute("Count")));
-							}
-							else if (reader.Name == "Rolelist" && reader.NodeType == XmlNodeType.EndElement)
-							{
-								break;
-							}
+              if (reader.Name == "Role" && reader.NodeType == XmlNodeType.Element)
+              { //Check what kind of role definition this is
+                string name = reader.GetAttribute("Name");
+                if (string.IsNullOrWhiteSpace(name))
+                { //If there is no role defined
+                  string attri = reader.GetAttribute("Attribute");
+                  if (attri == "Any") To_Add = new Attribute();
+                  else To_Add = Attribute.Parse(attri);
+                }
+                else To_Add = Roles[name];
+                RoleLists[listname].Add(To_Add, int.Parse(reader.GetAttribute("Count")));
+              }
+              else if (reader.Name == "Rolelist" && reader.NodeType == XmlNodeType.EndElement)
+              {
+                break;
+              }
 						}
 					}
 					else if (reader.Name == "Rolelists" && reader.NodeType == XmlNodeType.EndElement)
@@ -237,14 +251,35 @@ namespace QuizBot
 		#endregion
 
 		#region The Properties of Data
+		/// <summary>
+		/// The number of players currently in the game
+		/// </summary>
 		public static int PlayerCount { get { return Joined.Count; } }
 
-		public static bool GameStarted { get; set; }
+		/// <summary>
+		/// Boolean value indicating whether a game has been started
+		/// </summary>
+		public static bool GameStarted { 
+			get 
+			{
+				if (GamePhase == QuizBot.GamePhase.Inactive) return false;
+				else return true;
+			} 
+		}
 
-		public static GamePhase GamePhase { get; set; }
+    /// <summary>
+    /// The current phase the game is going through
+    /// </summary>
+    public static GamePhase GamePhase { get; set; } = GamePhase.Inactive;
 
+		/// <summary>
+		/// The current group the game is running on
+		/// </summary>
 		public static long CurrentGroup { get; set; }
 
+		/// <summary>
+		/// The time which the bot was started
+		/// </summary>
 		public static DateTime StartTime { get; set; }
 
 		//Need this to remove stuff for the commands
@@ -252,9 +287,15 @@ namespace QuizBot
 		#endregion
 
 		#region The Dictionaries of Data
+		/// <summary>
+		/// Dictionary of all the roles currently defined
+		/// </summary>
 		public static Dictionary<string, Role> Roles;
 
-		public static Triptionary<string, Role, int> RoleLists;
+		/// <summary>
+		/// Contains all the rolelists currently defined
+		/// </summary>
+		public static Triptionary<string, Wrapper, int> RoleLists;
 
 		public static Triptionary<Team, int, string> Attributes;
 
@@ -264,6 +305,9 @@ namespace QuizBot
 
 		public static Dictionary<int, Player> Joined = new Dictionary<int, Player>();
 
+		/// <summary>
+		/// Dictionary containing all the messages
+		/// </summary>
 		public static Dictionary<string, string> Messages;
 		#endregion
 	}
@@ -308,7 +352,7 @@ namespace QuizBot
 		/// <summary>
 		/// The currently selected rolelist
 		/// </summary>
-		public static Dictionary<Role, int> CurrentRoles
+		public static Dictionary<Wrapper, int> CurrentRoles
 		{
 			get { return GameData.RoleLists[CurrentRoleList]; }
 		}
