@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<strings> <!--This system is based off the werewolf language system-->
+<!--This system is based off the werewolf language system-->
+<strings version="1.0"> 
 	<!--Administration events-->
 	<string key="PlayerJoin">
 		<value>{0} has joined the game! {1} players, {2} minimum, {3} maximum</value>
@@ -39,5 +40,25 @@
 
 	<string key="JoinSeconds">
 		<value>{0} seconds left to /join</value>
+	</string>
+	
+	<string key="SentConfig">
+		<value>{0}, I have sent you the config via PM</value>
+	</string>
+
+	<string key="RoleNotFound">
+		<value>Role "{0}" not found!</value>
+	</string>
+	
+	<string key="PleaseStartBot">
+		<value>{0}, click @quiztestbot and start the bot so as to enable PM!</value>
+	</string>
+
+	<string key="ForceGameEnd">
+		<value>Game has been forcefully ended by {0}!</value>
+	</string>
+
+	<string key="PrivateOnly">
+		<value>This command can only be used in a private chat!</value>
 	</string>
 </strings>
