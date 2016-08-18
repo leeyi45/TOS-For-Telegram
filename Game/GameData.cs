@@ -31,221 +31,96 @@ namespace QuizBot
 			Console.ReadLine();
 		}
 
-		public static void InitializeRoles()
-		{
-			Roles = new Dictionary<string, Role>();
-			RoleLists = new Triptionary<string, Wrapper, int>();
-			Attributes = new Triptionary<Team, int, string>();
+    public static void InitializeRoles()
+    {
+      Roles = new Dictionary<string, Role>();
+      RoleLists = new Triptionary<string, Wrapper, int>();
+      Attributes = new Dictionary<int, Attribute>();
 
-			//This whole function can be optimized (lots of repetitive code)
-			try { Program.ConsoleLog("Loading roles"); }
-			catch { }
-			#region XML File Processing
-			//Locate the xml file
-			if (!File.Exists(xmlFile))
-			{
-				RoleInitialErr(new Exception("existence"));
-				return;
-			}
+      try { Program.ConsoleLog("Loading roles"); }
+      catch { }
 
-			#endregion
+      if (!File.Exists(xmlFile)) throw new Exception("file existence");
 
-			//try {
-				#region Attribute Check
-				XmlTextReader reader = new XmlTextReader(xmlFile);
-				reader.WhitespaceHandling = WhitespaceHandling.None;
+      XDocument document = XDocument.Load(xmlFile);
 
-				while(reader.Read()) 
-				{ //TODO Remove the goto statement
-					if (reader.Name == "Attributes" && reader.NodeType == XmlNodeType.Element)
-					{ //Found attributes
-						goto AttributesFound;
-					}
-				}
-				throw new Exception("Attribute definitions");
-				#endregion
+      #region Version check
+      if (document.Root.Attribute("version").Value != "1.0")
+      {
+        throw new Exception("Version");
+      }
+      #endregion
 
-				#region Attribute Reading
-				AttributesFound:
-				while (reader.Read())
-				{
-					if (reader.Name == "Attribute" && reader.NodeType == XmlNodeType.Element)
-					{
-						Team temp = (Team)Enum.Parse(typeof(Team), reader.GetAttribute("Team"));
-						Attributes[temp].Add(Attributes[temp].Count, reader.GetAttribute("Name"));
-					}
-					else if (reader.Name == "Attributes" && reader.NodeType == XmlNodeType.EndElement)
-					{
-						break;
-					}
-				}
-				#endregion
+      #region Attributes
+      if (!document.HasElement("Attributes")) throw new Exception("Attribute definitions");
+      foreach (var each in document.Root.Element("Attributes").Elements("Attribute"))
+      {
+        Team temp = (Team)Enum.Parse(typeof(Team), each.GetAttributeValue("Team"));
+        Attributes.Add(Attributes.Count, new Attribute(each.GetAttributeValue("Name"), temp));
+      }
+      #endregion
 
-				#region Version Check
-				//Restart Reader because I have no idea how to use XDocument
-				//TODO create XDocument implementation
-				reader = new XmlTextReader(xmlFile);
-				reader.WhitespaceHandling = WhitespaceHandling.None;
+      #region Roles
+      if (!document.HasElement("Roles")) throw new Exception("Role definitions");
+      foreach (var each in document.Root.Element("Roles").Elements("Role"))
+      {
+        var team = (Team)Enum.Parse(typeof(Team), each.GetElementValue("Team"));
+        Roles.Add(each.GetElementValue("Name"), new Role(
+          each.GetElementValue("Name"),
+          team,
+          each.GetElementValue("Description"),
+          new Attribute(each.GetElementValue("Attribute"), team),
+          Boolean.Parse(each.GetElementValue("HasDayAction")),
+          Boolean.Parse(each.GetElementValue("HasNightAction"))));
+      }
+      #endregion
 
-				//Check if the file version is correct
-				reader.Read(); //Advance to <?xml version="1.0" encoding="utf-8" ?>
-				reader.Read(); //Advance to root node
-				if (!(reader.Name == "Root" && reader.NodeType == XmlNodeType.Element &&
-					reader.GetAttribute(0) == "1.0"))
-				{ //Incorrect Version
-					throw new Exception("Version");
-				}
-				#endregion
+      #region Rolelist
+      if (!document.HasElement("Rolelists")) throw new Exception("Rolelist definitions");
+      foreach (var rolelist in document.Root.Element("Rolelists").Elements("Rolelist"))
+      {
+        var listname = rolelist.GetAttributeValue("Name");
+        foreach (var each in rolelist.Elements("Role"))
+        {
+          Wrapper To_Add = new Wrapper();
+          try
+          {
+            //Check what kind of role definition this is
+            string name = each.GetAttributeValue("Name");
+            To_Add = Roles[name];
+          }
+          catch (NullReferenceException)
+          {
+            //If there is no role defined
+            string attri = each.GetAttributeValue("Attribute");
+            if (attri == "Any") To_Add = new Attribute();
+            else To_Add = Attribute.Parse(attri);
+          }
+          RoleLists[listname].Add(To_Add, int.Parse(each.GetAttributeValue("Count")));
+        }
 
-				#region Roles Check
-				while(reader.Read()) 
-				{ //TODO Remove the goto statement
-					if (reader.Name == "Roles" && reader.NodeType == XmlNodeType.Element)
-					{ //Found roles
-						goto RolesFound;
-					}
-				}
-				throw new Exception("Role definitions");
-				#endregion
-	
-				#region Role Reading
-				RolesFound:
-				{ }
-				//Begin reading the roles
-				while (reader.Read())
-				{
-					if (reader.Name == "Role" && reader.NodeType == XmlNodeType.Element)
-					{
-          var team = (Team)Enum.Parse(typeof(Team), reader.GetAttribute("Team"));
+      }
+      #endregion
 
-            Roles.Add(reader.GetAttribute("Name"), new Role(
-              reader.GetAttribute("Name"), 
-              team, 
-							reader.GetAttribute("Description"), 
-              new Attribute(reader.GetAttribute("Attribute"), team), 
-							Boolean.Parse(reader.GetAttribute("HasDayAction")), 
-							Boolean.Parse(reader.GetAttribute("HasNightAction"))));
-					}
-					else if (reader.Name == "Roles" && reader.NodeType == XmlNodeType.EndElement)
-					{
-						break;
-					}
-				}
-				#endregion
+      try { Program.ConsoleLog("Roles loaded"); }
+      catch { }
+    }
 
-				#region Alternate Implementation
-				/* To be implemented in the future
-				var persons = XDocument.Load(xmlFile)
-								.Root
-								.Elements("Roles")
-								.Elements("Role")
-								.Select(x => new Role { Name = x.Element("Name").Value, team = (Team)Enum.Parse(typeof(Team), (string)x.Element("Team").Value), 
-									attribute = x.Element("attribute").Value,
-								description = x.Element("Description").Value, HasDayAction = Boolean.Parse(x.Element("HasDayAction").Value),
-								HasNightAction = Boolean.Parse(x.Element("HasNightAction").Value)})
-								.ToArray();
-
-				MessageBox.Show("got to line 82");
-				
-				foreach (var x in XDocument.Load(xmlFile).Root.Element("Roles").Elements())
-				{
-					Roles.Add(x.Element("Name").Value, new Role(x.Element("Name").Value, (Team)int.Parse(x.Element("Team").Value),
-						x.Element("Description").Value, x.Element("attribute").Value, Boolean.Parse(x.Element("HasDayAction").Value),
-						Boolean.Parse(x.Element("HasNightAction").Value)));
-				}
-
-				
-				foreach (var each in persons)
-				{
-					Console.WriteLine(each.Name);
-				}
-				Console.WriteLine("Persons length is " + persons.Length);
-				Console.ReadLine();
-				*/
-				#endregion
-
-				#region Rolelist Check
-				reader = new XmlTextReader(xmlFile);
-				reader.WhitespaceHandling = WhitespaceHandling.None;
-				while (reader.Read())
-				{ //TODO Remove the goto statement
-					if (reader.Name == "Rolelists" && reader.NodeType == XmlNodeType.Element)
-					{ //Found roles
-						goto RoleListsFound;
-					}
-				}
-				throw new Exception("Rolelist definitions");
-				#endregion
-
-				#region Rolelist Reading
-				RoleListsFound:
-				while (reader.Read())
-				{
-					if (reader.Name == "Rolelist" && reader.NodeType == XmlNodeType.Element)
-					{
-						string listname = reader.GetAttribute("Name");
-          Wrapper To_Add;
-						while (reader.Read())
-						{
-              if (reader.Name == "Role" && reader.NodeType == XmlNodeType.Element)
-              { //Check what kind of role definition this is
-                string name = reader.GetAttribute("Name");
-                if (string.IsNullOrWhiteSpace(name))
-                { //If there is no role defined
-                  string attri = reader.GetAttribute("Attribute");
-                  if (attri == "Any") To_Add = new Attribute();
-                  else To_Add = Attribute.Parse(attri);
-                }
-                else To_Add = Roles[name];
-                RoleLists[listname].Add(To_Add, int.Parse(reader.GetAttribute("Count")));
-              }
-              else if (reader.Name == "Rolelist" && reader.NodeType == XmlNodeType.EndElement)
-              {
-                break;
-              }
-						}
-					}
-					else if (reader.Name == "Rolelists" && reader.NodeType == XmlNodeType.EndElement)
-					{
-						break;
-					}
-				}
-				#endregion
-			try {}
-			catch (Exception e)
-			{
-				RoleInitialErr(e);
-			}
-			try { Program.ConsoleLog("Roles loaded"); }
-			catch { }
-		}
-
-		public static void InitializeMessages()
+    public static void InitializeMessages()
 		{
 			try { Program.ConsoleLog("Loading messages"); }
 			catch { }
 			Messages = new Dictionary<string, string>();
-			XmlTextReader reader = new XmlTextReader(messageFile);
-			reader.WhitespaceHandling = WhitespaceHandling.None;
-			while (reader.Read())
-			{
-				if (reader.Name == "string" && reader.NodeType == XmlNodeType.Element)
-				{
-					string key = reader.GetAttribute("key");
-					reader.Read();
-					if (reader.Name == "value" && reader.NodeType == XmlNodeType.Element)
-					{
-						reader.Read();
-						Messages.Add(key, reader.Value);
-						//Program.PrintWait("Element name is " + reader.Name + " and value is " + reader.Value);
-					}
-				}
-				else if (reader.Name == "strings" && reader.NodeType == XmlNodeType.EndElement)
-				{
-					break;
-				}
-			}
-			try { Program.ConsoleLog("Loaded messages"); }
+
+      if (!File.Exists(messageFile)) throw new Exception("Missing message file");
+      XDocument doc = XDocument.Load(messageFile);
+
+      foreach(var each in doc.Root.Elements("string"))
+      {
+        Messages.Add(each.GetAttributeValue("key"), each.GetElementValue("value"));
+      }
+
+  		try { Program.ConsoleLog("Loaded messages"); }
 			catch { }
 		}
 		#endregion
@@ -297,7 +172,7 @@ namespace QuizBot
 		/// </summary>
 		public static Triptionary<string, Wrapper, int> RoleLists;
 
-		public static Triptionary<Team, int, string> Attributes;
+		public static Dictionary<int, Attribute> Attributes;
 
 		public static Dictionary<string, Action> DayRoleActions;
 
@@ -309,6 +184,7 @@ namespace QuizBot
 		/// Dictionary containing all the messages
 		/// </summary>
 		public static Dictionary<string, string> Messages;
+
 		#endregion
 	}
 
@@ -322,6 +198,15 @@ namespace QuizBot
 			get { return Properties.Settings.Default.Max_Users; }
 			set { Properties.Settings.Default.Max_Users = value; }
 		}
+
+    /// <summary>
+    /// The minimum number of players allowed per game
+    /// </summary>
+    public static int MinPlayers
+    {
+      get { return Properties.Settings.Default.Min_Users; }
+      set { Properties.Settings.Default.Min_Users = value; }
+    }
 
 		/// <summary>
 		/// The amount of time the join phase is allocated, in seconds
