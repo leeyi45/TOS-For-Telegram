@@ -221,30 +221,53 @@ namespace QuizBot
 
       int[] randoms = random.GenerateIntegers(totaltoassign, 0, noroles.Count, false);
 
-      if (totaltoassign > GameData.PlayerCount)
-      { //If there are fewer players than defined by the rolelist
-        for(int i = 0; i < Settings.CurrentRoles.Count; i++)
-        { //based on priority assign
-          var role = Settings.CurrentRoles.ToArray();
-          Player player = new Player();
-          for(; i < i + role[i].Value; i++)
+      for(int i = 0; i < Settings.CurrentRoles.Count; i++)
+      { //based on priority assign
+        var role = Settings.CurrentRoles.ToArray();
+        Player player = new Player();
+        for(; i < i + role[i].Value; i++)
+        {
+          player = noroles[randoms[i]];
+          if(role[i].Key is Role) player.role = role[i].Key as Role;
+          else if (role[i].Key is Attribute)
           {
-            player = noroles[randoms[i]];
-            if(role[i].Key is Role) player.role = role[i].Key as Role;
-            else if (role[i].Key is Attribute)
-            {
-
+            var attribute = role[i].Key as Attribute;
+            var ranGen = new Random();
+            if (attribute.Name == "Any")
+            { //Assign any role to the player
+              player.role = GameData.Roles.ToArray()[ranGen.Next(0, GameData.Roles.Count)].Value;
             }
-
-            hasroles.Add(hasroles.Count, player);
-            noroles.Remove(i);
+            else
+            {
+              //Need to randomly select a role
+              var iterator = from each in GameData.Roles
+                             where each.Value.attribute == (attribute)
+                             select each;
+              var tempRoles = new Dictionary<int, Role>();
+              foreach (var each in iterator)
+              {
+                tempRoles.Add(tempRoles.Count, each.Value);
+              }
+              player.role = tempRoles[ranGen.Next(0, tempRoles.Count)];
+            }
           }
-          if (noroles.Count == 0) break;
-        }
-      }
-      else
-      { //If there are equal or more players than defined by the rolelist
 
+          hasroles.Add(hasroles.Count, player);
+          noroles.Remove(i);
+        }
+        //Break if there are no more players or no more roles to assign
+        if (noroles.Count == 0  || Settings.CurrentRoles.Count == i) break;
+      }
+
+      if (noroles.Count > 0)
+      {
+        //If there are unassigned people
+        foreach (var each in noroles)
+        {
+          each.Value.role = GameData.Roles["Villager"];
+          hasroles.Add(hasroles.Count, each.Value);
+          noroles.Remove(each.Key);
+        }
       }
 
 		}
@@ -344,12 +367,12 @@ namespace QuizBot
 			}
 		}
 
-		[Command(InGroupOnly = true, Trigger = "start")]
+		[Command(Trigger = "start")]
 		private static void Start(Message msg)
 		{
 			if (msg.Chat.Type == ChatType.Private)
 			{
-				Program.BotMessage(msg.Chat.Id, "PleaseStartBot", msg.Chat.FirstName);
+				//Program.BotMessage(msg.Chat.Id, "PleaseStartBot", msg.Chat.FirstName);
 				return;
 			}
 			if (GameData.GamePhase == GamePhase.Joining)
