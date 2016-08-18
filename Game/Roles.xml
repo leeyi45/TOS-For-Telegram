@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<Root version ="1.0" xmlns="default">
-	
+<Root version ="1.0">
 	<Attributes>
 		<Attribute Team="Town" Name="Support"/>
 		<Attribute Team="Town" Name="Investigative"/>
@@ -9,13 +8,50 @@
 	</Attributes>
 	
 	<Roles>
-		<Role Name="Escort" Team="Town" Description="Role blocks people at night" Attribute="Support" HasDayAction="False" HasNightAction ="True"/>
-		<Role Name="Investigator" Team="Town" Description="Discover people's roles" Attribute="Investigative" HasDayAction="False" HasNightAction="True"/>
-		<Role Name="Villager" Team="Town" Description="Does nothing" Attribute="Support" HasDayAction="False" HayNightAction="False"/>
-
-		<Role Name="Mafioso" Team="Mafia" Description="Kills people" Attribute="Killing" HasDayAction="False" HayNightAction="True"/>
-
-		<Role Name="Serial Killer" Team="Neutral" Description="Kills people" Attribute="Killing" HasDayAction="False" HayNightAction="True"/>
+		<Role>
+      <Name>Escort</Name>
+      <Team>Town</Team>
+      <Description>Role blocks people</Description>
+      <Attribute>Support</Attribute>
+      <HasDayAction>False</HasDayAction>
+      <HasNightAction>True</HasNightAction>
+    </Role>
+    
+		<Role>
+      <Name>Investigator</Name>
+      <Team>Town</Team>
+      <Description>Discovers peoples' roles</Description>
+      <Attribute>Investigative</Attribute>
+      <HasDayAction>False</HasDayAction>
+      <HasNightAction>True</HasNightAction>
+    </Role>
+    
+    <Role>
+      <Name>Villager</Name>
+      <Team>Town</Team>
+      <Description>Does nothing</Description>
+      <Attribute>Support</Attribute>
+      <HasDayAction>False</HasDayAction>
+      <HasNightAction>False</HasNightAction>
+    </Role>
+    
+    <Role>
+      <Name>Mafioso</Name>
+      <Team>Mafia</Team>
+      <Attribute>Killing</Attribute>
+      <Description>Kills people</Description>
+      <HasDayAction>False</HasDayAction>
+      <HasNightAction>True</HasNightAction>
+    </Role>
+      
+    <Role>
+      <Name>Serial Killer</Name>
+      <Team>Neutral</Team>
+      <Attribute>Killing</Attribute>
+      <Description>Kills people</Description>
+      <HasDayAction>False</HasDayAction>
+      <HasNightAction>True</HasNightAction>
+    </Role>
 	</Roles>
 
 	
@@ -23,6 +59,12 @@
 		<Rolelist Name="Default">
 			<Role Name ="Escort" Count="1"/>
 			<Role Name ="Serial Killer" Count="1"/>
+      <Role Attribute="Town Killing" Count="1"/>
+      <Role Attribute="Any" Count="1"/>
 		</Rolelist>
+    
+    <Rolelist Name="All Any">
+      <Role Attribute="Any" Count="35"/>
+    </Rolelist>
 	</Rolelists>
 </Root>
