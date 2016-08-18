@@ -18,11 +18,11 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace QuizBot
 {
-	class Program
+	static class Program
 	{
 		internal static readonly TelegramBotClient Bot = new TelegramBotClient("255326562:AAHF0Qq2zjjY9tfX2JnqnYSUeXPT6rej3Fk");
 
-		public static LogForm ConsoleForm = new LogForm();
+		public static LogForm ConsoleForm;
 
 		[STAThread]
 		static void Main(string[] notused)
@@ -32,8 +32,12 @@ namespace QuizBot
 			Bot.OnMessageEdited += OnMessage;
 			Bot.OnCallbackQuery += OnCallbackQuery;
 			GameData.StartTime = DateTime.Now;
-
+			GameData.GamePhase = GamePhase.Inactive;
+			ConsoleForm = new LogForm();
 			//var me = Bot.GetMeAsync().Result;
+			GameData.InitializeRoles();
+			GameData.InitializeMessages();
+      Commands.InitializeCommands();
 			Application.Run(ConsoleForm);
 		}
 
@@ -49,7 +53,9 @@ namespace QuizBot
 			}*/
 
 			if (message == null || message.Type != MessageType.TextMessage) return;
-			
+
+			ConsoleLog("Message \"" + msgtext + "\" received from " + message.From.FirstName + " " + message.From.LastName);
+
 			//If it is a command
 			if(msgtext.StartsWith("/")) 
 			{
@@ -78,9 +84,26 @@ namespace QuizBot
 			}
 		}
 
-		public async static void BotMessage(string text)
+		/// <summary>
+		/// Send a message using a message with the specified key
+		/// </summary>
+		/// <param name="key">Message key</param>
+		/// <param name="args">Message arguments</param>
+		public async static void BotMessage(string key, params object[] args)
 		{
-			await Bot.SendTextMessageAsync(GameData.CurrentGroup, text);
+      try { await Bot.SendTextMessageAsync(GameData.CurrentGroup, string.Format(GameData.Messages[key], args)); }
+			catch (Telegram.Bot.Exceptions.ApiRequestException) { }
+		}
+
+		/// <summary>
+		/// Send a message to the specified group using a message with specified key
+		/// </summary>
+		/// <param name="id">Group id</param>
+		/// <param name="key">Message Key</param>
+		/// <param name="args">Message Arguments</param>
+		public async static void BotMessage(long id, string key, params object[] args)
+		{
+			await Bot.SendTextMessageAsync(id, string.Format(GameData.Messages[key], args));
 		}
 
 		public static void ConsoleLog(string text)
@@ -92,6 +115,11 @@ namespace QuizBot
 		{
 			Console.WriteLine(text);
 			Console.ReadLine();
+		}
+
+		public static string GetName(this User x)
+		{
+			return x.FirstName + " " + x.LastName;
 		}
 	}
 }
