@@ -291,17 +291,17 @@ namespace QuizBot
 		[Command(Trigger = "players")]
 		private static void Players(Message msg)
 		{
-			if (GameData.GamePhase == GamePhase.Inactive)
-			{
-				Program.BotMessage("NoGameJoin");
-			}
+			if (GameData.GamePhase == GamePhase.Inactive) Program.BotMessage("NoGameJoin");
 			else
 			{
 				StringBuilder output = new StringBuilder("*Players*\n\n");
 				foreach (var each in GameData.Joined)
 				{
-					output.AppendLine(each.Value.FirstName);
-				}
+					output.Append(each.Value.Username);
+          if (!each.Value.IsAlive) output.Append(": " + each.Value.role.ToString());
+          output.Append("\n");
+
+        }
 				Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Markdown);
 			}
 		}
