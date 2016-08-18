@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 
-using Telegram.Bot;
-using Telegram.Bot.Args;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -103,6 +101,7 @@ namespace QuizBot
 			NormalCommands.Add("players", (x, y) => Players(x));
 			AdminCommands.Add("ping", (x, y) => Ping(x));
       NormalCommands.Add("listroles", (x, y) => ListRoles(x));
+      NormalCommands.Add("version", (x, y) => Version(x));
 		}
 
 		//The default parser
@@ -169,12 +168,12 @@ namespace QuizBot
 		#region Join Game Logic
 		public static void StartJoinGame(Message msg)
 		{
-			if (Settings.JoinTime > 60) Time.Tick += new EventHandler(TickHandler1);
+			if (Settings.JoinTime < 60) Time.Tick += new EventHandler(TickHandler1);
 			else Time.Tick += new EventHandler(TickHandler2);
 
-			Time.Interval = 10000; //10 seconds by default
+			Time.Interval = 1000; //1 seconds by default
 			GameData.CurrentGroup = msg.Chat.Id;
-			Program.BotMessage("StartGame", msg.From.Username);
+			Program.BotMessage("GameStart", msg.From.Username);
 			GameData.GamePhase = GamePhase.Joining;
 			GameData.Joined.Add(GameData.PlayerCount, msg.From);
 			Time.Start();
@@ -186,15 +185,24 @@ namespace QuizBot
 
 		public static void TickHandler1(object sender, EventArgs e) 
 		{ //Less than 1 minute join time
+      System.Windows.Forms.MessageBox.Show("I got here");
 			TimeLeft -= Time.Interval/1000;
+      Console.Write(TimeLeft.ToString());
 			if (TimeLeft % 30 == 0 || TimeLeft == 10)
 			{
 				Program.BotMessage("JoinSeconds", Settings.JoinTime - TimeLeft);
 			}
 			else if (TimeLeft == 0)
 			{
-				Program.BotMessage("BeginGame");
-				StartRolesAssign();
+        if (GameData.PlayerCount < Settings.MinPlayers)
+        {
+          Program.BotMessage("NotEnoughPlayers");
+        }
+        else
+        {
+          Program.BotMessage("BeginGame");
+          StartRolesAssign();
+        }
 			}
 		}
 
@@ -211,14 +219,13 @@ namespace QuizBot
 			var hasroles = new Dictionary<int, Player>();
 			var random = new org.random.JSONRPC.RandomJSONRPC("bbcfa0f8-dbba-423a-8798-c8984c4fc5c5");
 			int totaltoassign = 0;
-      int totalattris = 0;
       GameData.GamePhase = GamePhase.Assigning;
       foreach (var each in Settings.CurrentRoles)
 			{
-				totaltoassign += each.Value;
-        if (each.Key is Attribute) totalattris += 1 * each.Value;
+        totaltoassign += each.Value;
 			}
 
+      //Only actual randoms are being used for players
       int[] randoms = random.GenerateIntegers(totaltoassign, 0, noroles.Count, false);
 
       for(int i = 0; i < Settings.CurrentRoles.Count; i++)
@@ -259,6 +266,7 @@ namespace QuizBot
         if (noroles.Count == 0  || Settings.CurrentRoles.Count == i) break;
       }
 
+      //Check if there are players that still have no roles
       if (noroles.Count > 0)
       {
         //If there are unassigned people
@@ -269,7 +277,7 @@ namespace QuizBot
           noroles.Remove(each.Key);
         }
       }
-
+      GameData.Joined = hasroles; //Update the main dictionary
 		}
 		#endregion
 		
@@ -306,7 +314,8 @@ namespace QuizBot
 			}
 			else if (GameData.GamePhase == GamePhase.Joining)
 			{ //Join the player thanks
-				Program.BotMessage(msg.Chat.Id, "PlayerJoin", player.Username, GameData.Joined.Count, 5, Settings.MaxPlayers);
+				Program.BotMessage(msg.Chat.Id, "PlayerJoin", player.Username, GameData.Joined.Count, 
+          Settings.MinPlayers, Settings.MaxPlayers);
 				GameData.Joined.Add(GameData.PlayerCount, player);
 			}
 		}
@@ -375,14 +384,14 @@ namespace QuizBot
 				//Program.BotMessage(msg.Chat.Id, "PleaseStartBot", msg.Chat.FirstName);
 				return;
 			}
-			if (GameData.GamePhase == GamePhase.Joining)
-			{
-				Program.BotMessage("RunningGameStart");
-				return;
-			}
-			GameData.CurrentGroup = msg.Chat.Id;
-			Program.ConsoleLog("Game started!");
-			StartJoinGame(msg);
+      if (GameData.GamePhase == GamePhase.Joining) Program.BotMessage("RunningGameStart");
+     // else 
+      else
+      {
+        GameData.CurrentGroup = msg.Chat.Id;
+        Program.ConsoleLog("Game started!");
+        StartJoinGame(msg);
+      }
 		}
 
 		[Command(Trigger = "roles")]
@@ -423,6 +432,17 @@ namespace QuizBot
         output.AppendLine(each.Value.Name + ": <i>" + each.Value.description + "</i>");
       }
       Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Html);
+    }
+
+    [Command(Trigger = "version")]
+    public static void Version(Message msg)
+    {
+      Assembly main = Assembly.GetExecutingAssembly();
+      var version = main.GetName().Version;
+      StringBuilder output = new StringBuilder("*Version information*\n\n");
+      output.AppendLine("Version: " + version.Major + version.Minor);
+      output.AppendLine("Build: " + version.Build);
+      Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Markdown)''
     }
 		#endregion
 	}
