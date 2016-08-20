@@ -263,6 +263,9 @@ namespace QuizBot
 	}*/
 
   //This class is here so I can store both attributes and roles in the same dictionary
+  /// <summary>
+  /// Wrapper class for roles and attributes
+  /// </summary>
   public class Wrapper
   {
     public virtual Team team { get; set; }
@@ -270,24 +273,46 @@ namespace QuizBot
     public virtual string Name { get; set; }
   }
 
-  public class Attribute : Wrapper
+  /// <summary>
+  /// Class to represent a team
+  /// </summary>
+  public class TeamWrapper : Wrapper
   {
-    public Attribute()
+    public TeamWrapper(Team team)
+    {
+      this.team = team;
+    }
+
+    public override string Name
+    {
+      get { return "Random " + team.ToString(); }
+    }
+  }
+
+  /// <summary>
+  /// Class representing the type of role
+  /// </summary>
+  public class Alignment : Wrapper
+  {
+    /// <summary>
+    /// Initializes an "Any" attribute
+    /// </summary>
+    public Alignment()
     {
       Name = "Any";
     }
 
-    public Attribute(string name, Team team)
+    public Alignment(string name, Team team)
     {
       this.team = team;
       this.name = name;
     }
 
-    public static Attribute Parse(string input)
+    public static Alignment Parse(string input)
     {
       string[] args = input.Split(' ');
-      if (args.Length > 2) throw new FormatException();
-      return new Attribute(args[1], (Team)Enum.Parse(typeof(Team), args[0]));
+      if (args.Length > 2 || string.IsNullOrWhiteSpace(input)) throw new FormatException();
+      return new Alignment(args[1], (Team)Enum.Parse(typeof(Team), args[0]));
     }
 
     private string name;
@@ -304,9 +329,12 @@ namespace QuizBot
 
   }
 
+  /// <summary>
+  /// Class to represent a role
+  /// </summary>
 	public class Role : Wrapper
 	{
-		public Role(string _name, Team _team, string d, Attribute a, bool n, bool day)
+		public Role(string _name, Team _team, string d, Alignment a, bool n, bool day)
 		{
 			Name = _name;
 			team = _team;
@@ -322,7 +350,7 @@ namespace QuizBot
 
 		public string description { get; set; }
 
-		public Attribute attribute { get; set; }
+		public Alignment attribute { get; set; }
 
 		public bool HasNightAction { get; set; }
 
@@ -342,6 +370,9 @@ namespace QuizBot
 		}
 	}
 
+  /// <summary>
+  /// Class representing a player in the game
+  /// </summary>
 	public class Player
 	{
 		public Player() { }
@@ -370,9 +401,9 @@ namespace QuizBot
 		public string Username { get; private set; }
 
 		public int Id { get; private set; }
-		#endregion
+    #endregion
 
-		public bool IsAlive { get; set; }
+    public bool IsAlive { get; set; } = true;
 
 		public string Name
 		{
