@@ -1,19 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Xml;
-using System.Xml.Linq;
-using System.IO;
 using System.Diagnostics;
-
-using RoleList = QuizBot.Triptionary<System.String, QuizBot.Role, System.Int32>;
+using System.IO;
+using System.Windows.Forms;
+using System.Xml.Linq;
 
 namespace QuizBot
 {
-	class GameData
+  class GameData
 	{
 		#region Intialization
 		public const string xmlFile = @"C:\Users\Lee Yi\Desktop\Everything, for the moment\Coding\C# Bot\QuizBot\QuizBot\Game\Roles.xml";
@@ -35,7 +29,7 @@ namespace QuizBot
     {
       Roles = new Dictionary<string, Role>();
       RoleLists = new Triptionary<string, Wrapper, int>();
-      Attributes = new Dictionary<int, Attribute>();
+      Alignments = new Dictionary<int, Alignment>();
 
       try { Program.ConsoleLog("Loading roles"); }
       catch { }
@@ -51,12 +45,12 @@ namespace QuizBot
       }
       #endregion
 
-      #region Attributes
-      if (!document.HasElement("Attributes")) throw new Exception("Attribute definitions");
-      foreach (var each in document.Root.Element("Attributes").Elements("Attribute"))
+      #region Alignment
+      if (!document.HasElement("Alignments")) throw new Exception("Alignment definitions");
+      foreach (var each in document.Root.Element("Alignments").Elements("Alignment"))
       {
         Team temp = (Team)Enum.Parse(typeof(Team), each.GetAttributeValue("Team"));
-        Attributes.Add(Attributes.Count, new Attribute(each.GetAttributeValue("Name"), temp));
+        Alignments.Add(Alignments.Count, new Alignment(each.GetAttributeValue("Name"), temp));
       }
       #endregion
 
@@ -69,7 +63,7 @@ namespace QuizBot
           each.GetElementValue("Name"),
           team,
           each.GetElementValue("Description"),
-          new Attribute(each.GetElementValue("Attribute"), team),
+          new Alignment(each.GetElementValue("Alignment"), team),
           Boolean.Parse(each.GetElementValue("HasDayAction")),
           Boolean.Parse(each.GetElementValue("HasNightAction"))));
       }
@@ -82,21 +76,32 @@ namespace QuizBot
         var listname = rolelist.GetAttributeValue("Name");
         foreach (var each in rolelist.Elements("Role"))
         {
-          Wrapper To_Add = new Wrapper();
           try
           {
-            //Check what kind of role definition this is
-            string name = each.GetAttributeValue("Name");
-            To_Add = Roles[name];
+            Wrapper To_Add = new Wrapper();
+            string value = "";
+
+            if (each.TryGetAttribute("Name", out value))
+            { //Normal role definition
+              To_Add = Roles[value];
+            }
+            else if (each.TryGetAttribute("Alignment", out value))
+            { //Alignment defined
+              if (value == "Any") To_Add = new Alignment();
+              else To_Add = Alignment.Parse(value);
+            }
+            else if (each.TryGetAttribute("Team", out value))
+            { //Team defined
+              To_Add = new TeamWrapper((Team)Enum.Parse(typeof(Team), value));
+            }
+            else throw new Exception();
+
+            int count = 1;
+            if (each.TryGetAttribute("Count", out value)) int.TryParse(value, out count);
+
+            RoleLists[listname].Add(To_Add, count);
           }
-          catch (NullReferenceException)
-          {
-            //If there is no role defined
-            string attri = each.GetAttributeValue("Attribute");
-            if (attri == "Any") To_Add = new Attribute();
-            else To_Add = Attribute.Parse(attri);
-          }
-          RoleLists[listname].Add(To_Add, int.Parse(each.GetAttributeValue("Count")));
+          catch(Exception) { throw new Exception("Role not defined correctly!"); }
         }
 
       }
@@ -158,7 +163,7 @@ namespace QuizBot
 		public static DateTime StartTime { get; set; }
 
 		//Need this to remove stuff for the commands
-		public const string WeirdThing = "@quiztestbot";
+		public static string BotUsername { get; set; }
 		#endregion
 
 		#region The Dictionaries of Data
@@ -172,7 +177,7 @@ namespace QuizBot
 		/// </summary>
 		public static Triptionary<string, Wrapper, int> RoleLists;
 
-		public static Dictionary<int, Attribute> Attributes;
+		public static Dictionary<int, Alignment> Alignments;
 
 		public static Dictionary<string, Action> DayRoleActions;
 
