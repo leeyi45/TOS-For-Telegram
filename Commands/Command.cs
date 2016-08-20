@@ -85,23 +85,21 @@ namespace QuizBot
 	//Okay this is my work
 	public class Commands
 	{
-		public static Dictionary<string, CommandDelegate> AdminCommands = new Dictionary<string, CommandDelegate>();
+    public static Dictionary<string, Tuple<CommandDelegate, Command>> AllCommands = 
+      new Dictionary<string, Tuple<CommandDelegate, Command>>();
 
-		public static Dictionary<string, CommandDelegate> NormalCommands = new Dictionary<string, CommandDelegate>();
-
-		public delegate void CommandDelegate(Message msg, params object[] args);
+		public delegate void CommandDelegate(Message msg, string originalMsg, string[] args);
 
 		public static void InitializeCommands()
 		{
-			AdminCommands.Add("config", (x, y) => Config(x));
-			NormalCommands.Add("join", (x, y) => Join(x));
-			NormalCommands.Add("roles", (x, y) => Roles(x, (string[])y));
-			NormalCommands.Add("start", (x, y) => Start(x));
-			NormalCommands.Add("say", (x, y) => Say(x, (string)y[0]));
-			NormalCommands.Add("players", (x, y) => Players(x));
-			AdminCommands.Add("ping", (x, y) => Ping(x));
-      NormalCommands.Add("listroles", (x, y) => ListRoles(x));
-      NormalCommands.Add("version", (x, y) => Version(x));
+      //Just means I don't have to add the functions myself cause I'm lazy af
+      foreach(var method in typeof(Commands).GetMethods(BindingFlags.NonPublic | BindingFlags.Static))
+      {
+        Command attribute = method.GetCustomAttribute(typeof(Command)) as Command;
+        if (attribute == null) continue;
+        AllCommands.Add(attribute.Trigger, new Tuple<CommandDelegate, Command>(
+          (CommandDelegate)Delegate.CreateDelegate(typeof(CommandDelegate), method), attribute));
+      }
 		}
 
 		//The default parser
@@ -117,47 +115,39 @@ namespace QuizBot
 			string[] args = cmd.Split(' ');
 			//Remove the @quiztestbot
 			if (args[0].Contains("@quiztestbot")) args[0] = args[0].Substring(0, 
-        args[0].Length - GameData.WeirdThing.Length);
+        args[0].Length - Program.Bot.GetMeAsync().Result.Username.Length - 1);
+      //Program.ConsoleLog("The arg is " + args[0]);
+      try
+      {
+        //Check stuff
+        Command attribute = AllCommands[args[0]].Item2;
 
-			try
-			{
-        #region Admin Commands
-        if (AdminCommands.ContainsKey(args[0]))
-				{ //If admin command
-					if (!admin) NotAdmin(msg);
-					else
-					{
-						AdminCommands[args[0]](msg);
-					}
-				}
+        #region Checks
+        if (attribute.InGroupOnly &&
+          (msg.Chat.Type == ChatType.Private || msg.Chat.Type == ChatType.Channel))
+        { //If the chat is not a group and the command is group only
+          Program.BotMessage(msg.Chat.Id, "GroupOnly");
+          return;
+        }
+
+        if (attribute.InPrivateOnly && msg.Chat.Type != ChatType.Private)
+        { //If the chat is not private and the command is private only
+          Program.BotMessage(msg.Chat.Id, "PrivateOnly");
+          return;
+        }
+
+        if (attribute.GroupAdminOnly && !admin)
+        { //If command is admin only and user is not admin
+          NotAdmin(msg);
+          return;
+        }
         #endregion
 
-        #region Non admin commands
-        else
-        { //Non admin command
-          switch (args[0])
-          {
-            case "roles":
-              {
-                NormalCommands[args[0]](msg, args);
-                break;
-              }
-            case "say":
-              {
-                NormalCommands[args[0]](msg, cmd);
-                break;
-              }
-            default:
-              {
-                NormalCommands[args[0]](msg);
-                break;
-              }
-          }
-				}
-        #endregion
+        AllCommands[args[0]].Item1(msg, cmd, args);
       }
-			catch (KeyNotFoundException) { /*Ignore if the command is not recognised */ }
-		
+      catch (KeyNotFoundException)
+      { //Program.ConsoleLog(e.Message); }
+      }
 		}
 
 		public static void NotAdmin(Message msg)
@@ -289,7 +279,7 @@ namespace QuizBot
 
 		#region Commands
 		[Command(Trigger = "config", GroupAdminOnly = true)]
-		private static void Config(Message msg)
+		private static void Config(Message msg, string cmd, string[] args)
 		{
 			//Send the config menu to the player
 			Program.BotMessage(msg.Chat.Id, "SentConfig", msg.From.GetName());
@@ -297,7 +287,7 @@ namespace QuizBot
 		}
 
 		[Command(InGroupOnly = true, Trigger = "join")]
-		private static void Join(Message msg)
+		private static void Join(Message msg, string cmd, string[] args)
 		{
 			var player = msg.From;
 			if (UpdateHelper.HasJoined(player) && GameData.GamePhase == GamePhase.Joining)
@@ -321,7 +311,7 @@ namespace QuizBot
 		}
 
 		[Command(Trigger = "players")]
-		private static void Players(Message msg)
+		private static void Players(Message msg, string cmd, string[] args)
 		{
 			if (GameData.GamePhase == GamePhase.Inactive) Program.BotMessage("NoGameJoin");
 			else
@@ -339,7 +329,7 @@ namespace QuizBot
 		}
 
 		[Command(InGroupOnly = true, Trigger = "ping")]
-		private static void Ping(Message msg)
+		private static void Ping(Message msg, string cmd, string[] args)
 		{
 			var ts = DateTime.UtcNow - msg.Date;
 			var send = DateTime.UtcNow;
@@ -357,27 +347,26 @@ namespace QuizBot
 		}
 
 		[Command(InPrivateOnly = true, Trigger = "say")]
-		private static void Say(Message msg, string cmd)
-		{
-			if (msg.Chat.Type == ChatType.Group) Program.BotMessage(msg.Chat.Id, "PrivateOnly");
-			else
+		private static void Say(Message msg, string cmd, string[] args)
+    {
+      //if (msg.Chat.Type == ChatType.Group) Program.BotMessage(msg.Chat.Id, "PrivateOnly");
+      args[0] = "";
+			try
 			{
-				try
-				{
-					Program.Bot.SendTextMessageAsync(GameData.CurrentGroup,
-						cmd.Substring(3 + GameData.WeirdThing.Length));
-				}
-				catch (ArgumentOutOfRangeException)
-				{
-					Program.Bot.SendTextMessageAsync(GameData.CurrentGroup,
-						cmd.Substring(3));
-				}
-				//catch { Program.BotMessage(msg.Chat.Id, "NoGameJoin"); }
+				Program.Bot.SendTextMessageAsync(GameData.CurrentGroup,
+					cmd.Substring(3 + GameData.WeirdThing.Length));
 			}
+			catch (ArgumentOutOfRangeException)
+			{
+				Program.Bot.SendTextMessageAsync(GameData.CurrentGroup,
+					cmd.Substring(3));
+			}
+      Program.Bot.SendTextMessageAsync(GameData.CurrentGroup, string.Concat(args));
+				//catch { Program.BotMessage(msg.Chat.Id, "NoGameJoin"); }
 		}
 
 		[Command(Trigger = "start")]
-		private static void Start(Message msg)
+		private static void Start(Message msg, string cmd, string[] args)
 		{
 			if (msg.Chat.Type == ChatType.Private)
 			{
@@ -395,7 +384,7 @@ namespace QuizBot
 		}
 
 		[Command(Trigger = "roles")]
-		private static void Roles(Message msg, string[] args)
+		private static void Roles(Message msg, string cmd, string[] args)
 		{
 			StringBuilder output = new StringBuilder("*" + Settings.CurrentRoleList + "*" + "\n\n");
 			foreach (var each in Settings.CurrentRoles)
@@ -424,7 +413,7 @@ namespace QuizBot
 		}
 
     [Command(Trigger = "listroles")]
-    public static void ListRoles(Message msg)
+    private static void ListRoles(Message msg, string cmd, string[] args)
     {
       StringBuilder output = new StringBuilder("<b>Currently Registered Roles:</b>\n\n");
       foreach(var each in GameData.Roles)
@@ -435,14 +424,14 @@ namespace QuizBot
     }
 
     [Command(Trigger = "version")]
-    public static void Version(Message msg)
+    private static void Version(Message msg, string cmd, string[] args)
     {
       Assembly main = Assembly.GetExecutingAssembly();
       var version = main.GetName().Version;
       StringBuilder output = new StringBuilder("*Version information*\n\n");
-      output.AppendLine("Version: " + version.Major + version.Minor);
+      output.AppendLine("Version: " + version.Major + "." + version.Minor);
       output.AppendLine("Build: " + version.Build);
-      Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Markdown)''
+      Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Markdown);
     }
 		#endregion
 	}
