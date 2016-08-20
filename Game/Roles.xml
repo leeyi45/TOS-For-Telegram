@@ -1,18 +1,40 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Root version ="1.0">
-	<Attributes>
-		<Attribute Team="Town" Name="Support"/>
-		<Attribute Team="Town" Name="Investigative"/>
-		<Attribute Team="Mafia" Name="Killing"/>
-		<Attribute Team="Neutral" Name="Killing"/>
-	</Attributes>
+	<Alignments>
+		<Alignment Team="Town" Name="Support"/>
+		<Alignment Team="Town" Name="Investigative"/>
+    <Alignment Team="Town" Name="Protective"/>
+		<Alignment Team="Mafia" Name="Killing"/>
+    <Alignment Team="Mafia" Name="Support"/>
+		<Alignment Team="Neutral" Name="Killing"/>
+    <Alignment Team="Neutral" Name="Benign"/>
+    <Alignment Team="Neutral" Name="Evil"/>
+	</Alignments>
 	
 	<Roles>
-		<Role>
+    <Role>
+      <Name>Bodyguard</Name>
+      <Team>Town</Team>
+      <Description>Saves people, but dies</Description>
+      <Alignment>Protective</Alignment>
+      <HasDayAction>False</HasDayAction>
+      <HasNightAction>True</HasNightAction>
+    </Role>
+
+    <Role>
+      <Name>Doctor</Name>
+      <Team>Town</Team>
+      <Description>Heal one person per night</Description>
+      <Alignment>Support</Alignment>
+      <HasDayAction>False</HasDayAction>
+      <HasNightAction>True</HasNightAction>
+    </Role>
+
+    <Role>
       <Name>Escort</Name>
       <Team>Town</Team>
       <Description>Role blocks people</Description>
-      <Attribute>Support</Attribute>
+      <Alignment>Support</Alignment>
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
     </Role>
@@ -21,7 +43,16 @@
       <Name>Investigator</Name>
       <Team>Town</Team>
       <Description>Discovers peoples' roles</Description>
-      <Attribute>Investigative</Attribute>
+      <Alignment>Investigative</Alignment>
+      <HasDayAction>False</HasDayAction>
+      <HasNightAction>True</HasNightAction>
+    </Role>
+
+    <Role>
+      <Name>Sheriff</Name>
+      <Team>Town</Team>
+      <Description>Determine if a person is suspicious or not</Description>
+      <Alignment>Investigative</Alignment>
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
     </Role>
@@ -30,41 +61,83 @@
       <Name>Villager</Name>
       <Team>Town</Team>
       <Description>Does nothing</Description>
-      <Attribute>Support</Attribute>
+      <Alignment>Support</Alignment>
       <HasDayAction>False</HasDayAction>
       <HasNightAction>False</HasNightAction>
+    </Role>
+
+    <!--Mafia Roles-->
+    <Role>
+      <Name>Consort</Name>
+      <Team>Mafia</Team>
+      <Alignment>Support</Alignment>
+      <Description>Role blocks people</Description>
+      <HasDayAction>False</HasDayAction>
+      <HasNightAction>True</HasNightAction>
     </Role>
     
     <Role>
       <Name>Mafioso</Name>
       <Team>Mafia</Team>
-      <Attribute>Killing</Attribute>
+      <Alignment>Killing</Alignment>
       <Description>Kills people</Description>
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
     </Role>
-      
+     
+    <!--Neutral Roles-->
+    <Role>
+      <Name>Arsonist</Name>
+      <Team>Neutral</Team>
+      <Alignment>Killing</Alignment>
+      <Description>Douses, and then burns people</Description>
+      <HasDayAction>False</HasDayAction>
+      <HasNightAction>True</HasNightAction>
+    </Role>
+
+    <Role>
+      <Name>Jester</Name>
+      <Team>Neutral</Team>
+      <Alignment>Evil</Alignment>
+      <Description>If lynched, wins the game</Description>
+      <HasDayAction>False</HasDayAction>
+      <HasNightAction>False</HasNightAction>
+    </Role>
+    
     <Role>
       <Name>Serial Killer</Name>
       <Team>Neutral</Team>
-      <Attribute>Killing</Attribute>
+      <Alignment>Killing</Alignment>
       <Description>Kills people</Description>
+      <HasDayAction>False</HasDayAction>
+      <HasNightAction>True</HasNightAction>
+    </Role>
+    
+    <Role>
+      <Name>Survivor</Name>
+      <Team>Neutral</Team>
+      <Alignment>Benign</Alignment>
+      <Description>Survive through the whole game</Description>
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
     </Role>
 	</Roles>
-
 	
 	<Rolelists>
 		<Rolelist Name="Default">
-			<Role Name ="Escort" Count="1"/>
-			<Role Name ="Serial Killer" Count="1"/>
-      <Role Attribute="Town Killing" Count="1"/>
-      <Role Attribute="Any" Count="1"/>
+      <Role Name = "Sheriff"/>
+      <Role Name = "Doctor"/>
+      <Role Name = "Investigator"/>
+			<Role Name = "Mafioso"/>
+      <Role Name = "Escort"/>
+			<Role Name ="Serial Killer"/>
+      <Role Alignment="Town Killing"/>
+      <Role Name = "Jester"/>
+      <Role Team="Town"/>
 		</Rolelist>
     
     <Rolelist Name="All Any">
-      <Role Attribute="Any" Count="35"/>
+      <Role Alignment="Any" Count="35"/>
     </Rolelist>
 	</Rolelists>
 </Root>
