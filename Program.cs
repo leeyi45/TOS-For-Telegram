@@ -20,25 +20,25 @@ namespace QuizBot
 {
 	static class Program
 	{
-		internal static readonly TelegramBotClient Bot = new TelegramBotClient("255326562:AAHF0Qq2zjjY9tfX2JnqnYSUeXPT6rej3Fk");
+		internal static readonly TelegramBotClient Bot = new TelegramBotClient(Chats.BotToken);
 
 		public static LogForm ConsoleForm;
 
 		[STAThread]
 		static void Main(string[] notused)
 		{
-			//Begin Setting the Bot Event Handlers
-			Bot.OnMessage += OnMessage;
-			Bot.OnMessageEdited += OnMessage;
-			Bot.OnCallbackQuery += OnCallbackQuery;
-			GameData.StartTime = DateTime.Now;
-			GameData.GamePhase = GamePhase.Inactive;
-			ConsoleForm = new LogForm();
-			//var me = Bot.GetMeAsync().Result;
-			GameData.InitializeRoles();
-			GameData.InitializeMessages();
+		    //Begin Setting the Bot Event Handlers
+		  Bot.OnMessage += OnMessage;
+		  Bot.OnMessageEdited += OnMessage;
+		  Bot.OnCallbackQuery += OnCallbackQuery;
+		  GameData.StartTime = DateTime.Now;
+		  ConsoleForm = new LogForm();
+      GameData.InitializeRoles();
+		  GameData.InitializeMessages();
       Commands.InitializeCommands();
-			Application.Run(ConsoleForm);
+      Chats.getChats();
+      GameData.BotUsername = Bot.GetMeAsync().Result.Username;
+		  Application.Run(ConsoleForm);
 		}
 
 		static async void OnMessage(object sender, MessageEventArgs messageEventArgs)
@@ -91,7 +91,8 @@ namespace QuizBot
 		/// <param name="args">Message arguments</param>
 		public async static void BotMessage(string key, params object[] args)
 		{
-      try { await Bot.SendTextMessageAsync(GameData.CurrentGroup, string.Format(GameData.Messages[key], args)); }
+      try { await Bot.SendTextMessageAsync(GameData.CurrentGroup, string.Format(GameData.Messages[key], args),
+        parseMode: ParseMode.Markdown); }
 			catch (Telegram.Bot.Exceptions.ApiRequestException) { }
 		}
 
@@ -103,7 +104,7 @@ namespace QuizBot
 		/// <param name="args">Message Arguments</param>
 		public async static void BotMessage(long id, string key, params object[] args)
 		{
-			await Bot.SendTextMessageAsync(id, string.Format(GameData.Messages[key], args));
+			await Bot.SendTextMessageAsync(id, string.Format(GameData.Messages[key], args), parseMode: ParseMode.Markdown);
 		}
 
 		public static void ConsoleLog(string text)
@@ -117,9 +118,51 @@ namespace QuizBot
 			Console.ReadLine();
 		}
 
-		public static string GetName(this User x)
+    #region Extension Methods
+    public static string GetName(this User x)
 		{
 			return x.FirstName + " " + x.LastName;
 		}
-	}
+
+    public static string GetAttributeValue(this System.Xml.Linq.XElement x, System.Xml.Linq.XName name)
+    {
+      return x.Attribute(name).Value;
+    }
+
+    public static string GetElementValue(this System.Xml.Linq.XElement x, System.Xml.Linq.XName name)
+    {
+      return x.Element(name).Value;
+    }
+
+    public static bool TryGetAttribute(this System.Xml.Linq.XElement x, System.Xml.Linq.XName name, out string output)
+    {
+      try
+      {
+        output = x.Attribute(name).Value;
+        return true;
+      }
+      catch(NullReferenceException)
+      {
+        output = null;
+        return false;
+      }
+    }
+
+    /// <summary>
+    /// Only checks the root element for containing elements
+    /// </summary>
+    /// <param name="doc">Document</param>
+    /// <param name="name">Name of the element</param>
+    /// <returns>Boolean value indicating if the element was found</returns>
+    public static bool HasElement(this System.Xml.Linq.XDocument doc, System.Xml.Linq.XName name)
+    {
+      foreach(var each in doc.Root.Elements())
+      {
+        //Program.PrintWait(each.Name.ToString());
+        if (each.Name == name) return true;
+      }
+      return false;
+    }
+    #endregion
+  }
 }
