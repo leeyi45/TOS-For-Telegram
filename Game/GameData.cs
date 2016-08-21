@@ -59,13 +59,15 @@ namespace QuizBot
       foreach (var each in document.Root.Element("Roles").Elements("Role"))
       {
         var team = (Team)Enum.Parse(typeof(Team), each.GetElementValue("Team"));
-        Roles.Add(each.GetElementValue("Name"), new Role(
-          each.GetElementValue("Name"),
+        var name = each.GetElementValue("Name");
+        Roles.Add(name, new Role(
+          name,
           team,
           each.GetElementValue("Description"),
           new Alignment(each.GetElementValue("Alignment"), team),
-          Boolean.Parse(each.GetElementValue("HasDayAction")),
-          Boolean.Parse(each.GetElementValue("HasNightAction"))));
+          bool.Parse(each.GetElementValue("HasDayAction")),
+          bool.Parse(each.GetElementValue("HasNightAction"))));
+        Messages.Add(name + "Assign", each.GetElementValue("OnAssign"));
       }
       #endregion
 
