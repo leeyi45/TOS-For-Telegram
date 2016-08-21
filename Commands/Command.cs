@@ -358,7 +358,7 @@ namespace QuizBot
 		{
 			var noroles = GameData.Joined;
 			var hasroles = new Dictionary<int, Player>();
-			var random = new org.random.JSONRPC.RandomJSONRPC("bbcfa0f8-dbba-423a-8798-c8984c4fc5c5");
+      var random = new Random();//new org.random.JSONRPC.RandomJSONRPC("bbcfa0f8-dbba-423a-8798-c8984c4fc5c5");
 			int totaltoassign = 0;
       GameData.GamePhase = GamePhase.Assigning;
       foreach (var each in Settings.CurrentRoles)
@@ -366,60 +366,58 @@ namespace QuizBot
         totaltoassign += each.Value;
 			}
 
-      //Only actual randoms are being used for players
-      int[] randoms = random.GenerateIntegers(totaltoassign, 0, noroles.Count, false);
+      int[] randoms = random.Next(totaltoassign, 0, noroles.Count);
 
-      for(int i = 0; i < Settings.CurrentRoles.Count; i++)
-      { //based on priority assign
-        var role = Settings.CurrentRoles.ToArray();
-        Player player = new Player();
-        for(; i < i + role[i].Value; i++)
+      int i = 0;
+      foreach(var role in Settings.CurrentRoles)
+      {
+        Role assignThis = new Role();
+
+        for (; i < role.Value; i++)
         {
-          player = noroles[randoms[i]];
-          if(role[i].Key is Role) player.role = role[i].Key as Role;
-          else if (role[i].Key is Alignment)
+          var player = GameData.Joined[randoms[i]];
+          KeyValuePair<string, Role>[] assignThese;
+          if (role.Key is Role)
           {
-            var attribute = role[i].Key as Alignment;
-            var ranGen = new Random();
-            if (attribute.Name == "Any")
-            { //Assign any role to the player
-              player.role = GameData.Roles.ToArray()[ranGen.Next(0, GameData.Roles.Count)].Value;
+            assignThis = role.Key as Role;
+          }
+          else if (role.Key is Alignment)
+          {
+            if ((role.Key as Alignment).Name == "Any")
+            {
+              assignThis = GameData.Roles.ToArray()[random.Next(0, GameData.Roles.Count)].Value;
             }
             else
             {
-              //Need to randomly select a role
-              var iterator = from each in GameData.Roles
-                             where each.Value.attribute == (attribute)
-                             select each;
-              var tempRoles = new Dictionary<int, Role>();
-              foreach (var each in iterator)
-              {
-                tempRoles.Add(tempRoles.Count, each.Value);
-              }
-              player.role = tempRoles[ranGen.Next(0, tempRoles.Count)];
+              assignThese = GameData.Roles.Where(x => x.Value.attribute == (role.Key as Alignment))
+                .ToArray();
+              assignThis = assignThese[random.Next(0, assignThese.Length)].Value;
             }
           }
-
+          else if (role.Key is TeamWrapper)
+          {
+            assignThese = GameData.Roles.Where(x => x.Value.team == (role.Key as TeamWrapper).team)
+              .ToArray();
+            assignThis = assignThese[random.Next(0, assignThese.Length)].Value;
+          }
+          player.role = assignThis;
           hasroles.Add(hasroles.Count, player);
-          noroles.Remove(i);
+          noroles.Remove(randoms[i]);
         }
-        //Break if there are no more players or no more roles to assign
-        if (noroles.Count == 0  || Settings.CurrentRoles.Count == i) break;
+
+        //If there are no more players to assign
+        if (noroles.Count == 0) break;
       }
 
-      //Check if there are players that still have no roles
-      if (noroles.Count > 0)
+      if(noroles.Count > 0)
       {
-        //If there are unassigned people
-        foreach (var each in noroles)
+        foreach(var each in noroles)
         {
           each.Value.role = GameData.Roles["Villager"];
-          hasroles.Add(hasroles.Count, each.Value);
-          noroles.Remove(each.Key);
+          hasroles.Add(each.Key, each.Value);
         }
       }
-      GameData.Joined = hasroles; //Update the main dictionary
-		}
+    }
 		#endregion
 		
 		public static void EndGame()
