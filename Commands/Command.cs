@@ -13,72 +13,34 @@ namespace QuizBot
 	 * https://github.com/parabola949/Werewolf/
 	 */
   internal static class UpdateHelper
-	{
-	  internal static bool IsGroupAdmin(Update update)
-	  {
-		  return IsGroupAdmin(update.Message.From.Id, update.Message.Chat.Id);
-	  }
-
-	  internal static bool IsGroupAdmin(int user, long group)
-	  {
-		  //fire off admin request
-		  try
-		  {
-			  var admin = Program.Bot.GetChatMemberAsync(group, user).Result;
-			  return admin.Status == ChatMemberStatus.Administrator || admin.Status == ChatMemberStatus.Creator;
-		  }
-		  catch
-		  {
-			  return false;
-		  }
-	  }
-
-	  public static bool HasJoined(Player x)
-	  {
-		  foreach (var each in GameData.Joined)
-		  {
-			  if (x == each.Value) return true;
-		  }
-		  return false;
-	  }
-	}
-
-	public class Command : System.Attribute
   {
-    /// <summary>
-    /// The string to trigger the command
-    /// </summary>
-    public string Trigger { get; set; }
+    internal static bool IsGroupAdmin(Update update)
+    {
+      return IsGroupAdmin(update.Message.From.Id, update.Message.Chat.Id);
+    }
 
-    /// <summary>
-    /// Is this command limited to bot admins only
-    /// </summary>
-    public bool GlobalAdminOnly { get; set; } = false;
+    internal static bool IsGroupAdmin(int user, long group)
+    {
+      //fire off admin request
+      try
+      {
+        var admin = Program.Bot.GetChatMemberAsync(group, user).Result;
+        return admin.Status == ChatMemberStatus.Administrator || admin.Status == ChatMemberStatus.Creator;
+      }
+      catch
+      {
+        return false;
+      }
+    }
 
-    /// <summary>
-    /// Is this command limited to group admins only
-    /// </summary>
-    public bool GroupAdminOnly { get; set; } = false;
-
-    /// <summary>
-    /// Developer only command
-    /// </summary>
-    public bool DevOnly { get; set; } = false;
-
-    /// <summary>
-    /// Marks the command as something to block (for example, in support chat)
-    /// </summary>
-    public bool Blockable { get; set; } = false;
-
-    /// <summary>
-    /// Marks the command as to be used within a group only
-    /// </summary>
-    public bool InGroupOnly { get; set; } = false;
-
-    /// <summary>
-    /// Marks the command as to be used within a private chat only
-    /// </summary>
-    public bool InPrivateOnly { get; set; } = false;
+    public static bool HasJoined(Player x)
+    {
+      foreach (var each in GameData.Joined)
+      {
+        if (x == each.Value) return true;
+      }
+      return false;
+    }
   }
 
 	//Okay this is my work
@@ -358,21 +320,19 @@ namespace QuizBot
 		{
 			var noroles = GameData.Joined;
 			var hasroles = new Dictionary<int, Player>();
-      var random = new Random();//new org.random.JSONRPC.RandomJSONRPC("bbcfa0f8-dbba-423a-8798-c8984c4fc5c5");
+      var random = new Random();
+      //new org.random.JSONRPC.RandomJSONRPC("bbcfa0f8-dbba-423a-8798-c8984c4fc5c5");
 			int totaltoassign = 0;
       GameData.GamePhase = GamePhase.Assigning;
-      foreach (var each in Settings.CurrentRoles)
-			{
-        totaltoassign += each.Value;
-			}
+      foreach (var each in Settings.CurrentRoles) { totaltoassign += each.Value; }
 
       int[] randoms = random.Next(totaltoassign, 0, noroles.Count);
 
       int i = 0;
+      #region Assign the roles
       foreach(var role in Settings.CurrentRoles)
       {
         Role assignThis = new Role();
-
         for (; i < role.Value; i++)
         {
           var player = GameData.Joined[randoms[i]];
@@ -408,7 +368,9 @@ namespace QuizBot
         //If there are no more players to assign
         if (noroles.Count == 0) break;
       }
+      #endregion
 
+      //Assign the rest of the people to be villagers
       if(noroles.Count > 0)
       {
         foreach(var each in noroles)
@@ -417,10 +379,16 @@ namespace QuizBot
           hasroles.Add(each.Key, each.Value);
         }
       }
+
+      GameData.Joined = hasroles;
+      foreach(var each in hasroles)
+      {
+        each.Value.OnAssignRole();
+      }
     }
-		#endregion
-		
-		public static void EndGame()
+    #endregion
+
+    public static void EndGame()
 		{
 			GameData.GamePhase = GamePhase.Inactive;
 			GameData.Joined = new Dictionary<int, Player>();
