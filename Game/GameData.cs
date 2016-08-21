@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using System.Xml.Linq;
 
@@ -99,11 +100,12 @@ namespace QuizBot
             else throw new Exception();
 
             int count = 1;
+            //If a count is not defined assume it is one
             if (each.TryGetAttribute("Count", out value)) int.TryParse(value, out count);
 
             RoleLists[listname].Add(To_Add, count);
           }
-          catch(Exception) { throw new Exception("Role not defined correctly!"); }
+          catch (Exception) { throw new Exception("Role not defined correctly on line " + (each as System.Xml.IXmlLineInfo).LineNumber); }
         }
 
       }
@@ -166,13 +168,18 @@ namespace QuizBot
 
 		//Need this to remove stuff for the commands
 		public static string BotUsername { get; set; }
-		#endregion
 
-		#region The Dictionaries of Data
-		/// <summary>
-		/// Dictionary of all the roles currently defined
-		/// </summary>
-		public static Dictionary<string, Role> Roles;
+    public static int AliveCount
+    {
+      get { return GameData.Joined.Count(x => x.Value.IsAlive); }
+    }
+    #endregion
+
+    #region The Dictionaries of Data
+    /// <summary>
+    /// Dictionary of all the roles currently defined
+    /// </summary>
+    public static Dictionary<string, Role> Roles;
 
 		/// <summary>
 		/// Contains all the rolelists currently defined
@@ -180,10 +187,6 @@ namespace QuizBot
 		public static Triptionary<string, Wrapper, int> RoleLists;
 
 		public static Dictionary<int, Alignment> Alignments;
-
-		public static Dictionary<string, Action> DayRoleActions;
-
-		public static Dictionary<string, Action> NightRoleActions;
 
 		public static Dictionary<int, Player> Joined = new Dictionary<int, Player>();
 
