@@ -11,7 +11,8 @@ using Telegram.Bot.Types.Enums;
 
 namespace QuizBot
 {
-	public enum Cycle
+  #region Enums
+  public enum Cycle
 	{
 		Day = 1,
 		Night = 2,
@@ -32,10 +33,10 @@ namespace QuizBot
 		Assigning,
 		Running
 	}
+  #endregion
 
-
-	//Could be using tuples, but why the hell not
-	class Triptionary<T, U, V> : IEnumerable
+  //Could be using tuples, but why the hell not
+  class Triptionary<T, U, V> : IEnumerable
 	{
 		public Triptionary()
 		{
@@ -317,6 +318,7 @@ namespace QuizBot
 
     private string name;
 
+    #region Operators
     public override string Name
     {
       get
@@ -326,6 +328,27 @@ namespace QuizBot
       }
       set { name = value; }
     }
+
+    public static bool operator==(Alignment rhs, Alignment lhs)
+    {
+      return (rhs.name == lhs.name && rhs.team == lhs.team);
+    }
+
+    public static bool operator!=(Alignment Rhs, Alignment lhs)
+    {
+      return !(Rhs == lhs);
+    }
+
+    public override bool Equals(object obj)
+    {
+      return base.Equals(obj);
+    }
+
+    public override int GetHashCode()
+    {
+      return base.GetHashCode();
+    }
+    #endregion
 
   }
 
@@ -360,13 +383,13 @@ namespace QuizBot
 		public void DoDayAction()
 		{
 			if (!HasDayAction) return;
-			GameData.DayRoleActions[Name]();
+			Game.DayRoleActions[Name]();
 		}
 
 		public void DoNightAction()
 		{
 			if (!HasNightAction) return;
-			GameData.NightRoleActions[Name]();
+			Game.NightRoleActions[Name]();
 		}
 	}
 
@@ -378,7 +401,6 @@ namespace QuizBot
 		public Player() { }
 
 		public Player(Role _R)
-			: base()
 		{
 			role = _R;
 		}
@@ -405,12 +427,14 @@ namespace QuizBot
 
     public bool IsAlive { get; set; } = true;
 
-		public string Name
-		{
-			get { return FirstName + " " + LastName; }
-		}
+		public string Name { get { return FirstName + " " + LastName; } }
 
 		public string Nickname { get; set; }
+
+    public void OnAssignRole()
+    {
+      Program.BotMessage(Id, "You are the " + role.Name + "!\n" , role.Name + "Assign");
+    }
 
 		#region Operators
 		public static implicit operator Player(User x) 
@@ -439,4 +463,56 @@ namespace QuizBot
 		}
 		#endregion
 	}
+
+  //Class originally defined in the werewolf for telegram
+  public class Command : Attribute
+  {
+    /// <summary>
+    /// The string to trigger the command
+    /// </summary>
+    public string Trigger { get; set; }
+
+    /// <summary>
+    /// Is this command limited to bot admins only
+    /// </summary>
+    public bool GlobalAdminOnly { get; set; } = false;
+
+    /// <summary>
+    /// Is this command limited to group admins only
+    /// </summary>
+    public bool GroupAdminOnly { get; set; } = false;
+
+    /// <summary>
+    /// Developer only command
+    /// </summary>
+    public bool DevOnly { get; set; } = false;
+
+    /// <summary>
+    /// Marks the command as something to block (for example, in support chat)
+    /// </summary>
+    public bool Blockable { get; set; } = false;
+
+    /// <summary>
+    /// Marks the command as to be used within a group only
+    /// </summary>
+    public bool InGroupOnly { get; set; } = false;
+
+    /// <summary>
+    /// Marks the command as to be used within a private chat only
+    /// </summary>
+    public bool InPrivateOnly { get; set; } = false;
+  }
+
+  public class ActionObject
+  {
+    public ActionObject(Player from, object data)
+    {
+      From = from;
+      Data = data;
+    }
+
+    public Player From { get; set; }
+
+    public object Data { get; set; }
+  }
 }
