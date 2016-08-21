@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Root version ="1.0">
+  <!-- Valid Teams: Town, Mafia, Neutral -->
 	<Alignments>
 		<Alignment Team="Town" Name="Support"/>
 		<Alignment Team="Town" Name="Investigative"/>
@@ -10,7 +11,8 @@
     <Alignment Team="Neutral" Name="Benign"/>
     <Alignment Team="Neutral" Name="Evil"/>
 	</Alignments>
-	
+
+  <!-- Please ensure that the alignments used below have been defined above -->
 	<Roles>
     <Role>
       <Name>Bodyguard</Name>
@@ -19,6 +21,7 @@
       <Alignment>Protective</Alignment>
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
+      <OnAssign>You may choose a person each night, and protect them from any harm that might come their way!</OnAssign>
     </Role>
 
     <Role>
@@ -28,6 +31,7 @@
       <Alignment>Support</Alignment>
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
+      <OnAssign>You may choose a person each night to heal and save them</OnAssign>
     </Role>
 
     <Role>
@@ -37,6 +41,7 @@
       <Alignment>Support</Alignment>
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
+      <OnAssign>You may choose a person each night to distract them from performing their role</OnAssign>
     </Role>
     
 		<Role>
@@ -46,6 +51,7 @@
       <Alignment>Investigative</Alignment>
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
+      <OnAssign>Each night, you may choose to discover a person's possible roles</OnAssign>
     </Role>
 
     <Role>
@@ -55,6 +61,7 @@
       <Alignment>Investigative</Alignment>
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
+      <OnAssign>Each night, you may choose to discover if a person is suspicious or not</OnAssign>
     </Role>
     
     <Role>
@@ -64,6 +71,7 @@
       <Alignment>Support</Alignment>
       <HasDayAction>False</HasDayAction>
       <HasNightAction>False</HasNightAction>
+      <OnAssign>You do not have a role, so work together with the other town members to find the evil people</OnAssign>
     </Role>
 
     <!--Mafia Roles-->
@@ -74,6 +82,7 @@
       <Description>Role blocks people</Description>
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
+      <OnAssign>You may choose a person each night to distract them from performing their role</OnAssign>
     </Role>
     
     <Role>
@@ -83,6 +92,7 @@
       <Description>Kills people</Description>
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
+      <OnAssign>Each night, you may choose a person to kill</OnAssign>
     </Role>
      
     <!--Neutral Roles-->
@@ -93,6 +103,7 @@
       <Description>Douses, and then burns people</Description>
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
+      <OnAssign>Every night, you can either douse people in gasoline, or ignite the people that have been doused</OnAssign>
     </Role>
 
     <Role>
@@ -102,6 +113,7 @@
       <Description>If lynched, wins the game</Description>
       <HasDayAction>False</HasDayAction>
       <HasNightAction>False</HasNightAction>
+      <OnAssign>Your job is to get yourself lynched, no matter what the cost!</OnAssign>
     </Role>
     
     <Role>
@@ -111,6 +123,7 @@
       <Description>Kills people</Description>
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
+      <OnAssign>Each night, you may choose a person to kill</OnAssign>
     </Role>
     
     <Role>
@@ -120,9 +133,11 @@
       <Description>Survive through the whole game</Description>
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
+      <OnAssign>Every night you may put on a vest that protects you from damage. You may only do this four times</OnAssign>
     </Role>
 	</Roles>
 	
+  <!-- Please ensure the roles used below have been defined above -->
 	<Rolelists>
 		<Rolelist Name="Default">
       <Role Name = "Sheriff"/>
