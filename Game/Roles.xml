@@ -137,7 +137,7 @@
     </Role>
 	</Roles>
 	
-  <!-- Please ensure the roles used below have been defined above -->
+  <!-- Please ensure the stuff used below have been defined above -->
 	<Rolelists>
 		<Rolelist Name="Default">
       <Role Name = "Sheriff"/>
