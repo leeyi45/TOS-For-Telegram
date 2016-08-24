@@ -100,6 +100,7 @@ namespace QuizBot
   /// </summary>
 	public class Role : Wrapper
   {
+    [Obsolete("Use the array constructor instead", false)]
     public Role(string _name, Team _team, string d, Alignment a, bool n, bool day)
     {
       Name = _name;

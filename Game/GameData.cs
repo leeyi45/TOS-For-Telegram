@@ -208,6 +208,11 @@ namespace QuizBot
     {
       get { return GameData.Joined.Count(x => x.Value.IsAlive); }
     }
+
+    public static Dictionary<int, Player> Alive
+    {
+      get { return Joined.Where(x => x.Value.IsAlive).ToDictionary(x => x.Key, x => x.Value); }
+    }
     #endregion
 
     #region The Dictionaries of Data
@@ -237,12 +242,23 @@ namespace QuizBot
 
 		#endregion
 
-    public static Player GetPlayer(Player test)
+    public static Player GetPlayer(Player test, bool dead = false)
     {
-      if (!Joined.ContainsValue(test)) return null;
+      if (!dead)
+      {
+        if (!Alive.ContainsValue(test)) return null;
+        else
+        {
+          return Alive.Values.Where(x => x == test).ToArray()[0];
+        }
+      }
       else
       {
-        return Joined.Values.Where(x => x == test).ToArray()[0];
+        if (!Joined.ContainsValue(test)) return null;
+        else
+        {
+          return Joined.Values.Where(x => x == test).ToArray()[0];
+        }
       }
     }
 	}

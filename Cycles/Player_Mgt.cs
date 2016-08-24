@@ -16,9 +16,8 @@ namespace QuizBot
     /// <returns>An array containing the players that fit the definition</returns>
     public static Player[] ReturnPlayers(Role condition)
     {
-      return GameData.Joined.Values.Where(x => x.role == condition).ToArray();
+      return GameData.Alive.Values.Where(x => x.role == condition).ToArray();
     }
-
 
     public static void ProcessHeals()
     {
@@ -59,8 +58,8 @@ namespace QuizBot
 
     public static void AnnounceRB()
     {
-      foreach (var player in GameData.Joined.Where(x => x.Value.role != GameData.Roles["Serial Killer"]))
-      {
+      foreach (var player in GameData.Alive.Where(x => x.Value.role != GameData.Roles["Serial Killer"]))
+      { //SK cannot be rbed
         if(player.Value.IsRoleBlocked) Program.BotMessage(player.Value.Id, "Roleblocked");
       }
     }
