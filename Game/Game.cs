@@ -59,6 +59,7 @@ namespace QuizBot
       public string role { get; set; }
     }
 
+    /*
     private ActionObject GetKeyboardMarkup(Player from)
     {
       InlineKeyboardButton[][] buttons = new InlineKeyboardButton[GameData.AliveCount][];
@@ -70,6 +71,6 @@ namespace QuizBot
       }
       var test = new InlineKeyboardMarkup(buttons);
       return new ActionObject(from, test);
-    }
+    }*/
   }
 }

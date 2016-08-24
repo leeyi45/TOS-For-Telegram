@@ -10,10 +10,10 @@ namespace QuizBot
 {
   class GameData
 	{
-		#region Intialization
-		public const string xmlFile = @"C:\Users\Lee Yi\Desktop\Everything, for the moment\Coding\C# Bot\QuizBot\QuizBot\Game\Roles.xml";
+    #region Intialization
+    public const string xmlFile = @"C:\Users\Lee Yi\Desktop\Everything, for the moment\Coding\C# Bot\TOS-For-Telegram\Game\Roles.xml";
 
-		public const string messageFile = @"C:\Users\Lee Yi\Desktop\Everything, for the moment\Coding\C# Bot\QuizBot\QuizBot\Game\Messages.xml";
+		public const string messageFile = @"C:\Users\Lee Yi\Desktop\Everything, for the moment\Coding\C# Bot\TOS-For-Telegram\Game\Messages.xml";
 
 		public static void RoleInitialErr(Exception e)
 		{
@@ -31,6 +31,7 @@ namespace QuizBot
       Roles = new Dictionary<string, Role>();
       RoleLists = new Triptionary<string, Wrapper, int>();
       Alignments = new Dictionary<int, Alignment>();
+      InvestResults = new Dictionary<int, string>();
 
       try { Program.ConsoleLog("Loading roles"); }
       catch { }
@@ -61,14 +62,40 @@ namespace QuizBot
       {
         var team = (Team)Enum.Parse(typeof(Team), each.GetElementValue("Team"));
         var name = each.GetElementValue("Name");
-        Roles.Add(name, new Role(
-          name,
-          team,
-          each.GetElementValue("Description"),
-          new Alignment(each.GetElementValue("Alignment"), team),
-          bool.Parse(each.GetElementValue("HasDayAction")),
-          bool.Parse(each.GetElementValue("HasNightAction"))));
-        Messages.Add(name + "Assign", each.GetElementValue("OnAssign"));
+        var align = new Alignment(each.GetElementValue("Alignment"), team);
+        bool suspicious;
+        bool nightImmune = false;
+        switch(team)
+        {
+          //Town are all non suspicious
+          case Team.Town: { suspicious = false; break; }
+          //Maf are all suspicious
+          case Team.Mafia: { suspicious = true;  break; }
+          //The rest check
+          default:
+            {
+              if (align.Name == "Killing") suspicious = true;
+              else suspicious = false;
+              break;
+            }
+        }
+
+        string boolParse;
+        if (each.TryGetElement("NightImmune", out boolParse)) nightImmune = bool.Parse(boolParse);
+        
+        //Messages.Add(name + "Assign", each.GetElementValue("OnAssign"));
+        Roles.Add(name, new Role
+        {
+          Name = name,
+          team = team,
+          Alignment = align,
+          HasDayAction = bool.Parse(each.GetElementValue("HasDayAction")),
+          HasNightAction = bool.Parse(each.GetElementValue("HasNightAction")),
+          Description = each.GetElementValue("Description"),
+          NightImmune = nightImmune,
+          Suspicious = suspicious,
+          InvestResult = int.Parse(each.GetElementValue("Invest"))
+        });
       }
       #endregion
 
@@ -108,6 +135,14 @@ namespace QuizBot
           catch (Exception) { throw new Exception("Role not defined correctly on line " + (each as System.Xml.IXmlLineInfo).LineNumber); }
         }
 
+      }
+      #endregion
+
+      #region Invest messages
+      if (!document.HasElement("InvestResults")) throw new Exception("Invest result definitions");
+      foreach(var each in document.Root.Element("InvestResults").Elements("InvestResult"))
+      {
+        InvestResults.Add(int.Parse(each.GetAttributeValue("Key")), each.GetElementValue("Value"));
       }
       #endregion
 
@@ -166,8 +201,8 @@ namespace QuizBot
 		/// </summary>
 		public static DateTime StartTime { get; set; }
 
-		//Need this to remove stuff for the commands
-		public static string BotUsername { get; set; }
+    //Need this to remove stuff for the commands
+    public static string BotUsername { get; set; } = "@quiztestbot";
 
     public static int AliveCount
     {
@@ -195,7 +230,21 @@ namespace QuizBot
 		/// </summary>
 		public static Dictionary<string, string> Messages;
 
+    /// <summary>
+    /// Dictionary containing all the investigative results
+    /// </summary>
+    public static Dictionary<int, string> InvestResults;
+
 		#endregion
+
+    public static Player GetPlayer(Player test)
+    {
+      if (!Joined.ContainsValue(test)) return null;
+      else
+      {
+        return Joined.Values.Where(x => x == test).ToArray()[0];
+      }
+    }
 	}
 
 	class Settings

@@ -14,6 +14,7 @@
 
   <!-- Please ensure that the alignments used below have been defined above -->
 	<Roles>
+    <!-- To be implemented
     <Role>
       <Name>Bodyguard</Name>
       <Team>Town</Team>
@@ -22,7 +23,7 @@
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
       <OnAssign>You may choose a person each night, and protect them from any harm that might come their way!</OnAssign>
-    </Role>
+    </Role> -->
 
     <Role>
       <Name>Doctor</Name>
@@ -32,6 +33,18 @@
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
       <OnAssign>You may choose a person each night to heal and save them</OnAssign>
+      <Invest>3</Invest>
+    </Role>
+    
+    <Role>
+      <Name>Mayor</Name>
+      <Team>Town</Team>
+      <Description>Reveal to for vote to count as 3</Description>
+      <Alignment>Support</Alignment>
+      <HasDayAction>True</HasDayAction>
+      <HasNightAction>False</HasNightAction>
+      <OnAssign>You may reveal yourself for your vote to count as 3!</OnAssign>
+      <Invest>2</Invest>
     </Role>
 
     <Role>
@@ -42,6 +55,7 @@
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
       <OnAssign>You may choose a person each night to distract them from performing their role</OnAssign>
+      <Invest>1</Invest>
     </Role>
     
 		<Role>
@@ -52,6 +66,7 @@
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
       <OnAssign>Each night, you may choose to discover a person's possible roles</OnAssign>
+      <Invest>2</Invest>
     </Role>
 
     <Role>
@@ -62,6 +77,7 @@
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
       <OnAssign>Each night, you may choose to discover if a person is suspicious or not</OnAssign>
+      <Invest>4</Invest>
     </Role>
     
     <Role>
@@ -72,6 +88,7 @@
       <HasDayAction>False</HasDayAction>
       <HasNightAction>False</HasNightAction>
       <OnAssign>You do not have a role, so work together with the other town members to find the evil people</OnAssign>
+      <Invest>5</Invest>
     </Role>
 
     <!--Mafia Roles-->
@@ -83,6 +100,7 @@
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
       <OnAssign>You may choose a person each night to distract them from performing their role</OnAssign>
+      <Invest>1</Invest>
     </Role>
     
     <Role>
@@ -93,6 +111,7 @@
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
       <OnAssign>Each night, you may choose a person to kill</OnAssign>
+      <Invest>6</Invest>
     </Role>
      
     <!--Neutral Roles-->
@@ -104,6 +123,7 @@
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
       <OnAssign>Every night, you can either douse people in gasoline, or ignite the people that have been doused</OnAssign>
+      <Invest>4</Invest>
     </Role>
 
     <Role>
@@ -114,6 +134,7 @@
       <HasDayAction>False</HasDayAction>
       <HasNightAction>False</HasNightAction>
       <OnAssign>Your job is to get yourself lynched, no matter what the cost!</OnAssign>
+      <Invest>5</Invest>
     </Role>
     
     <Role>
@@ -124,6 +145,8 @@
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
       <OnAssign>Each night, you may choose a person to kill</OnAssign>
+      <NightImmune>True</NightImmune>
+      <Invest>3</Invest>
     </Role>
     
     <Role>
@@ -134,6 +157,7 @@
       <HasDayAction>False</HasDayAction>
       <HasNightAction>True</HasNightAction>
       <OnAssign>Every night you may put on a vest that protects you from damage. You may only do this four times</OnAssign>
+      <Invest>6</Invest>
     </Role>
 	</Roles>
 	
@@ -155,4 +179,32 @@
       <Role Alignment="Any" Count="35"/>
     </Rolelist>
 	</Rolelists>
+
+   <!-- Messages might be a little biased -->
+  <InvestResults> <!-- "Your target is " + message below-->
+    <InvestResult Key="1"> <!-- Escort and Consort-->
+      <Value>is skilled at disrupting others.</Value>
+    </InvestResult>
+    
+    <InvestResult Key="2"> <!-- Mayor and Investigator-->
+      <Value>has sensitive information to reveal.</Value>
+    </InvestResult>
+    <!-- Above result probably needs changing -->
+    
+    <InvestResult Key="3"> <!-- SK and Doctor-->
+      <Value>is covered in blood.</Value>
+    </InvestResult>
+    
+    <InvestResult Key="4"> <!-- Arso and Sheriff-->
+      <Value>is waiting for the perfect moment to strike.</Value>
+    </InvestResult>
+      
+    <InvestResult Key="5"> <!-- Villager and Jester-->
+      <Value>does not seem to do anything</Value>
+    </InvestResult>
+    
+    <InvestResult Key="6"> <!-- Mafioso or Survivor-->
+      <Value>is either the mafioso or survivor</Value>
+    </InvestResult>
+  </InvestResults>
 </Root>

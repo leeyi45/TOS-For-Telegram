@@ -197,8 +197,8 @@ namespace QuizBot
       //catch { Program.BotMessage(msg.Chat.Id, "NoGameJoin"); }
     }
 
-    [Command(Trigger = "start")]
-    private static void Start(Message msg, string[] args)
+    [Command(Trigger = "startgame")]
+    private static void StartGame(Message msg, string[] args)
     {
       if (msg.Chat.Type == ChatType.Private)
       {
@@ -250,7 +250,7 @@ namespace QuizBot
       StringBuilder output = new StringBuilder("<b>Currently Registered Roles:</b>\n\n");
       foreach (var each in GameData.Roles)
       {
-        output.AppendLine(each.Value.Name + ": <i>" + each.Value.description + "</i>");
+        output.AppendLine(each.Value.Name + ": <i>" + each.Value.Description + "</i>");
       }
       Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Html);
     }
@@ -264,6 +264,12 @@ namespace QuizBot
       output.AppendLine("Version: " + version.Major + "." + version.Minor);
       output.AppendLine("Build: " + version.Build);
       Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Markdown);
+    }
+
+    [Command(Trigger = "getchatid")]
+    private static void GetChatId(Message msg, string[] args)
+    {
+      Program.Bot.SendTextMessageAsync(msg.Chat.Id, "The chat ID is: " + msg.Chat.Id.ToString());
     }
     #endregion
     #endregion
@@ -349,7 +355,7 @@ namespace QuizBot
             }
             else
             {
-              assignThese = GameData.Roles.Where(x => x.Value.attribute == (role.Key as Alignment))
+              assignThese = GameData.Roles.Where(x => x.Value.Alignment == (role.Key as Alignment))
                 .ToArray();
               assignThis = assignThese[random.Next(0, assignThese.Length)].Value;
             }

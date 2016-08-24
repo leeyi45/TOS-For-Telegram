@@ -104,7 +104,8 @@ namespace QuizBot
 		/// <param name="args">Message Arguments</param>
 		public async static void BotMessage(long id, string key, params object[] args)
 		{
-			await Bot.SendTextMessageAsync(id, string.Format(GameData.Messages[key], args), parseMode: ParseMode.Markdown);
+      try { await Bot.SendTextMessageAsync(id, string.Format(GameData.Messages[key], args), parseMode: ParseMode.Markdown); }
+      catch(Exception) { }
 		}
 
 		public static void ConsoleLog(string text)
@@ -148,6 +149,20 @@ namespace QuizBot
       }
     }
 
+    public static bool TryGetElement(this System.Xml.Linq.XElement x, System.Xml.Linq.XName name, out string output)
+    {
+      try
+      {
+        output = x.Element(name).Value;
+        return true;
+      }
+      catch (NullReferenceException)
+      {
+        output = null;
+        return false;
+      }
+    }
+
     /// <summary>
     /// Only checks the root element for containing elements
     /// </summary>
@@ -162,6 +177,23 @@ namespace QuizBot
         if (each.Name == name) return true;
       }
       return false;
+    }
+
+    public static int[] Next(this Random random, int count, int min, int max, bool replace = false)
+    {
+      int[] output = new int[count];
+      int x;
+      for(int i = 0; i < count; i++)
+      {
+        x = random.Next(min, max);
+        if (output.Contains(x) && !replace)
+        {
+          i--;
+          continue;
+        }
+        else output[i] = x;
+      }
+      return output;
     }
     #endregion
   }
