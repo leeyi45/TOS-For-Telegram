@@ -139,5 +139,27 @@ namespace QuizBot
       if (!HasNightAction) return;
       //Game.NightRoleActions[Name]();
     }
+
+    #region Operators
+    public static bool operator ==(Role rhs, Role lhs)
+    {
+      return (rhs.Name == lhs.Name);
+    }
+
+    public static bool operator !=(Role rhs, Role lhs)
+    {
+      return !(rhs == lhs);
+    }
+
+    public override bool Equals(object obj)
+    {
+      return base.Equals(obj);
+    }
+
+    public override int GetHashCode()
+    {
+      return base.GetHashCode();
+    }
+    #endregion
   }
 }

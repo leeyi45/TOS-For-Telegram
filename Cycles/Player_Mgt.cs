@@ -57,6 +57,14 @@ namespace QuizBot
       }
     }
 
+    public static void AnnounceRB()
+    {
+      foreach (var player in GameData.Joined.Where(x => x.Value.role != GameData.Roles["Serial Killer"]))
+      {
+        if(player.Value.IsRoleBlocked) Program.BotMessage(player.Value.Id, "Roleblocked");
+      }
+    }
+
     public static void ProcessSK()
     {
       foreach(var player in ReturnPlayers(GameData.Roles["Serial Killer"]))
@@ -76,6 +84,7 @@ namespace QuizBot
     {
       foreach (var player in ReturnPlayers(GameData.Roles["Mafioso"]))
       {
+        if (player.IsRoleBlocked) continue;
         if (player.role.NightImmune)
         { //Inform the player
 
@@ -84,6 +93,15 @@ namespace QuizBot
         {
           player.ActionTarget.Kill(player);
         }
+      }
+    }
+
+    public static void ProcessInvest()
+    {
+      foreach(var player in ReturnPlayers(GameData.Roles["Investigator"]))
+      {
+        if (player.IsRoleBlocked) continue;
+        Program.BotMessage("InvestResult", GameData.InvestResults[player.ActionTarget.role.InvestResult]);
       }
     }
 
@@ -101,6 +119,19 @@ namespace QuizBot
       //Process the mafioso
       ProcessMafioso();
 
+      //Announce to all those who have roleblocked
+      AnnounceRB();
+    }
+
+    public static void AnnounceDeaths()
+    { //Announce all the deaths
+      StringBuilder output = new StringBuilder("");
+      foreach(var dead in GameData.Joined.Values.Where(x => !x.IsAlive))
+      {
+        output.AppendLine(string.Format(GameData.Messages[dead.WasKilledBy.role.Name + " PublicDeath"] + 
+          " He/she was the {1}", dead.Username, dead.role.Name));
+      }
+      Program.BotMessage(output.ToString());
     }
   }
 }

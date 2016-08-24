@@ -3,9 +3,46 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace QuizBot
 {
+  /* The following classes are not my own work, but taken from the 
+  * werewolf for telegram bot
+  * https://github.com/parabola949/Werewolf/
+  */
+  internal static class UpdateHelper
+  {
+    internal static bool IsGroupAdmin(Update update)
+    {
+      return IsGroupAdmin(update.Message.From.Id, update.Message.Chat.Id);
+    }
+
+    internal static bool IsGroupAdmin(int user, long group)
+    {
+      //fire off admin request
+      try
+      {
+        var admin = Program.Bot.GetChatMemberAsync(group, user).Result;
+        return admin.Status == ChatMemberStatus.Administrator || admin.Status == ChatMemberStatus.Creator;
+      }
+      catch
+      {
+        return false;
+      }
+    }
+
+    public static bool HasJoined(Player x)
+    {
+      foreach (var each in GameData.Joined)
+      {
+        if (x == each.Value) return true;
+      }
+      return false;
+    }
+  }
+
   //Class originally defined in the werewolf for telegram
   public class Command : Attribute
   {

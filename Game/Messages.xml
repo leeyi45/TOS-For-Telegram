@@ -61,4 +61,30 @@
 	<string key="PrivateOnly">
 		<value>This command can only be used in a private chat!</value>
 	</string>
+
+  <!-- Actual messages during the game -->
+  <string key="InvestResult">
+    <value>Your target is {0}</value>
+  </string>
+
+  <string key="Roleblocked">
+    <value>You have been roleblocked!</value>
+  </string>
+  
+  <!-- Death Messages -->
+  <string key="Serial Killer Death">
+    <value>You have been stabbed by the Serial Killer!</value>
+  </string>
+
+  <string key="Serial Killer PublicDeath">
+    <value>{0} was brutally stabbed by the serial killer last night!</value>
+  </string>
+
+  <string key="Mafioso Death">
+    <value>You have been assasinated by the Mafia in the dead of night!</value>
+  </string>
+
+  <string key="Mafioso PublicDeath">
+    <value>The Mafia ordered the assasination of {0}, and was found dead in his house in the morning!</value>
+  </string>
 </strings>

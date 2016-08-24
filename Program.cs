@@ -108,6 +108,15 @@ namespace QuizBot
       catch(Exception) { }
 		}
 
+    public async static void BotMessage(string message)
+    {
+      try
+      {
+        await Bot.SendTextMessageAsync(GameData.CurrentGroup, message, parseMode: ParseMode.Markdown);
+      }
+      catch (Telegram.Bot.Exceptions.ApiRequestException) { }
+    }
+
 		public static void ConsoleLog(string text)
 		{
 			ConsoleForm.Invoke(new Action(() => { ConsoleForm.LogLine(text); }));

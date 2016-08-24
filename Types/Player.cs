@@ -94,6 +94,7 @@ namespace QuizBot
     {
       WasKilledBy = wasKilledBy;
       IsAlive = false;
+      Program.BotMessage(Id, wasKilledBy.role.Name + " Death"); //Tell the user they have been killed!
     }
     #endregion
 
