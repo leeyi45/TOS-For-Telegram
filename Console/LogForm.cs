@@ -154,6 +154,7 @@ namespace QuizBot
       if(yes) LogLine("Bot started receving messages", false);
       StatusLabel.Text = "Running";
       StatusLabel.ForeColor = Color.ForestGreen;
+      GameData.StartTime = DateTime.Now.AddHours(-8);
     }
 
     public void StopBot(bool yes = true)

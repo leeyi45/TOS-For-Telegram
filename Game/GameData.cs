@@ -196,6 +196,7 @@ namespace QuizBot
 		/// </summary>
 		public static long CurrentGroup { get; set; }
 
+    //This time is actually moved back by 8 hours to GMT
 		/// <summary>
 		/// The time which the bot was started
 		/// </summary>

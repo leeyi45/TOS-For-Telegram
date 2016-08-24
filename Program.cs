@@ -31,7 +31,7 @@ namespace QuizBot
 		  Bot.OnMessage += OnMessage;
 		  Bot.OnMessageEdited += OnMessage;
 		  Bot.OnCallbackQuery += OnCallbackQuery;
-		  GameData.StartTime = DateTime.Now;
+		  GameData.StartTime = DateTime.Now.AddHours(-8);
 		  ConsoleForm = new LogForm();
       GameData.InitializeRoles();
 		  GameData.InitializeMessages();
@@ -41,16 +41,14 @@ namespace QuizBot
 		  Application.Run(ConsoleForm);
 		}
 
-		static async void OnMessage(object sender, MessageEventArgs messageEventArgs)
+		static void OnMessage(object sender, MessageEventArgs messageEventArgs)
 		{
 			var message = messageEventArgs.Message;
 			var msgtext = message.Text;
 
-			/*
-			if (message.Date < GameData.StartTime)
-			{
-				return;
-			}*/
+      //Spam filter
+      //Messages received while not receiving are ignored
+      if (message.Date.Ticks < GameData.StartTime.Ticks) return;
 
 			if (message == null || message.Type != MessageType.TextMessage) return;
 
