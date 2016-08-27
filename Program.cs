@@ -52,6 +52,11 @@ namespace QuizBot
 
 			if (message == null || message.Type != MessageType.TextMessage) return;
 
+      if(message.ForwardFrom != null && Settings.GetUserId)
+      {
+        Bot.SendTextMessageAsync(message.From.Id, Commands.ProcessUserId(message));
+      }
+
 			ConsoleLog("Message \"" + msgtext + "\" received from " + message.From.FirstName + " " + message.From.LastName);
 
 			//If it is a command

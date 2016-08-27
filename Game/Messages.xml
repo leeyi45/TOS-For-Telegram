@@ -38,6 +38,10 @@
 		<value>{0}, you are not an admin!</value>
 	</string>
 
+  <string key="NotDevError">
+    <value>{0}, you are not a developer!</value>
+  </string>
+
 	<string key="JoinSeconds">
 		<value>{0} seconds left to /join</value>
 	</string>
@@ -61,6 +65,10 @@
 	<string key="PrivateOnly">
 		<value>This command can only be used in a private chat!</value>
 	</string>
+
+  <string key="TimeLeft">
+    <value>{0} seconds left to /join!</value>
+  </string>
 
   <!-- Actual messages during the game -->
   <string key="InvestResult">

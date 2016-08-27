@@ -9,7 +9,7 @@ using System.Xml.Linq;
 namespace QuizBot
 {
   class GameData
-	{
+  {
     #region Intialization
     public const string xmlFile = @"C:\Users\Lee Yi\Desktop\Everything, for the moment\Coding\C# Bot\TOS-For-Telegram\Game\Roles.xml";
 
@@ -317,5 +317,7 @@ namespace QuizBot
 		{
 			get { return GameData.RoleLists[CurrentRoleList]; }
 		}
+
+    public static bool GetUserId { get; set; } = false;
 	}
 }

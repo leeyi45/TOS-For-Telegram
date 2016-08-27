@@ -61,7 +61,6 @@ namespace QuizBot
 
     private string name;
 
-    #region Operators
     public override string Name
     {
       get
@@ -72,6 +71,7 @@ namespace QuizBot
       set { name = value; }
     }
 
+    #region Operators
     public static bool operator ==(Alignment rhs, Alignment lhs)
     {
       return (rhs.name == lhs.name && rhs.team == lhs.team);

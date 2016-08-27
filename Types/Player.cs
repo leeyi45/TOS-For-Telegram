@@ -27,6 +27,15 @@ namespace QuizBot
       Username = x.Username;
     }
 
+    public Player(int Id, string username, string FirstName, string LastName)
+    {
+      this.Id = Id;
+      if (string.IsNullOrWhiteSpace(username)) Username = string.Empty;
+      else Username = username;
+      this.FirstName = FirstName;
+      this.LastName = LastName;
+    }
+
     public Role role { get; set; }
 
     #region User Fields

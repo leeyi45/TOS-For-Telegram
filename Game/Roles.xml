@@ -170,7 +170,7 @@
 			<Role Name = "Mafioso"/>
       <Role Name = "Escort"/>
 			<Role Name ="Serial Killer"/>
-      <Role Alignment="Town Killing"/>
+      <Role Alignment="Town Support"/>
       <Role Name = "Jester"/>
       <Role Team="Town"/>
 		</Rolelist>

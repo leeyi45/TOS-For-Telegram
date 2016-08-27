@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Xml;
+using System.Xml.Linq;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -68,6 +70,12 @@ namespace QuizBot
           NotAdmin(msg);
           return;
         }
+
+        if(attribute.DevOnly && msg.From.Id != Chats.chats["dev"])
+        { //User is not dev
+          Program.BotMessage(msg.Chat.Id, "NotDevError", msg.From.Username);
+          return;
+        }
         #endregion
 
         AllCommands[args[0]].Item1(msg, args);
@@ -122,7 +130,7 @@ namespace QuizBot
       if (GameData.GamePhase == GamePhase.Inactive) Program.BotMessage("NoGameJoin");
       else
       {
-        StringBuilder output = new StringBuilder("*Players*\n\n");
+        StringBuilder output = new StringBuilder("*Players: *" + GameData.PlayerCount + "\n\n");
         foreach (var each in GameData.Joined)
         {
           output.Append(each.Value.Username);
@@ -236,16 +244,117 @@ namespace QuizBot
     {
       Program.Bot.SendTextMessageAsync(msg.Chat.Id, "The chat ID is: " + msg.Chat.Id.ToString());
     }
+
+    [Command(Trigger = "testassign", DevOnly=true)]
+    private static void TestAssign(Message msg, string[] args)
+    {
+
+      var otherroles = new Dictionary<int, Player>();
+      var doc = XDocument.Load(WerewolfFile);
+      foreach(var each in doc.Root.Elements("member"))
+      {
+        string[] name = each.GetElementValue("name").Split(' ');
+        otherroles.Add(otherroles.Count, 
+          new Player(int.Parse(each.GetElementValue("Id")), each.GetElementValue("username"),
+          name[0], name[1]));
+      }
+      var noroles = otherroles;
+      var hasroles = new Dictionary<int, Player>();
+      var random = new Random();
+      //new org.random.JSONRPC.RandomJSONRPC("bbcfa0f8-dbba-423a-8798-c8984c4fc5c5");
+      int totaltoassign = 0;
+      //GameData.GamePhase = GamePhase.Assigning;
+      foreach (var each in Settings.CurrentRoles) { totaltoassign += each.Value; }
+
+      int[] randoms = random.Next(totaltoassign, 0, noroles.Count);
+
+      int i = 0;
+      #region Assign the roles
+      foreach (var role in Settings.CurrentRoles)
+      {
+        Role assignThis = new Role();
+        int count = i + role.Value;
+        for (; i < count; i++)
+        {
+          var player = otherroles[randoms[i]];
+          KeyValuePair<string, Role>[] assignThese;
+          if (role.Key is Role)
+          {
+            assignThis = role.Key as Role;
+          }
+          else if (role.Key is Alignment)
+          {
+            if ((role.Key as Alignment).Name == "Any")
+            {
+              assignThis = GameData.Roles.ToArray()[random.Next(0, GameData.Roles.Count)].Value;
+            }
+            else
+            {
+              assignThese = GameData.Roles.Where(x => x.Value.Alignment == (role.Key as Alignment))
+                .ToArray();
+              assignThis = assignThese[random.Next(0, assignThese.Length)].Value;
+            }
+          }
+          else if (role.Key is TeamWrapper)
+          {
+            assignThese = GameData.Roles.Where(x => x.Value.team == (role.Key as TeamWrapper).team)
+              .ToArray();
+            assignThis = assignThese[random.Next(0, assignThese.Length)].Value;
+          }
+          player.role = assignThis;
+          hasroles.Add(hasroles.Count, player);
+          noroles.Remove(randoms[i]);
+        }
+
+        //If there are no more players to assign
+        if (noroles.Count == 0) break;
+      }
+      #endregion
+
+      //Assign the rest of the people to be villagers
+      if (noroles.Count > 0)
+      {
+        foreach (var each in noroles)
+        {
+          each.Value.role = GameData.Roles["Villager"];
+          hasroles.Add(hasroles.Count, each.Value);
+        }
+      }
+
+      otherroles = hasroles;
+      StringBuilder output = new StringBuilder("*Role assignment results:*\n\n");
+      foreach(var each in hasroles)
+      {
+        output.Append(each.Value.Name + ": " + each.Value.role.Name + ", Assigned as ");
+        try { output.AppendLine(Settings.CurrentRoles.ToArray()[each.Key].Key.Name); }
+        catch(IndexOutOfRangeException) { output.AppendLine("Villager"); }
+      }
+      Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Markdown);
+    }
+
+    [Command(Trigger = "getuserid", InPrivateOnly = true, DevOnly = true)]
+    private static void GetUserId(Message msg, string[] args)
+    {
+      if (!Settings.GetUserId)
+      {
+        Settings.GetUserId = true;
+        Program.Bot.SendTextMessageAsync(msg.Chat.Id, "Forward the messages please");
+      }
+      else
+      {
+        Settings.GetUserId = false;
+        Program.Bot.SendTextMessageAsync(msg.Chat.Id, "Done registering IDs");
+      }
+    }
     #endregion
     #endregion
 
     #region Join Game Logic
     public static void StartJoinGame(Message msg)
 		{
-			if (Settings.JoinTime < 60) Time.Tick += new EventHandler(TickHandler1);
-			else Time.Tick += new EventHandler(TickHandler2);
+			Time.Tick += new EventHandler(TickHandler);
 
-			Time.Interval = 1000; //1 seconds by default
+			Time.Interval = 10000; //10 seconds by default
 			GameData.CurrentGroup = msg.Chat.Id;
 			Program.BotMessage("GameStart", msg.From.Username);
 			GameData.GamePhase = GamePhase.Joining;
@@ -257,33 +366,13 @@ namespace QuizBot
 
 		static System.Windows.Forms.Timer Time = new System.Windows.Forms.Timer();
 
-		public static void TickHandler1(object sender, EventArgs e) 
-		{ //Less than 1 minute join time
-      System.Windows.Forms.MessageBox.Show("I got here");
-			TimeLeft -= Time.Interval/1000;
-      Console.Write(TimeLeft.ToString());
-			if (TimeLeft % 30 == 0 || TimeLeft == 10)
-			{
-				Program.BotMessage("JoinSeconds", Settings.JoinTime - TimeLeft);
-			}
-			else if (TimeLeft == 0)
-			{
-        if (GameData.PlayerCount < Settings.MinPlayers)
-        {
-          Program.BotMessage("NotEnoughPlayers");
-        }
-        else
-        {
-          Program.BotMessage("BeginGame");
-          StartRolesAssign();
-        }
-			}
-		}
-
-		public static void TickHandler2(object sender, EventArgs e)
-		{ //More than 1 minute join time
-
-		}
+    public static void TickHandler(object sender, EventArgs e)
+    {
+      TimeLeft -= 10;
+      if (TimeLeft % 30 == 0) Program.BotMessage("TimeLeft", TimeLeft);
+      if (TimeLeft == 0) StartRolesAssign();
+    }
+    
 		#endregion
 
 		#region Assign Roles
@@ -322,6 +411,10 @@ namespace QuizBot
             {
               assignThese = GameData.Roles.Where(x => x.Value.Alignment == (role.Key as Alignment))
                 .ToArray();
+              if(assignThese.Length == 0)
+              { //Noroles meet that criteria
+
+              }
               assignThis = assignThese[random.Next(0, assignThese.Length)].Value;
             }
           }
@@ -329,6 +422,10 @@ namespace QuizBot
           {
             assignThese = GameData.Roles.Where(x => x.Value.team == (role.Key as TeamWrapper).team)
               .ToArray();
+            if (assignThese.Length == 0)
+            { //Noroles meet that criteria
+
+            }
             assignThis = assignThese[random.Next(0, assignThese.Length)].Value;
           }
           player.role = assignThis;
@@ -347,7 +444,7 @@ namespace QuizBot
         foreach(var each in noroles)
         {
           each.Value.role = GameData.Roles["Villager"];
-          hasroles.Add(each.Key, each.Value);
+          hasroles.Add(hasroles.Count, each.Value);
         }
       }
 
@@ -364,5 +461,33 @@ namespace QuizBot
 			GameData.GamePhase = GamePhase.Inactive;
 			GameData.Joined = new Dictionary<int, Player>();
 		}
+
+    private const string WerewolfFile = @"C:\Users\Lee Yi\Desktop\Everything, for the moment\Coding\C# Bot\TOS-For-Telegram\WFPMembers.xml";
+
+    //Use this to add new users
+    public static string ProcessUserId(Message msg)
+    {
+      XDocument doc = XDocument.Load(WerewolfFile);
+      User forward = msg.ForwardFrom;
+      foreach(var element in doc.Root.Elements("member"))
+      {
+        if(long.Parse(element.Element("Id").Value) == msg.ForwardFrom.Id)
+        {
+          return "User " + forward.Username + " has already been registered!";
+        }
+      }
+
+      string username = forward.Username;
+      if (string.IsNullOrWhiteSpace(forward.Username)) username = string.Empty;
+
+      doc.Root.Add(
+        new XElement
+        ("member",
+        new XElement("username", username),
+        new XElement("name", forward.FirstName + " " + forward.LastName),
+        new XElement("Id", forward.Id)));
+      doc.Save(WerewolfFile);
+      return "User " + forward.Username + " has been registered!";
+    }
 	}
 }

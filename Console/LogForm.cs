@@ -19,6 +19,9 @@ namespace QuizBot
     {
       InitializeComponent();
       AddCommands();
+      test = new System.Windows.Forms.Timer();
+      test.Interval = 6000;
+      test.Tick += new EventHandler(Tick);
     }
 
     private void CloseButton_Click(object sender, EventArgs e)
@@ -181,6 +184,8 @@ namespace QuizBot
       return col;
     }
 
+    private System.Windows.Forms.Timer test;
+
     #region Stuff for the console
     private Dictionary<string, ConsoleCommand> ConsoleCommands;
 
@@ -248,6 +253,25 @@ namespace QuizBot
         default: { throw new ArgumentException(args[1]); }
       }
       return args[1] + " reloaded";
+    }
+
+    [Command(Trigger = "timestart")]
+    private string TimeStart(string[] args)
+    {
+      test.Start();
+      return "Timer started";
+    }
+
+    [Command(Trigger = "timestop")]
+    private string TimeStop(string[] args)
+    {
+      test.Stop();
+      return "Timer stopped";
+    }
+
+    private void Tick(object sender, EventArgs e)
+    {
+      Program.Bot.SendTextMessageAsync(Chats.chats["wfp"], "Timer has ticked!");
     }
     #endregion
 
