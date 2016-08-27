@@ -9,3 +9,19 @@ listroles - Lists all the currently registered roles
 players - List all players
 version - Shows information about the current version
 say - Sends a message to the group
+
+  <string key="Serial Killer Death">
+    <value>You have been stabbed by the Serial Killer!</value>
+  </string>
+
+  <string key="Serial Killer PublicDeath">
+    <value>{0} was brutally stabbed by the serial killer last night!</value>
+  </string>
+
+  <string key="Mafioso Death">
+    <value>You have been assasinated by the Mafia in the dead of night!</value>
+  </string>
+
+  <string key="Mafioso PublicDeath">
+    <value>The Mafia ordered the assasination of {0}, and was found dead in his house in the morning!</value>
+  </string>

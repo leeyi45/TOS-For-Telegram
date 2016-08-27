@@ -80,5 +80,10 @@ namespace QuizBot
     /// Marks the command as to be used within a private chat only
     /// </summary>
     public bool InPrivateOnly { get; set; } = false;
+
+    /// <summary>
+    /// Marks the command as one to be used after a game has been started
+    /// </summary>
+    public bool GameStartOnly { get; set; } = false;
   }
 }

@@ -166,6 +166,7 @@ namespace QuizBot
 
   		try { Program.ConsoleLog("Loaded messages"); }
 			catch { }
+      //ArrangeXML();
 		}
 		#endregion
 
@@ -205,6 +206,9 @@ namespace QuizBot
     //Need this to remove stuff for the commands
     public static string BotUsername { get; set; } = "@quiztestbot";
 
+    /// <summary>
+    /// The number of players currently alive
+    /// </summary>
     public static int AliveCount
     {
       get { return GameData.Joined.Count(x => x.Value.IsAlive); }
@@ -261,6 +265,24 @@ namespace QuizBot
           return Joined.Values.Where(x => x == test).ToArray()[0];
         }
       }
+    }
+
+    public static void ArrangeXML()
+    {
+      var doc = XDocument.Load(messageFile);
+      var elements = new XElement[Messages.Count];
+      int i = 0;
+      var query = from message in Messages
+                  orderby message.Key[0] ascending, message.Key[1] ascending 
+                  select message;
+
+      foreach(var message in query)
+      {
+        elements[i] = new XElement("string", new XElement("value", message.Value));
+        elements[i].Add(new XAttribute("key", message.Key));
+        i++;
+      }
+      doc.Save(messageFile);
     }
 	}
 

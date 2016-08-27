@@ -1,84 +1,98 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--This system is based off the werewolf language system-->
-<strings version="1.0"> 
-	<!--Administration events-->
-	<string key="PlayerJoin">
-		<value>{0} has joined the game! {1} players, {2} minimum, {3} maximum</value>
-	</string>
-
-	<string key="Leave">
-		<value>{0} has left the game!</value>
-	</string>
-
-	<string key="AlreadyJoin">
-		<value>You have already joined!</value>
-	</string>
-
-	<string key="GameRunningJoin">
-		<value>You cannot join now, a game is already in progress!</value>
-	</string>
-
-	<string key="NoGameJoin">
-		<value>There is no game in progress, use /start to start one!</value>
-	</string>
-
-	<string key="GameStart">
-		<value>{0} has started a game, /join to join!</value>
-	</string>
-
-	<string key="RunningGameStart">
-		<value>A game has already been started! /join to join!</value>
-	</string>
-
-	<string key="BeginGame">
-		<value>Game started. Please switch over to message the bot to begin</value>
-	</string>
-
-	<string key="NotAdminError">
-		<value>{0}, you are not an admin!</value>
-	</string>
-
+<strings version="1.0">
+  <!--Administration events-->
+  <string key="PlayerJoin">
+    <value>{0} has joined the game! {1} players, {2} minimum, {3} maximum</value>
+  </string>
+  
+  <string key="Leave">
+    <value>{0} has left the game!</value>
+  </string>
+    
+  <string key="AlreadyJoin">
+    <value>You have already joined!</value>
+  </string>
+  
+  <string key="GameRunningJoin">
+    <value>You cannot join now, a game is already in progress!</value>
+  </string>
+    
+  <string key="NoGameJoin">
+    <value>There is no game in progress, use /start to start one!</value>
+  </string>
+  
+  <string key="GameStart">
+    <value>{0} has started a game, /join to join!</value>
+  </string>
+  
+  <string key="RunningGameStart">
+    <value>A game has already been started! /join to join!</value>
+  </string>
+  
+  <string key="BeginGame">
+    <value>Game started. Please switch over to message the bot to begin</value>
+  </string>
+  
+  <string key="NotAdminError">
+    <value>{0}, you are not an admin!</value>
+  </string>
+    
   <string key="NotDevError">
     <value>{0}, you are not a developer!</value>
   </string>
-
-	<string key="JoinSeconds">
-		<value>{0} seconds left to /join</value>
-	</string>
-	
-	<string key="SentConfig">
-		<value>{0}, I have sent you the config via PM</value>
-	</string>
-
-	<string key="RoleNotFound">
-		<value>Role "{0}" not found!</value>
-	</string>
-	
-	<string key="PleaseStartBot">
-		<value>{0}, click @quiztestbot and start the bot so as to enable PM!</value>
-	</string>
-
-	<string key="ForceGameEnd">
-		<value>Game has been forcefully ended by {0}!</value>
-	</string>
-
-	<string key="PrivateOnly">
-		<value>This command can only be used in a private chat!</value>
-	</string>
-
+  
+  <string key="JoinSeconds">
+    <value>{0} seconds left to /join</value>
+  </string>
+  
+  <string key="SentConfig">
+    <value>{0}, I have sent you the config via PM</value>
+  </string>
+  
+  <string key="RoleNotFound">
+    <value>Role "{0}" not found!</value>
+  </string>
+  
+  <string key="PleaseStartBot">
+    <value>{0}, click @quiztestbot and start the bot so as to enable PM!</value>
+  </string>
+  
+  <string key="ForceGameEnd">
+    <value>Game has been forcefully ended by {0}!</value>
+  </string>
+  
+  <string key="PrivateOnly">
+    <value>This command can only be used in a private chat!</value>
+  </string>
+  
+  <string key="MaxPlayersReached">
+    <value>You cannot join! The maxmimum number of players has been reached!</value>
+  </string>
+  
+  <string key="MinPlayersReached">
+    <value>{0} players have joined! /begin to begin the game!</value>
+  </string>
+  
   <string key="TimeLeft">
     <value>{0} seconds left to /join!</value>
   </string>
-
+  
+  <string key="NotEnoughPlayers">
+    <value>There needs to be at least {0} players to begin\nThere are currently only {1}</value>
+  </string>
+    
+  <string key="RolesAssigned">
+    <value>The roles have been assigned, and the game begins!</value>
+  </string>
   <!-- Actual messages during the game -->
   <string key="InvestResult">
     <value>Your target is {0}</value>
   </string>
-
+  
   <string key="Roleblocked">
     <value>You have been roleblocked!</value>
   </string>
-  
   <!-- Death Messages -->
   <string key="Serial Killer Death">
     <value>You have been stabbed by the Serial Killer!</value>

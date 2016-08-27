@@ -132,5 +132,10 @@ namespace QuizBot
       }
       Program.BotMessage(output.ToString());
     }
+
+    public static void DoNightCycle()
+    {
+
+    }
   }
 }

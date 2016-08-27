@@ -76,6 +76,12 @@ namespace QuizBot
           Program.BotMessage(msg.Chat.Id, "NotDevError", msg.From.Username);
           return;
         }
+
+        if(attribute.GameStartOnly && GameData.GamePhase == GamePhase.Inactive)
+        { //Game has not been started
+          Program.BotMessage(msg.Chat.Id, "NoGameJoin");
+          return;
+        }
         #endregion
 
         AllCommands[args[0]].Item1(msg, args);
@@ -99,7 +105,7 @@ namespace QuizBot
       QuizBot.Config.SendInline(msg.From);
     }
 
-    [Command(InGroupOnly = true, Trigger = "join")]
+    [Command(InGroupOnly = true, Trigger = "join", GameStartOnly = true)]
     private static void Join(Message msg, string[] args)
     {
       var player = msg.From;
@@ -107,39 +113,61 @@ namespace QuizBot
       { //Joined already
         Program.BotMessage("AlreadyJoin");
       }
-      else if (GameData.GamePhase == GamePhase.Inactive)
-      { //Game is not running
-        Program.BotMessage("NoGameJoin");
-      }
       else if (GameData.GamePhase == GamePhase.Running || GameData.GamePhase == GamePhase.Assigning)
       { //Game is running
         Program.BotMessage("GameRunningJoin");
       }
       else if (GameData.GamePhase == GamePhase.Joining)
       { //Join the player thanks
-        Program.BotMessage(msg.Chat.Id, "PlayerJoin", player.Username, GameData.Joined.Count,
+        if(GameData.PlayerCount == Settings.MaxPlayers)
+        {
+          Program.BotMessage(msg.Chat.Id, "MaxPlayersReached");
+          return;
+        }
+        Program.BotMessage(msg.Chat.Id, "PlayerJoin", player.Username, GameData.PlayerCount,
           Settings.MinPlayers, Settings.MaxPlayers);
         Program.BotMessage(msg.From.Id, "JoinGameSuccess", msg.Chat.Title);
         GameData.Joined.Add(GameData.PlayerCount, player);
+        if(GameData.PlayerCount >= Settings.MinPlayers)
+        {
+          Program.BotMessage(msg.Chat.Id, "MinPlayersReached");
+        }
       }
     }
 
-    [Command(Trigger = "players")]
+    [Command(Trigger = "begin", InGroupOnly = true, GameStartOnly = true)]
+    private static void Begin(Message msg, string[] args)
+    {
+      if(GameData.PlayerCount < Settings.MinPlayers)
+      {
+        Program.BotMessage("NotEnoughPlayers", GameData.PlayerCount, Settings.MinPlayers);
+        return;
+      }
+      GameData.GamePhase = GamePhase.Assigning;
+      Program.BotMessage("BeginGame");
+      StartRolesAssign();
+    }
+
+    [Command(Trigger = "players", GameStartOnly = true)]
     private static void Players(Message msg, string[] args)
     {
-      if (GameData.GamePhase == GamePhase.Inactive) Program.BotMessage("NoGameJoin");
-      else
+      var output = new StringBuilder("*Players: *" + GameData.AliveCount + "/" + GameData.PlayerCount + "\n\n");
+      foreach (var each in GameData.Joined)
       {
-        StringBuilder output = new StringBuilder("*Players: *" + GameData.PlayerCount + "\n\n");
-        foreach (var each in GameData.Joined)
-        {
-          output.Append(each.Value.Username);
-          if (!each.Value.IsAlive) output.Append(": " + each.Value.role.ToString());
-          output.Append("\n");
-
-        }
-        Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Markdown);
+        output.Append(each.Value.Username);
+        if (!each.Value.IsAlive) output.Append(": " + each.Value.role.ToString());
+        output.Append("\n");
       }
+      Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Markdown);
+    }
+
+    [Command(Trigger = "say", InPrivateOnly = true, GameStartOnly = true)]
+    private static void Say(Message msg, string[] args)
+    {
+      string[] otherargs = new string[args.Length - 1];
+      Array.Copy(args, 1, otherargs, 0, args.Length - 1);
+      Program.Bot.SendTextMessageAsync(GameData.CurrentGroup, string.Join(" ", otherargs));
+      //catch { Program.BotMessage(msg.Chat.Id, "NoGameJoin"); }
     }
 
     [Command(InGroupOnly = true, Trigger = "ping")]
@@ -147,11 +175,6 @@ namespace QuizBot
     {
       var ts = DateTime.UtcNow - msg.Date;
       var send = DateTime.UtcNow;
-      /*
-			var message = "PingInfo\n" + ts.ToString("mm\\:ss\\.ff") + "\n" +
-					System.Diagnostics..AvgCpuTime.ToString("F0") +
-					Program.MessageRxPerSecond.ToString("F0") + " MAX IN\n" +
-					Program.MessageTxPerSecond.ToString("F0") + "MAX OUT";*/
       var message = "*PingInfo*\n" + "Time to receive ping message: " + ts.ToString("fff'.'ff") + "ms";
       var result = Program.Bot.SendTextMessageAsync(msg.Chat.Id, message,
         parseMode: ParseMode.Markdown).Result;
@@ -160,31 +183,18 @@ namespace QuizBot
         ts.ToString("fff'.'ff") + "ms", parseMode: ParseMode.Markdown);
     }
 
-    [Command(InPrivateOnly = true, Trigger = "say")]
-    private static void Say(Message msg, string[] args)
-    {
-      //if (msg.Chat.Type == ChatType.Group) Program.BotMessage(msg.Chat.Id, "PrivateOnly");
-      string[] otherargs = new string[args.Length - 1];
-      Array.Copy(args, 1, otherargs, 0, args.Length - 1);
-      Program.Bot.SendTextMessageAsync(GameData.CurrentGroup, string.Join(" ", otherargs));
-      //catch { Program.BotMessage(msg.Chat.Id, "NoGameJoin"); }
-    }
-
     [Command(Trigger = "startgame")]
     private static void StartGame(Message msg, string[] args)
     {
-      if (msg.Chat.Type == ChatType.Private)
-      {
-        //Program.BotMessage(msg.Chat.Id, "PleaseStartBot", msg.Chat.FirstName);
-        return;
-      }
       if (GameData.GamePhase == GamePhase.Joining) Program.BotMessage("RunningGameStart");
       // else 
       else
       {
         GameData.CurrentGroup = msg.Chat.Id;
         Program.ConsoleLog("Game started!");
-        StartJoinGame(msg);
+        Program.BotMessage("GameStart", msg.From.Username);
+        GameData.GamePhase = GamePhase.Joining;
+        GameData.Joined.Add(GameData.PlayerCount, msg.From);
       }
     }
 
@@ -349,39 +359,12 @@ namespace QuizBot
     #endregion
     #endregion
 
-    #region Join Game Logic
-    public static void StartJoinGame(Message msg)
-		{
-			Time.Tick += new EventHandler(TickHandler);
-
-			Time.Interval = 10000; //10 seconds by default
-			GameData.CurrentGroup = msg.Chat.Id;
-			Program.BotMessage("GameStart", msg.From.Username);
-			GameData.GamePhase = GamePhase.Joining;
-			GameData.Joined.Add(GameData.PlayerCount, msg.From);
-			Time.Start();
-		}
-
-		public static int TimeLeft = Settings.JoinTime;
-
-		static System.Windows.Forms.Timer Time = new System.Windows.Forms.Timer();
-
-    public static void TickHandler(object sender, EventArgs e)
-    {
-      TimeLeft -= 10;
-      if (TimeLeft % 30 == 0) Program.BotMessage("TimeLeft", TimeLeft);
-      if (TimeLeft == 0) StartRolesAssign();
-    }
-    
-		#endregion
-
 		#region Assign Roles
 		public static void StartRolesAssign()
 		{
 			var noroles = GameData.Joined;
 			var hasroles = new Dictionary<int, Player>();
       var random = new Random();
-      //new org.random.JSONRPC.RandomJSONRPC("bbcfa0f8-dbba-423a-8798-c8984c4fc5c5");
 			int totaltoassign = 0;
       GameData.GamePhase = GamePhase.Assigning;
       foreach (var each in Settings.CurrentRoles) { totaltoassign += each.Value; }
@@ -453,6 +436,9 @@ namespace QuizBot
       {
         each.Value.OnAssignRole();
       }
+      GameData.GamePhase = GamePhase.Running;
+      Program.BotMessage("RolesAssigned");
+      Player_Mgt.DoNightCycle();
     }
     #endregion
 
