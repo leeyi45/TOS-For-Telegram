@@ -410,6 +410,9 @@ namespace QuizBot
     }
 	}
 
+  /// <summary>
+  /// Class containing the settings system
+  /// </summary>
 	class Settings
 	{
 		/// <summary>
@@ -447,10 +450,37 @@ namespace QuizBot
 			get { return Properties.Settings.Default.Join_Time * 1000; }
 		}
 
-		/// <summary>
-		/// The currently selected rolelist name
-		/// </summary>
-		public static string CurrentRoleList
+    /// <summary>
+    /// The amount of time the night time phase is allocated, in seconds
+    /// </summary>
+    public static int NightTime
+    {
+      get { return Properties.Settings.Default.Night_Cycle; }
+      set { Properties.Settings.Default.Night_Cycle = value; }
+    }
+
+    /// <summary>
+    /// The amount of time the day time phase is allocated, in seconds
+    /// </summary>
+    public static int DayTime
+    {
+      get { return Properties.Settings.Default.Day_Cycle; }
+      set { Properties.Settings.Default.Day_Cycle = value; }
+    }
+
+    /// <summary>
+    /// The amount of time the lynch phase is allocated, in seconds
+    /// </summary>
+    public static int LynchTime
+    {
+      get { return Properties.Settings.Default.Voting_Cycle; }
+      set { Properties.Settings.Default.Voting_Cycle = value; }
+    }
+
+    /// <summary>
+    /// The currently selected rolelist name
+    /// </summary>
+    public static string CurrentRoleList
 		{
 			get { return Properties.Settings.Default.Rolelist; }
 			set { Properties.Settings.Default.Rolelist = value; }

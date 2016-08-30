@@ -1,4 +1,6 @@
-﻿namespace QuizBot.Properties {
+﻿using System.ComponentModel;
+
+namespace QuizBot.Properties {
     
     
     // This class allows you to handle specific events on the settings class:
@@ -11,17 +13,18 @@
         public Settings() {
             // // To add event handlers for saving and changing settings, uncomment the lines below:
             //
-            // this.SettingChanging += this.SettingChangingEventHandler;
+            this.PropertyChanged += this.SettingChangingEventHandler;
             //
             // this.SettingsSaving += this.SettingsSavingEventHandler;
             //
         }
         
-        private void SettingChangingEventHandler(object sender, System.Configuration.SettingChangingEventArgs e) {
-            // Add code to handle the SettingChangingEvent event here.
+        private void SettingChangingEventHandler(object sender, PropertyChangedEventArgs e) {
+      // Add code to handle the SettingChangingEvent event here.
+          Save();
         }
         
-        private void SettingsSavingEventHandler(object sender, System.ComponentModel.CancelEventArgs e) {
+        private void SettingsSavingEventHandler(object sender, CancelEventArgs e) {
             // Add code to handle the SettingsSaving event here.
         }
     }

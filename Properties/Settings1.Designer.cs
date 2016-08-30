@@ -70,5 +70,41 @@ namespace QuizBot.Properties {
                 this["Min_Users"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int Night_Cycle {
+            get {
+                return ((int)(this["Night_Cycle"]));
+            }
+            set {
+                this["Night_Cycle"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int Day_Cycle {
+            get {
+                return ((int)(this["Day_Cycle"]));
+            }
+            set {
+                this["Day_Cycle"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int Voting_Cycle {
+            get {
+                return ((int)(this["Voting_Cycle"]));
+            }
+            set {
+                this["Voting_Cycle"] = value;
+            }
+        }
     }
 }
