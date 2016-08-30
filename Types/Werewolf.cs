@@ -85,5 +85,19 @@ namespace QuizBot
     /// Marks the command as one to be used after a game has been started
     /// </summary>
     public bool GameStartOnly { get; set; } = false;
+
+    private bool testmode = false;
+
+    /// <summary>
+    /// Boolean value indicating if the command is to be used in test mode only
+    /// </summary>
+    public bool TestModeOnly
+    { get { return testmode; }
+      set
+      { //Test commands can only be used by devs
+        if (value) DevOnly = true;
+        testmode = value;
+      }
+    }
   }
 }

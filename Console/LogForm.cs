@@ -245,6 +245,10 @@ namespace QuizBot
     [Command(Trigger = "reload")]
     private string Reload(string[] args)
     {
+      if(args.Length == 1)
+      {
+        return "roles - To reload roles.xml\nmsgs - To reload Messages.xml";
+      }
       switch (args[1])
       {
         case "roles": { GameData.InitializeRoles(); break; }
@@ -285,7 +289,7 @@ namespace QuizBot
         LogLine(ConsoleCommands[args[0]](args));
       }
       catch (KeyNotFoundException) { LogLine("Unknown command: " + args[0]); }
-      catch (ArgumentException e) { LogLine("Unknow argument: " + e); }
+      catch (ArgumentException e) { LogLine("Unknown argument: " + e); }
     }
     #endregion
   }

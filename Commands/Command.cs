@@ -19,6 +19,8 @@ namespace QuizBot
 
 		public delegate void CommandDelegate(Message msg, string[] args);
 
+    private static bool TestMode = true;
+
 		public static void InitializeCommands()
 		{
       //Just means I don't have to add the functions myself cause I'm lazy af
@@ -43,7 +45,6 @@ namespace QuizBot
 			//Remove the @quiztestbot
 			if (args[0].Contains("@quiztestbot")) args[0] = args[0].Substring(0, 
         args[0].Length - GameData.BotUsername.Length - 1);
-      //Program.ConsoleLog("The arg is " + args[0]);
       try
       {
         //Check stuff
@@ -260,7 +261,7 @@ namespace QuizBot
       Program.Bot.SendTextMessageAsync(msg.Chat.Id, "The chat ID is: " + msg.Chat.Id.ToString());
     }
 
-    [Command(Trigger = "testassign", DevOnly=true)]
+    [Command(Trigger = "testassign", DevOnly = true)]
     private static void TestAssign(Message msg, string[] args)
     {
 
@@ -345,6 +346,12 @@ namespace QuizBot
         catch(IndexOutOfRangeException) { output.AppendLine("Villager"); }
       }
       Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Markdown);
+    }
+
+    [Command(Trigger = "testmode", DevOnly = true)]
+    private static void EngageTestMode(Message msg, string[] args)
+    { //Switch the game into a test mode
+
     }
 
     [Command(Trigger = "getuserid", InPrivateOnly = true, DevOnly = true)]

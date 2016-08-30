@@ -7,6 +7,9 @@ using Telegram.Bot.Args;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
+using System.Xml.Linq;
+using System.Linq;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -115,8 +118,16 @@ namespace QuizBot
 
 		public static void ConsoleLog(string text)
 		{
-			ConsoleForm.Invoke(new Action(() => { ConsoleForm.LogLine(text); }));
+      try { ConsoleForm.Invoke(new Action(() => { ConsoleForm.LogLine(text); })); }
+      catch(NullReferenceException) { }
+      catch(InvalidOperationException) { }
 		}
+
+    public static void MessageLog(string text, string caption = "")
+    {
+      MessageBox.Show(text, caption);
+      ConsoleLog(text);
+    }
 
 		public static void PrintWait(string text)
 		{
@@ -130,17 +141,17 @@ namespace QuizBot
 			return x.FirstName + " " + x.LastName;
 		}
 
-    public static string GetAttributeValue(this System.Xml.Linq.XElement x, System.Xml.Linq.XName name)
+    public static string GetAttributeValue(this XElement x, XName name)
     {
       return x.Attribute(name).Value;
     }
 
-    public static string GetElementValue(this System.Xml.Linq.XElement x, System.Xml.Linq.XName name)
+    public static string GetElementValue(this XElement x, XName name)
     {
       return x.Element(name).Value;
     }
 
-    public static bool TryGetAttribute(this System.Xml.Linq.XElement x, System.Xml.Linq.XName name, out string output)
+    public static bool TryGetAttribute(this XElement x, XName name, out string output)
     {
       try
       {
@@ -154,7 +165,7 @@ namespace QuizBot
       }
     }
 
-    public static bool TryGetElement(this System.Xml.Linq.XElement x, System.Xml.Linq.XName name, out string output)
+    public static bool TryGetElement(this XElement x, XName name, out string output)
     {
       try
       {
@@ -174,7 +185,7 @@ namespace QuizBot
     /// <param name="doc">Document</param>
     /// <param name="name">Name of the element</param>
     /// <returns>Boolean value indicating if the element was found</returns>
-    public static bool HasElement(this System.Xml.Linq.XDocument doc, System.Xml.Linq.XName name)
+    public static bool HasElement(this XDocument doc, XName name)
     {
       foreach(var each in doc.Root.Elements())
       {
@@ -182,6 +193,11 @@ namespace QuizBot
         if (each.Name == name) return true;
       }
       return false;
+    }
+
+    public static bool HasElement(this XElement element, XName name)
+    {
+      return element.Elements().Contains(element);
     }
 
     public static int[] Next(this Random random, int count, int min, int max, bool replace = false)
@@ -200,6 +216,23 @@ namespace QuizBot
       }
       return output;
     }
+
+    public static string TryGetStringElement(this XElement each, string name, bool allowNull = false)
+    {
+      string output;
+      if (!each.TryGetElement(name, out output)) GameData.Error(name, each);
+      if (string.IsNullOrWhiteSpace(output) && !allowNull) GameData.Error(name, each);
+      return output;
+    }
+
+    public static string TryGetStringAttribute(this XElement each, string name, bool allowNull = false)
+    {
+      string output;
+      if (!each.TryGetAttribute(name, out output)) GameData.Error(name, each);
+      if (string.IsNullOrWhiteSpace(output) && !allowNull) GameData.Error(name, each);
+      return output;
+    }
+
     #endregion
   }
 }

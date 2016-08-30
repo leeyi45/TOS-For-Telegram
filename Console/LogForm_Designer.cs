@@ -35,6 +35,7 @@ namespace QuizBot
 			this.logBox.TabIndex = 1;
 			this.logBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.CancelKey);
 			this.logBox.KeyPress += new KeyPressEventHandler(this.CancelKey2);
+      this.logBox.ScrollBars = ScrollBars.Vertical;
 			// 
 			// commandBox
 			// 

@@ -2,14 +2,45 @@
 <Root version ="1.0">
   <!-- Valid Teams: Town, Mafia, Neutral -->
 	<Alignments>
-		<Alignment Team="Town" Name="Support"/>
-		<Alignment Team="Town" Name="Investigative"/>
-    <Alignment Team="Town" Name="Protective"/>
-		<Alignment Team="Mafia" Name="Killing"/>
-    <Alignment Team="Mafia" Name="Support"/>
-		<Alignment Team="Neutral" Name="Killing"/>
-    <Alignment Team="Neutral" Name="Benign"/>
-    <Alignment Team="Neutral" Name="Evil"/>
+    <Alignment>
+      <Team>Town</Team>
+      <Name>Support</Name>
+    </Alignment>
+    
+    <Alignment>
+      <Team>Town</Team>
+      <Name>Investigative</Name>
+    </Alignment>
+    
+    <Alignment>
+      <Team>Town</Team>
+      <Name>Protective</Name>
+    </Alignment>
+    
+    <Alignment>
+      <Team>Mafia</Team>
+      <Name>Killing</Name>
+    </Alignment>
+    
+    <Alignment>
+      <Team>Mafia</Team>
+      <Name>Support</Name>
+    </Alignment>
+
+    <Alignment>
+      <Team>Neutral</Team>
+      <Name>Killing</Name>
+    </Alignment>
+    
+    <Alignment>
+      <Team>Neutral</Team>
+      <Name>Benign</Name>
+    </Alignment>
+    
+    <Alignment>
+      <Team>Neutral</Team>
+      <Name>Evil</Name>
+    </Alignment>
 	</Alignments>
 
   <!-- Please ensure that the alignments used below have been defined above -->
