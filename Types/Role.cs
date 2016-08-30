@@ -116,6 +116,8 @@ namespace QuizBot
     #region Properties
     public string Description { get; set; }
 
+    public string Instruction { get; set; }
+
     public Alignment Alignment { get; set; }
 
     public bool HasNightAction { get; set; }

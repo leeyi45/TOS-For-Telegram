@@ -82,7 +82,10 @@ namespace QuizBot
 
         string boolParse;
         if (each.TryGetElement("NightImmune", out boolParse)) nightImmune = bool.Parse(boolParse);
-        
+
+        string instruction;
+        if (!each.TryGetElement("Instruct", out instruction)) instruction = string.Empty;
+
         //Messages.Add(name + "Assign", each.GetElementValue("OnAssign"));
         Roles.Add(name, new Role
         {
@@ -94,7 +97,8 @@ namespace QuizBot
           Description = each.GetElementValue("Description"),
           NightImmune = nightImmune,
           Suspicious = suspicious,
-          InvestResult = int.Parse(each.GetElementValue("Invest"))
+          InvestResult = int.Parse(each.GetElementValue("Invest")),
+          Instruction = instruction
         });
       }
       #endregion

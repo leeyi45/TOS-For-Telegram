@@ -100,8 +100,7 @@
     <Compile Include="Console\LogForm_Designer.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Cycles\Player_Mgt.cs" />
-    <Compile Include="Game\Game.cs" />
+    <Compile Include="Game\Player_Mgt.cs" />
     <Compile Include="Game\GameData.cs" />
     <Compile Include="Libraries\Disp.cs" />
     <Compile Include="Program.cs" />
@@ -111,10 +110,10 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="Properties\Settings.cs" />
+    <Compile Include="Types\Callback.cs" />
     <Compile Include="Types\Enums.cs" />
     <Compile Include="Types\Player.cs" />
     <Compile Include="Types\Role.cs" />
-    <Compile Include="Types\Roles\Escort.cs" />
     <Compile Include="Types\Triptionary.cs" />
     <Compile Include="Types\Werewolf.cs" />
   </ItemGroup>

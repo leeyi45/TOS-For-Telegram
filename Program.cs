@@ -1,24 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-
-using Console_API;
 
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InlineQueryResults;
-using Telegram.Bot.Types.InputMessageContents;
-using Telegram.Bot.Types.ReplyMarkups;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace QuizBot
 {
-	static class Program
+  static class Program
 	{
 		internal static readonly TelegramBotClient Bot = new TelegramBotClient(Chats.BotToken);
 
@@ -67,23 +61,22 @@ namespace QuizBot
 			}
 		}
 
-		static async void OnCallbackQuery(object sender, CallbackQueryEventArgs e)
+		static void OnCallbackQuery(object sender, CallbackQueryEventArgs e)
 		{
-			var result = e.CallbackQuery;
-			switch (result.Data)
+      var From = e.CallbackQuery.From;
+      var result = new Callback(e.CallbackQuery.Data);    
+			switch (result.Protocol)
 			{
-				#region Configuration Options
-				case "wait":
+				case "config":
 					{
-						await Program.Bot.SendTextMessageAsync(result.From.Id, "The current wait time is " + Settings.JoinTime + " seconds.");
+            Config.Parse(result);
 						break;
 					}
-				case "playerCount":
-					{
-						await Program.Bot.SendTextMessageAsync(result.From.Id, "The current maximum number of players is " + Settings.MaxPlayers + ".");
-						break;
-					}
-				#endregion
+        case "nightAction":
+          {
+            Game.ParseNightAction(result);
+            break;
+          }
 			}
 		}
 

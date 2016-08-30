@@ -34,9 +34,7 @@ namespace QuizBot
 		//The default parser
 		public static void Parse(Message msg)
 		{
-			string cmd = msg.Text;
-			bool admin = UpdateHelper.IsGroupAdmin(msg.From.Id, msg.Chat.Id);
-
+      string cmd = msg.Text;
 			//remove the slash as necessary
 			cmd = cmd.ToLower().Substring(1, cmd.Length - 1);
 			if (string.IsNullOrWhiteSpace(cmd)) return;
@@ -65,9 +63,9 @@ namespace QuizBot
           return;
         }
 
-        if (attribute.GroupAdminOnly && !admin)
+        if (attribute.GroupAdminOnly && UpdateHelper.IsGroupAdmin(msg.From.Id, msg.Chat.Id))
         { //If command is admin only and user is not admin
-          NotAdmin(msg);
+          Program.BotMessage(msg.Chat.Id, "NotAdminError", msg.From.FirstName);
           return;
         }
 
@@ -90,11 +88,7 @@ namespace QuizBot
       { //Program.ConsoleLog(e.Message); }
       }
 		}
-
-		public static void NotAdmin(Message msg)
-		{
-			Program.BotMessage(msg.Chat.Id, "NotAdminError", msg.From.FirstName);
-		}
+    #endregion
 
     #region Commands
     [Command(Trigger = "config", GroupAdminOnly = true)]
@@ -168,6 +162,17 @@ namespace QuizBot
       Array.Copy(args, 1, otherargs, 0, args.Length - 1);
       Program.Bot.SendTextMessageAsync(GameData.CurrentGroup, string.Join(" ", otherargs));
       //catch { Program.BotMessage(msg.Chat.Id, "NoGameJoin"); }
+    }
+
+    [Command(Trigger = "leave", InGroupOnly = true, GameStartOnly = true)]
+    private static void Leave(Message msg, string[] args)
+    {
+      if(GameData.Alive.Values.Contains(msg.From))
+      {
+        Program.BotMessage(msg.Chat.Id, "LeftGame", msg.From.Username);
+        GameData.Alive.Values.Where(x => x == msg.From).ToArray()[0].Kill(null);
+      }
+      else Program.BotMessage(msg.Chat.Id, "NotInGame");
     }
 
     [Command(InGroupOnly = true, Trigger = "ping")]
@@ -357,10 +362,9 @@ namespace QuizBot
       }
     }
     #endregion
-    #endregion
 
-		#region Assign Roles
-		public static void StartRolesAssign()
+    #region Assign Roles
+    public static void StartRolesAssign()
 		{
 			var noroles = GameData.Joined;
 			var hasroles = new Dictionary<int, Player>();
@@ -438,7 +442,7 @@ namespace QuizBot
       }
       GameData.GamePhase = GamePhase.Running;
       Program.BotMessage("RolesAssigned");
-      Player_Mgt.DoNightCycle();
+      Game.DoNightCycle();
     }
     #endregion
 

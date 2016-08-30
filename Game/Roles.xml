@@ -34,6 +34,7 @@
       <HasNightAction>True</HasNightAction>
       <OnAssign>You may choose a person each night to heal and save them</OnAssign>
       <Invest>3</Invest>
+      <Instruct>heal tonight</Instruct>
     </Role>
     
     <Role>
@@ -56,6 +57,7 @@
       <HasNightAction>True</HasNightAction>
       <OnAssign>You may choose a person each night to distract them from performing their role</OnAssign>
       <Invest>1</Invest>
+      <Instruct>roleblock</Instruct>
     </Role>
     
 		<Role>
@@ -67,6 +69,7 @@
       <HasNightAction>True</HasNightAction>
       <OnAssign>Each night, you may choose to discover a person's possible roles</OnAssign>
       <Invest>2</Invest>
+      <Instruct>investigate</Instruct>
     </Role>
 
     <Role>
@@ -78,6 +81,7 @@
       <HasNightAction>True</HasNightAction>
       <OnAssign>Each night, you may choose to discover if a person is suspicious or not</OnAssign>
       <Invest>4</Invest>
+      <Instruct>investigate</Instruct>
     </Role>
     
     <Role>
@@ -101,6 +105,7 @@
       <HasNightAction>True</HasNightAction>
       <OnAssign>You may choose a person each night to distract them from performing their role</OnAssign>
       <Invest>1</Invest>
+      <Instruct>roleblock</Instruct>
     </Role>
     
     <Role>
@@ -112,6 +117,7 @@
       <HasNightAction>True</HasNightAction>
       <OnAssign>Each night, you may choose a person to kill</OnAssign>
       <Invest>6</Invest>
+      <Instruct>kill</Instruct>
     </Role>
      
     <!--Neutral Roles-->
@@ -124,6 +130,7 @@
       <HasNightAction>True</HasNightAction>
       <OnAssign>Every night, you can either douse people in gasoline, or ignite the people that have been doused</OnAssign>
       <Invest>4</Invest>
+      <Instruct>douse, or choose yourself to ignite the doused</Instruct>
     </Role>
 
     <Role>
@@ -147,6 +154,7 @@
       <OnAssign>Each night, you may choose a person to kill</OnAssign>
       <NightImmune>True</NightImmune>
       <Invest>3</Invest>
+      <Instruct>kill</Instruct>
     </Role>
     
     <Role>

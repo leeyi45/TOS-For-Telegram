@@ -85,7 +85,24 @@
   <string key="RolesAssigned">
     <value>The roles have been assigned, and the game begins!</value>
   </string>
+  
+  <string key="LeftGame">
+    <value>{0} has left the game!</value>
+  </string>
+  
+  <string key="NotInGame">
+    <value>You're not in the game!</value>
+  </string>
+  
   <!-- Actual messages during the game -->
+  <string key="Instruct">
+    <value>Choose one person to {0}</value>
+  </string>
+
+  <string key="ChosenTarget">
+    <value>You have chosen {0}</value>
+  </string>
+
   <string key="InvestResult">
     <value>Your target is {0}</value>
   </string>

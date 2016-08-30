@@ -36,6 +36,10 @@ namespace QuizBot
       this.LastName = LastName;
     }
 
+    /*
+    public Player(Role role, string FirstName, string LastName, string Username,
+      int Id, string Nickname, bool IsAlive, bool IsDoused, bool )*/
+
     public Role role { get; set; }
 
     #region User Fields
@@ -103,7 +107,8 @@ namespace QuizBot
     {
       WasKilledBy = wasKilledBy;
       IsAlive = false;
-      Program.BotMessage(Id, wasKilledBy.role.Name + " Death"); //Tell the user they have been killed!
+      //Tell the user they have been killed!
+      Program.BotMessage(Id, wasKilledBy.role.Name + " Death");
     }
     #endregion
 
@@ -124,6 +129,16 @@ namespace QuizBot
     }
 
     public static bool operator !=(Player rhs, Player lhs)
+    {
+      return !(rhs == lhs);
+    }
+
+    public static bool operator ==(Player rhs, User lhs)
+    {
+      return (rhs.Id == lhs.Id);
+    }
+
+    public static bool operator !=(Player rhs, User lhs)
     {
       return !(rhs == lhs);
     }
