@@ -141,65 +141,6 @@ namespace QuizBot
 			return x.FirstName + " " + x.LastName;
 		}
 
-    public static string GetAttributeValue(this XElement x, XName name)
-    {
-      return x.Attribute(name).Value;
-    }
-
-    public static string GetElementValue(this XElement x, XName name)
-    {
-      return x.Element(name).Value;
-    }
-
-    public static bool TryGetAttribute(this XElement x, XName name, out string output)
-    {
-      try
-      {
-        output = x.Attribute(name).Value;
-        return true;
-      }
-      catch(NullReferenceException)
-      {
-        output = null;
-        return false;
-      }
-    }
-
-    public static bool TryGetElement(this XElement x, XName name, out string output)
-    {
-      try
-      {
-        output = x.Element(name).Value;
-        return true;
-      }
-      catch (NullReferenceException)
-      {
-        output = null;
-        return false;
-      }
-    }
-
-    /// <summary>
-    /// Only checks the root element for containing elements
-    /// </summary>
-    /// <param name="doc">Document</param>
-    /// <param name="name">Name of the element</param>
-    /// <returns>Boolean value indicating if the element was found</returns>
-    public static bool HasElement(this XDocument doc, XName name)
-    {
-      foreach(var each in doc.Root.Elements())
-      {
-        //Program.PrintWait(each.Name.ToString());
-        if (each.Name == name) return true;
-      }
-      return false;
-    }
-
-    public static bool HasElement(this XElement element, XName name)
-    {
-      return element.Elements().Contains(element);
-    }
-
     public static int[] Next(this Random random, int count, int min, int max, bool replace = false)
     {
       int[] output = new int[count];
@@ -214,22 +155,6 @@ namespace QuizBot
         }
         else output[i] = x;
       }
-      return output;
-    }
-
-    public static string TryGetStringElement(this XElement each, string name, bool allowNull = false)
-    {
-      string output;
-      if (!each.TryGetElement(name, out output)) GameData.Error(name, each);
-      if (string.IsNullOrWhiteSpace(output) && !allowNull) GameData.Error(name, each);
-      return output;
-    }
-
-    public static string TryGetStringAttribute(this XElement each, string name, bool allowNull = false)
-    {
-      string output;
-      if (!each.TryGetAttribute(name, out output)) GameData.Error(name, each);
-      if (string.IsNullOrWhiteSpace(output) && !allowNull) GameData.Error(name, each);
       return output;
     }
 

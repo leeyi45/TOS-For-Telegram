@@ -86,8 +86,7 @@ namespace QuizBot
 
     private static int GetInvestResult(XElement each)
     {
-      string parse;
-      if (!each.TryGetElement("Invest", out parse)) Error("invest result", each);
+      string parse = each.TryGetStringElement("Invest");
       int output;
       if (!int.TryParse(parse, out output)) Error("invest result", each);
       return output;
@@ -120,7 +119,7 @@ namespace QuizBot
 
         #region Alignment
         Program.ConsoleLog("Reading alignments");
-        if (!document.HasElement("Alignments")) throw new InitException("Alignments have not been properly defined");
+        if (!document.Root.HasElement("Alignments")) throw new InitException("Alignments have not been properly defined");
         foreach (var each in document.Root.Element("Alignments").Elements("Alignment"))
         {
           Team temp = GetTeam(each);
@@ -133,11 +132,11 @@ namespace QuizBot
 
         #region Roles
         Program.ConsoleLog("Reading roles");
-        if (!document.HasElement("Roles")) throw new InitException("Roles have not been properly defined");
+        if (!document.Root.HasElement("Roles")) throw new InitException("Roles have not been properly defined");
         foreach (var each in document.Root.Element("Roles").Elements("Role"))
         {
           var team = GetTeam(each);
-          var align = GetAlignment(each, team);
+          var align = new Alignment(each.TryGetStringElement("Alignment"), team);
           var name = each.TryGetStringElement("Name");
 
           #region Get Suspicious
@@ -158,11 +157,6 @@ namespace QuizBot
           }
           #endregion
 
-          #region Get Instruction Value
-          string instruction = string.Empty;
-          each.TryGetElement("Instruct", out instruction);
-          #endregion
-
           var hasActions = GetHasActionValues(each);
 
           //Messages.Add(name + "Assign", each.GetElementValue("OnAssign"));
@@ -177,7 +171,7 @@ namespace QuizBot
             NightImmune = GetNightImmune(each),
             Suspicious = suspicious,
             InvestResult = GetInvestResult(each),
-            Instruction = instruction
+            Instruction = each.TryGetStringElement("Instruct", true)
           });
           Program.ConsoleLog("\"" + name + "\" registered");
         }
@@ -186,7 +180,7 @@ namespace QuizBot
 
         #region Rolelist
         Program.ConsoleLog("Loading rolelists");
-        if (!document.HasElement("Rolelists")) throw new InitException("Rolelists are not defined properly!");
+        if (!document.Root.HasElement("Rolelists")) throw new InitException("Rolelists are not defined properly!");
         foreach (var rolelist in document.Root.Element("Rolelists").Elements("Rolelist"))
         {
           var listname = rolelist.TryGetStringAttribute("Name");
@@ -249,7 +243,7 @@ namespace QuizBot
 
         #region Invest messages
         Program.ConsoleLog("Loading investigation results");
-        if (!document.HasElement("InvestResults")) throw new InitException("Invest results have not properly been defined");
+        if (!document.Root.HasElement("InvestResults")) throw new InitException("Invest results have not properly been defined");
         foreach (var each in document.Root.Element("InvestResults").Elements("InvestResult"))
         {
           InvestResults.Add(int.Parse(each.TryGetStringAttribute("Key")), each.TryGetStringElement("Value"));
@@ -496,4 +490,78 @@ namespace QuizBot
 
     public static bool GetUserId { get; set; } = false;
 	}
+
+  static class XmlExtensions
+  {
+    public static string GetAttributeValue(this XElement x, XName name)
+    {
+      return x.Attribute(name).Value;
+    }
+
+    public static string GetElementValue(this XElement x, XName name)
+    {
+      return x.Element(name).Value;
+    }
+
+    public static bool TryGetAttribute(this XElement x, XName name, out string output)
+    {
+      try
+      {
+        output = x.Attribute(name).Value;
+        return true;
+      }
+      catch (NullReferenceException)
+      {
+        output = null;
+        return false;
+      }
+    }
+
+    public static bool TryGetElement(this XElement x, XName name, out string output)
+    {
+      try
+      {
+        output = x.Element(name).Value;
+        return true;
+      }
+      catch (NullReferenceException)
+      {
+        output = null;
+        return false;
+      }
+    }
+
+    public static string TryGetStringElement(this XElement each, string name, bool allowNull = false)
+    {
+      string output;
+      if (!each.TryGetElement(name, out output))
+      {
+        if (!allowNull) GameData.Error(name, each);
+        else return string.Empty;
+      }
+      if (string.IsNullOrWhiteSpace(output) && !allowNull) GameData.Error(name, each);
+      return output;
+    }
+
+    public static string TryGetStringAttribute(this XElement each, string name, bool allowNull = false)
+    {
+      string output;
+      if (!each.TryGetAttribute(name, out output))
+      {
+        if (!allowNull) GameData.Error(name, each);
+        else return string.Empty;
+      }
+      if (string.IsNullOrWhiteSpace(output) && !allowNull) GameData.Error(name, each);
+      return output;
+    }
+
+    public static bool HasElement(this XElement element, XName name)
+    {
+      foreach(var each in element.Elements())
+      {
+        if (each.Name == name) return true;
+      }
+      return false;
+    }
+  }
 }
