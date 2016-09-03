@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Windows.Forms;
+using System.Reflection;
+using System.Collections.Generic;
 
 using Telegram.Bot;
 using Telegram.Bot.Args;
@@ -34,9 +36,20 @@ namespace QuizBot
 		  GameData.InitializeMessages();
       Commands.InitializeCommands();
       Chats.getChats();
+      LoadParsers();
       GameData.BotUsername = Bot.GetMeAsync().Result.Username;
 		  Application.Run(ConsoleForm);
 		}
+
+    static Dictionary<string, Action<Callback>> Parsers;
+
+    static void LoadParsers()
+    {
+      var parsers = new Dictionary<string, Action<Callback>>();
+      parsers.Add("config", new Action<Callback>(Config.Parse));
+      parsers.Add("nightAction", new Action<Callback>(Game.ParseNightAction));
+      parsers.Add("voteAction", new Action<Callback>(Game.ParseVoteChoice));
+    }
 
 		static void OnMessage(object sender, MessageEventArgs messageEventArgs)
 		{
@@ -67,20 +80,20 @@ namespace QuizBot
 		static void OnCallbackQuery(object sender, CallbackQueryEventArgs e)
 		{
       var From = e.CallbackQuery.From;
-      var result = new Callback(e.CallbackQuery.Data);    
-			switch (result.Protocol)
-			{
-				case "config":
-					{
-            Config.Parse(result);
-						break;
-					}
-        case "nightAction":
-          {
-            Game.ParseNightAction(result);
-            break;
-          }
-			}
+      var result = new Callback(e.CallbackQuery.Data);
+      try
+      {
+        Parsers[result.Protocol](result);
+      }
+      catch(NullReferenceException)
+      {
+        ConsoleLog("Callback parsers have not been loaded!");
+      }
+      catch(KeyNotFoundException)
+      {
+        ConsoleLog("Callback received from " + From.Username + " with unknown protocol + \"" +
+          result.Protocol + "\"");
+      }
 		}
 
 		/// <summary>
@@ -157,7 +170,6 @@ namespace QuizBot
       }
       return output;
     }
-
     #endregion
   }
 }
