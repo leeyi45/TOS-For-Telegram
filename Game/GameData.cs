@@ -41,17 +41,19 @@ namespace QuizBot
       throw new InitException("Failed to get " + message, each);
     }
 
-    private static Tuple<bool, bool> GetHasActionValues(XElement each)
+    private static bool[] GetHasActionValues(XElement each)
     {
+      bool[] values = new bool[4];
+      string[] data = { "HasDayAction", "HasNightAction", "AllowSelf", "AllowOthers" };
       string parse;
-      if (!each.TryGetElement("HasDayAction", out parse)) Error("HasDayAction", each);
-      bool dayAction;
-      if (!bool.TryParse(parse, out dayAction)) Error("HasDayAction", each);
-
-      if(!each.TryGetElement("HasNightAction", out parse)) Error("HasNightAction", each);
-      bool nightAction;
-      if(!bool.TryParse(parse, out nightAction)) Error("HasNightAction", each);
-      return new Tuple<bool, bool>(dayAction, nightAction);
+      for (int i = 0; i < 4; i++)
+      {
+        parse = each.TryGetStringElement(data[i], true);
+        bool temp;
+        if (!bool.TryParse(parse, out temp)) temp = true;
+        values[i] = temp;
+      }
+      return values;
     }
 
     private static Team GetTeam(XElement each)
@@ -160,19 +162,21 @@ namespace QuizBot
           var hasActions = GetHasActionValues(each);
 
           //Messages.Add(name + "Assign", each.GetElementValue("OnAssign"));
-          Roles.Add(name, new Role
+          Roles.Add(name.ToLower(), new Role
           {
             Name = name,
             team = team,
             Alignment = align,
-            HasDayAction = hasActions.Item1,
-            HasNightAction = hasActions.Item2,
+            HasDayAction = hasActions[0],
+            HasNightAction = hasActions[1],
             Description = each.TryGetStringElement("Description"),
             NightImmune = GetNightImmune(each),
             Suspicious = suspicious,
             InvestResult = GetInvestResult(each),
-            Instruction = each.TryGetStringElement("Instruct", true)
-          });
+            Instruction = each.TryGetStringElement("Instruct", true),
+            AllowOthers = hasActions[2],
+            AllowSelf = hasActions[3]
+        });
           Program.ConsoleLog("\"" + name + "\" registered");
         }
         Program.ConsoleLog("Finished reading roles");
@@ -193,6 +197,7 @@ namespace QuizBot
 
               if (each.TryGetAttribute("Name", out value))
               { //Normal role definition
+                value = value.ToLower();
                 try { To_Add = Roles[value]; }
                 catch (KeyNotFoundException)
                 {
@@ -385,7 +390,7 @@ namespace QuizBot
       }
     }
 
-    public static void ArrangeXML()
+    private static void ArrangeXML()
     {
       var doc = XDocument.Load(messageFile);
       var elements = new XElement[Messages.Count];
