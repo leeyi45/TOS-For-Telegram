@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
 using Telegram.Bot.Types;
@@ -64,7 +65,7 @@ namespace QuizBot
           return;
         }
 
-        if (attribute.GroupAdminOnly && UpdateHelper.IsGroupAdmin(msg.From.Id, msg.Chat.Id))
+        if (attribute.GroupAdminOnly && !UpdateHelper.IsGroupAdmin(msg.From.Id, msg.Chat.Id))
         { //If command is admin only and user is not admin
           Program.BotMessage(msg.Chat.Id, "NotAdminError", msg.From.FirstName);
           return;
@@ -76,7 +77,7 @@ namespace QuizBot
           return;
         }
 
-        if(attribute.GameStartOnly && GameData.GamePhase == GamePhase.Inactive)
+        if(attribute.GameStartOnly && !GameData.GameStarted)
         { //Game has not been started
           Program.BotMessage(msg.Chat.Id, "NoGameJoin");
           return;
@@ -140,7 +141,10 @@ namespace QuizBot
       }
       GameData.GamePhase = GamePhase.Assigning;
       Program.BotMessage("BeginGame");
-      StartRolesAssign();
+      //Run the game on another thread
+      //Keep the main one open for commands
+      GameStart = new Thread(new ThreadStart(StartRolesAssign));
+      GameStart.Start();
     }
 
     [Command(Trigger = "players", GameStartOnly = true)]
@@ -193,7 +197,6 @@ namespace QuizBot
     private static void StartGame(Message msg, string[] args)
     {
       if (GameData.GamePhase == GamePhase.Joining) Program.BotMessage("RunningGameStart");
-      // else 
       else
       {
         GameData.CurrentGroup = msg.Chat.Id;
@@ -207,30 +210,43 @@ namespace QuizBot
     [Command(Trigger = "roles")]
     private static void Roles(Message msg, string[] args)
     {
-      StringBuilder output = new StringBuilder("*" + Settings.CurrentRoleList + "*" + "\n\n");
-      foreach (var each in Settings.CurrentRoles)
+      StringBuilder output;
+      switch(args.Length)
       {
-        output.Append(each.Key.Name + ", Count: " + each.Value.ToString() + "\n");
-      }
+        case 1:
+          {
+            output = new StringBuilder("*" + Settings.CurrentRoleList + "*" + "\n\n");
+            foreach (var each in Settings.CurrentRoles)
+            {
+              output.AppendLine(each.Key.Name + ", Count: " + each.Value.ToString());
+            }
+            break;
+          }
+        case 2:
+          {
+            try
+            {
+              var role = GameData.Roles[args[1].ToLower()];
+              output = new StringBuilder("*Role Data:*\n\n");
+              foreach(var field in typeof(Role).GetProperties(BindingFlags.Instance | BindingFlags.Public))
+              {
+                output.AppendLine(field.Name + ": " + field.GetValue(role).ToString());
+              }
+            }
+            catch(KeyNotFoundException)
+            {
+              output = new StringBuilder("No such role \"" + args[1] + "\" found!");
+            }
+            break;
+          }
+        default:
+          {
+            output = new StringBuilder("Only one or two arguments are accepted");
+            break;
+          }
+      } 
+
       Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Markdown);
-
-      /*
-			else if (args.Length == 2) // /role + rolename
-			{
-				string r = "";
-				try
-				{
-					r = args[1][0].ToString().ToUpper() + args[1].Substring(1, args[1].Length);
-
-					Program.Bot.SendTextMessageAsync(msg.Chat.Id, "*" + GameData.Roles[r].Name + "*\n" + GameData.Roles[r].description,
-						parseMode: ParseMode.Markdown);
-				}
-				catch (KeyNotFoundException)
-				{
-					Program.BotMessage(msg.Chat.Id, "RoleNotFound", r);
-				}
-				catch { }
-			}*/
     }
 
     [Command(Trigger = "listroles")]
@@ -260,11 +276,28 @@ namespace QuizBot
     {
       Program.Bot.SendTextMessageAsync(msg.Chat.Id, "The chat ID is: " + msg.Chat.Id.ToString());
     }
+    
+    [Command(Trigger = "getcommands")]
+    private static void GetCommands(Message msg, string[] args)
+    {
+      var output = new StringBuilder("*Current Commands:*\n");
+      try
+      {
+        foreach (var each in AllCommands)
+        {
+          output.AppendLine(each.Key);
+        }
+      }
+      catch (NullReferenceException)
+      {
+        output = new StringBuilder("Commands have not been loaded!");
+      }
+      Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Markdown);
+    }
 
     [Command(Trigger = "testassign", DevOnly = true)]
     private static void TestAssign(Message msg, string[] args)
     {
-
       var otherroles = new Dictionary<int, Player>();
       var doc = XDocument.Load(WerewolfFile);
       foreach(var each in doc.Root.Elements("member"))
@@ -288,34 +321,34 @@ namespace QuizBot
       #region Assign the roles
       foreach (var role in Settings.CurrentRoles)
       {
-        Role assignThis = new Role();
         int count = i + role.Value;
         for (; i < count; i++)
         {
+          Role assignThis = null;
           var player = otherroles[randoms[i]];
-          KeyValuePair<string, Role>[] assignThese;
-          if (role.Key is Role)
+          try
           {
-            assignThis = role.Key as Role;
-          }
-          else if (role.Key is Alignment)
-          {
-            if ((role.Key as Alignment).Name == "Any")
-            {
-              assignThis = GameData.Roles.ToArray()[random.Next(0, GameData.Roles.Count)].Value;
-            }
+            if (role.Key is Role) assignThis = role.Key as Role;
             else
             {
-              assignThese = GameData.Roles.Where(x => x.Value.Alignment == (role.Key as Alignment))
-                .ToArray();
-              assignThis = assignThese[random.Next(0, assignThese.Length)].Value;
+              var assignThese = new Role[] { };
+              if (role.Key is Alignment)
+              {
+                if ((role.Key as Alignment).Name == "Any") assignThese = GameData.Roles.Values.ToArray();
+                else assignThese = GameData.Roles.Values.Where(x => x.Alignment == (role.Key as Alignment))
+                    .ToArray();
+              }
+              else if (role.Key is TeamWrapper)
+              {
+                assignThese = GameData.Roles.Values.Where(x => x.team == (role.Key as TeamWrapper).team)
+                  .ToArray();
+              }
+              assignThis = assignThese[random.Next(0, assignThese.Length)];
             }
           }
-          else if (role.Key is TeamWrapper)
+          catch(IndexOutOfRangeException)
           {
-            assignThese = GameData.Roles.Where(x => x.Value.team == (role.Key as TeamWrapper).team)
-              .ToArray();
-            assignThis = assignThese[random.Next(0, assignThese.Length)].Value;
+            throw new AssignException("There is no role defined for " + role.Key.Name);
           }
           player.role = assignThis;
           hasroles.Add(hasroles.Count, player);
@@ -332,7 +365,7 @@ namespace QuizBot
       {
         foreach (var each in noroles)
         {
-          each.Value.role = GameData.Roles["Villager"];
+          each.Value.role = GameData.Roles["villager"];
           hasroles.Add(hasroles.Count, each.Value);
         }
       }
@@ -351,7 +384,7 @@ namespace QuizBot
     [Command(Trigger = "testmode", DevOnly = true)]
     private static void EngageTestMode(Message msg, string[] args)
     { //Switch the game into a test mode
-
+      TestMode = !TestMode;
     }
 
     [Command(Trigger = "getuserid", InPrivateOnly = true, DevOnly = true)]
@@ -386,41 +419,33 @@ namespace QuizBot
       #region Assign the roles
       foreach(var role in Settings.CurrentRoles)
       {
-        Role assignThis = new Role();
+        Role assignThis = null;
         for (; i < role.Value; i++)
         {
           var player = GameData.Joined[randoms[i]];
-          KeyValuePair<string, Role>[] assignThese;
-          if (role.Key is Role)
+          try
           {
-            assignThis = role.Key as Role;
-          }
-          else if (role.Key is Alignment)
-          {
-            if ((role.Key as Alignment).Name == "Any")
-            {
-              assignThis = GameData.Roles.ToArray()[random.Next(0, GameData.Roles.Count)].Value;
-            }
+            if (role.Key is Role) assignThis = role.Key as Role;
             else
             {
-              assignThese = GameData.Roles.Where(x => x.Value.Alignment == (role.Key as Alignment))
-                .ToArray();
-              if(assignThese.Length == 0)
-              { //Noroles meet that criteria
-
+              var assignThese = new Role[] { };
+              if (role.Key is Alignment)
+              {
+                if ((role.Key as Alignment).Name == "Any") assignThese = GameData.Roles.Values.ToArray();
+                else assignThese = GameData.Roles.Values.Where(x => x.Alignment == (role.Key as Alignment))
+                    .ToArray();
               }
-              assignThis = assignThese[random.Next(0, assignThese.Length)].Value;
+              else if (role.Key is TeamWrapper)
+              {
+                assignThese = GameData.Roles.Values.Where(x => x.team == (role.Key as TeamWrapper).team)
+                  .ToArray();
+              }
+              assignThis = assignThese[random.Next(0, assignThese.Length)];
             }
           }
-          else if (role.Key is TeamWrapper)
+          catch (IndexOutOfRangeException)
           {
-            assignThese = GameData.Roles.Where(x => x.Value.team == (role.Key as TeamWrapper).team)
-              .ToArray();
-            if (assignThese.Length == 0)
-            { //Noroles meet that criteria
-
-            }
-            assignThis = assignThese[random.Next(0, assignThese.Length)].Value;
+            throw new AssignException("There is no role defined for " + role.Key.Name);
           }
           player.role = assignThis;
           hasroles.Add(hasroles.Count, player);
@@ -437,7 +462,7 @@ namespace QuizBot
       {
         foreach(var each in noroles)
         {
-          each.Value.role = GameData.Roles["Villager"];
+          each.Value.role = GameData.Roles["villager"];
           hasroles.Add(hasroles.Count, each.Value);
         }
       }
@@ -449,9 +474,14 @@ namespace QuizBot
       }
       GameData.GamePhase = GamePhase.Running;
       Program.BotMessage("RolesAssigned");
-      Game.DoNightCycle();
+      Game.RunGame();
     }
     #endregion
+
+    private static void TestFunction()
+    {
+      Program.PrintWait("Waiting");
+    }
 
     public static void EndGame()
 		{
@@ -486,5 +516,13 @@ namespace QuizBot
       doc.Save(WerewolfFile);
       return "User " + forward.Username + " has been registered!";
     }
+
+    private class AssignException : Exception
+    {
+      public AssignException(string message) 
+        : base("Error occurred while assigning roles:" + message) { }
+    }
+
+    private static Thread GameStart;
 	}
 }
