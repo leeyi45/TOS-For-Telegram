@@ -152,7 +152,7 @@ namespace QuizBot
     {
       if (Program.Bot.IsReceiving) return;
       if(yes) Log("Starting...");
-      Thread.Sleep(600);
+      Thread.Sleep(200);
       Program.Bot.StartReceiving();
       if(yes) LogLine("Bot started receving messages", false);
       StatusLabel.Text = "Running";
@@ -164,7 +164,7 @@ namespace QuizBot
     {
       if (!Program.Bot.IsReceiving) return;
       if(yes) Log("Stopping... ");
-      Thread.Sleep(600);
+      Thread.Sleep(200);
       Program.Bot.StopReceiving();
       if(yes) LogLine("Bot stopped receving messages", false);
       StatusLabel.Text = "Stopped";
