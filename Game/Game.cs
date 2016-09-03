@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -20,36 +20,76 @@ namespace QuizBot
       return GameData.Alive.Values.Where(x => x.role == condition).ToArray();
     }
 
-    public static void ProcessHeals()
+    public static void RunGame()
     {
-      foreach(var player in ReturnPlayers(GameData.Roles["Doctor"]))
+      Stopwatch = new System.Diagnostics.Stopwatch();
+      PerformNightCycle = new Thread(new ThreadStart(DoNightCycle));
+      UpdateNightCycle = new Thread(new ThreadStart(UpdateRolesAfterNight));
+      while (true)
+      {
+        #region Night Time
+        DoNightCycle();
+        Stopwatch.Start();
+        while (true)
+        {
+          if (Stopwatch.ElapsedMilliseconds == Settings.NightTime * 1000)
+          {
+            Stopwatch.Stop();
+            UpdateRolesAfterNight();
+            break;
+          }
+        }
+        #endregion
+        AnnounceDeaths();
+        #region Voting time
+        Stopwatch.Start();
+        while (true)
+        {
+          if(Stopwatch.ElapsedMilliseconds == Settings.LynchTime * 1000)
+          {
+            Stopwatch.Stop();
+            break;
+          }
+        }
+        #endregion
+        CheckWinConditions();
+      }
+    }
+
+    private static Thread PerformNightCycle;
+
+    private static Thread UpdateNightCycle;
+
+    private static void ProcessHeals()
+    {
+      foreach(var player in ReturnPlayers(GameData.Roles["doctor"]))
       {
         GameData.GetPlayer(player.ActionTarget).Healed = true;
       }
     }
 
-    public static void ProcessEscort()
+    private static void ProcessEscort()
     {
-      foreach (var player in ReturnPlayers(GameData.Roles["Escort"]))
+      foreach (var player in ReturnPlayers(GameData.Roles["escort"]))
       {
-        if(player.role == GameData.Roles["Doctor"])
+        if(player.role == GameData.Roles["doctor"])
         { //Reset doctor RB
           player.ActionTarget.Healed = false;
         }
-        else if(player.ActionTarget.role == GameData.Roles["Serial Killer"])
+        else if(player.ActionTarget.role == GameData.Roles["serial killer"])
         { //Escort visiting SK kills them
           player.Kill(player.ActionTarget);
         }
         GameData.GetPlayer(player.ActionTarget).IsRoleBlocked = true;
       }
 
-      foreach (var player in ReturnPlayers(GameData.Roles["Consort"]))
+      foreach (var player in ReturnPlayers(GameData.Roles["consort"]))
       {
-        if (player.role == GameData.Roles["Doctor"])
+        if (player.ActionTarget.role == GameData.Roles["doctor"])
         {
-          player.ActionTarget.Healed = false;
+          player.ActionTarget.ActionTarget.Healed = false;
         }
-        else if (player.ActionTarget.role == GameData.Roles["Serial Killer"])
+        else if (player.ActionTarget.role == GameData.Roles["serial killer"])
         { 
           player.Kill(player.ActionTarget);
         }
@@ -57,17 +97,17 @@ namespace QuizBot
       }
     }
 
-    public static void AnnounceRB()
+    private static void AnnounceRB()
     {
-      foreach (var player in GameData.Alive.Where(x => x.Value.role != GameData.Roles["Serial Killer"]))
+      foreach (var player in GameData.Alive.Where(x => x.Value.role != GameData.Roles["serial killer"]))
       { //SK cannot be rbed
         if(player.Value.IsRoleBlocked) Program.BotMessage(player.Value.Id, "Roleblocked");
       }
     }
 
-    public static void ProcessSK()
+    private static void ProcessSK()
     {
-      foreach(var player in ReturnPlayers(GameData.Roles["Serial Killer"]))
+      foreach(var player in ReturnPlayers(GameData.Roles["serial killer"]))
       {
         if(player.role.NightImmune)
         { //Inform the player
@@ -80,9 +120,9 @@ namespace QuizBot
       }
     }
     //Perhaps combine the two functions idk
-    public static void ProcessMafioso()
+    private static void ProcessMafioso()
     {
-      foreach (var player in ReturnPlayers(GameData.Roles["Mafioso"]))
+      foreach (var player in ReturnPlayers(GameData.Roles["mafioso"]))
       {
         if (player.IsRoleBlocked) continue;
         if (player.role.NightImmune)
@@ -96,16 +136,18 @@ namespace QuizBot
       }
     }
 
-    public static void ProcessInvest()
+    private static void ProcessInvest()
     {
-      foreach(var player in ReturnPlayers(GameData.Roles["Investigator"]))
+      foreach(var player in ReturnPlayers(GameData.Roles["investigator"]))
       {
         if (player.IsRoleBlocked) continue;
         Program.BotMessage("InvestResult", GameData.InvestResults[player.ActionTarget.role.InvestResult]);
       }
     }
 
-    public static void UpdateRolesAfterNight()
+    private static System.Diagnostics.Stopwatch Stopwatch;
+
+    private static void UpdateRolesAfterNight()
     {
       //Process the doctors' first
       ProcessHeals();
@@ -123,7 +165,7 @@ namespace QuizBot
       AnnounceRB();
     }
 
-    public static void AnnounceDeaths()
+    private static void AnnounceDeaths()
     { //Announce all the deaths
       StringBuilder output = new StringBuilder("");
       foreach(var dead in GameData.Joined.Values.Where(x => !x.IsAlive))
@@ -139,23 +181,43 @@ namespace QuizBot
       Program.BotMessage(output.ToString());
     }
 
-    public static void DoNightCycle()
+    private static void DoNightCycle()
     {
+      // Step 1: Send the users their options
       foreach(var player in GameData.Joined.Values.Where(x => x.role.HasNightAction))
       {
         Program.BotMessage(player.Id, "Instruct", player.role.Instruction);
-        Program.Bot.SendTextMessageAsync(player.Id, "", replyMarkup: GetMarkup(player));
+        Program.Bot.SendTextMessageAsync(player.Id, "", replyMarkup: 
+          GetMarkup(player, "NightAction", player.role.AllowSelf, player.role.AllowOthers));
       }
     }
 
-    public static InlineKeyboardMarkup GetMarkup(Player self, bool allowSelf = true, string protocol = "nightAction")
+    private static void CheckWinConditions()
+    {
+      switch(GameData.AliveCount)
+      {
+        case 1:
+          {
+            break;
+          }
+      }
+    }
+
+    public static InlineKeyboardMarkup GetMarkup(Player self, string protocol, bool allowSelf = true, bool allowOthers = true)
     {
       var markup = new InlineKeyboardButton[GameData.AliveCount][];
       int i = 0;
-      foreach(var player in GameData.Alive.Values)
+      if (!allowOthers)
       {
-        if (!allowSelf && player == self) continue;
-        markup[i] = new[] { new InlineKeyboardButton(player.Name, new Callback(self, protocol, player.Id.ToString())) };
+        markup[0] = new[] { new InlineKeyboardButton(self.Name, new Callback(self, protocol, self.Id.ToString())) };
+      }
+      else
+      {
+        foreach (var player in GameData.Alive.Values)
+        {
+          if (!allowSelf && player == self) continue;
+          markup[i] = new[] { new InlineKeyboardButton(player.Name, new Callback(self, protocol, player.Id.ToString())) };
+        }
       }
       return new InlineKeyboardMarkup(markup);
     }
@@ -164,6 +226,11 @@ namespace QuizBot
     {
       data.From.ActionTarget = GameData.Alive.Values.Where(x => x.Id == int.Parse(data.Data)).ToArray()[0];
       Program.BotMessage(data.From.Id, "ChosenTarget", data.From.ActionTarget.Name);
+    }
+
+    public static void ParseVoteChoice(Callback data)
+    {
+
     }
   }
 }
