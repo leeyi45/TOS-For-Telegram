@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace QuizBot
 {
@@ -109,6 +110,11 @@ namespace QuizBot
       IsAlive = false;
       //Tell the user they have been killed!
       Program.BotMessage(Id, wasKilledBy.role.Name + " Death");
+    }
+
+    public async void SendMessage(string message, IReplyMarkup markup = null)
+    {
+      await Program.Bot.SendTextMessageAsync(Id, message, replyMarkup: markup);
     }
     #endregion
 

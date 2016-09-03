@@ -114,34 +114,51 @@ namespace QuizBot
     public Role() { }
 
     #region Properties
+    /// <summary>
+    /// Brief description of the role
+    /// </summary>
     public string Description { get; set; }
 
+    /// <summary>
+    /// The instruction that users who have this role are given
+    /// </summary>
     public string Instruction { get; set; }
 
+    /// <summary>
+    /// The alignment of the role
+    /// </summary>
     public Alignment Alignment { get; set; }
 
+    /// <summary>
+    /// Boolean value indicating if it has a night action
+    /// </summary>
     public bool HasNightAction { get; set; }
 
+    /// <summary>
+    /// Boolean value indicating if it has a day action
+    /// </summary>
     public bool HasDayAction { get; set; }
 
+    /// <summary>
+    /// Boolean value indicating if the role is night immune
+    /// </summary>
     public bool NightImmune { get; set;}
 
+    /// <summary>
+    /// Integer value indicating which investigator result to display
+    /// </summary>
     public int InvestResult { get; set; }
 
+    /// <summary>
+    /// Boolean value indicating if it is suspicious
+    /// </summary>
     public bool Suspicious { get; set; }
+
+    // The following two fields are for sending the callback data
+    public bool AllowOthers { get; set; }
+
+    public bool AllowSelf { get; set; }
     #endregion
-
-    public virtual void DoDayAction()
-    {
-      if (!HasDayAction) return;
-      //Game.DayRoleActions[Name]();
-    }
-
-    public virtual void DoNightAction()
-    {
-      if (!HasNightAction) return;
-      //Game.NightRoleActions[Name]();
-    }
 
     #region Operators
     public static bool operator ==(Role rhs, Role lhs)

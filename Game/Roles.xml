@@ -66,6 +66,8 @@
       <OnAssign>You may choose a person each night to heal and save them</OnAssign>
       <Invest>3</Invest>
       <Instruct>heal tonight</Instruct>
+      <AllowOthers>True</AllowOthers>
+      <AllowSelf>True</AllowSelf>
     </Role>
     
     <Role>
@@ -203,7 +205,7 @@
   <!-- Please ensure the stuff used below have been defined above -->
 	<Rolelists>
 		<Rolelist Name="Default">
-      <Role Name = "Sheriff"/>
+      <Role Name = "Sheriff" Count="2"/>
       <Role Name = "Doctor"/>
       <Role Name = "Investigator"/>
 			<Role Name = "Mafioso"/>
@@ -211,7 +213,7 @@
 			<Role Name ="Serial Killer"/>
       <Role Alignment="Town Support"/>
       <Role Name = "Jester"/>
-      <Role Team="Town"/>
+      <Role Team="Town" Count="2"/>
 		</Rolelist>
     
     <Rolelist Name="All Any">
