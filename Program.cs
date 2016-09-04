@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Threading;
 
 using Telegram.Bot;
 using Telegram.Bot.Args;
@@ -21,34 +22,36 @@ namespace QuizBot
 	{
 		internal static readonly TelegramBotClient Bot = new TelegramBotClient(Chats.BotToken);
 
-		public static LogForm ConsoleForm;
+    //public static LogForm ConsoleForm;
+    public static Startup startup;
 
 		[STAThread]
 		static void Main(string[] notused)
 		{
-		    //Begin Setting the Bot Event Handlers
-		  Bot.OnMessage += OnMessage;
-		  Bot.OnMessageEdited += OnMessage;
-		  Bot.OnCallbackQuery += OnCallbackQuery;
+      //Begin Setting the Bot Event Handlers
 		  GameData.StartTime = DateTime.Now.AddHours(-8);
-		  ConsoleForm = new LogForm();
-      GameData.InitializeRoles();
-		  GameData.InitializeMessages();
-      Commands.InitializeCommands();
-      Chats.getChats();
-      LoadParsers();
+      startup = new Startup();
       GameData.BotUsername = Bot.GetMeAsync().Result.Username;
-		  Application.Run(ConsoleForm);
+      Application.Run(startup);
 		}
+
+    public static void LoadBot()
+    {
+
+      Bot.OnMessage += OnMessage;
+      Bot.OnMessageEdited += OnMessage;
+      Bot.OnCallbackQuery += OnCallbackQuery;
+
+    }
 
     static Dictionary<string, Action<Callback>> Parsers;
 
-    static void LoadParsers()
+    public static void LoadParsers()
     {
-      var parsers = new Dictionary<string, Action<Callback>>();
-      parsers.Add("config", new Action<Callback>(Config.Parse));
-      parsers.Add("nightAction", new Action<Callback>(Game.ParseNightAction));
-      parsers.Add("voteAction", new Action<Callback>(Game.ParseVoteChoice));
+      Parsers = new Dictionary<string, Action<Callback>>();
+      Parsers.Add("config", new Action<Callback>(Config.Parse));
+      Parsers.Add("nightAction", new Action<Callback>(Game.ParseNightAction));
+      Parsers.Add("voteAction", new Action<Callback>(Game.ParseVoteChoice));
     }
 
 		static void OnMessage(object sender, MessageEventArgs messageEventArgs)
@@ -131,7 +134,7 @@ namespace QuizBot
 
 		public static void ConsoleLog(string text)
 		{
-      try { ConsoleForm.Invoke(new Action(() => { ConsoleForm.LogLine(text); })); }
+      try { startup.ConsoleForm.Invoke(new Action(() => { startup.ConsoleForm.LogLine(text); })); }
       catch(NullReferenceException) { }
       catch(InvalidOperationException) { }
 		}

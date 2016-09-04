@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Reflection;
 
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+
 using Telegram.Bot.Types.Enums;
 
 //Event Data for the Console
@@ -15,22 +18,19 @@ namespace QuizBot
 {
   partial class LogForm : Form
   {
-    public LogForm()
+    public LogForm(Startup parent)
     {
       InitializeComponent();
       AddCommands();
       test = new System.Windows.Forms.Timer();
       test.Interval = 6000;
       test.Tick += new EventHandler(Tick);
+      Parent = parent;
     }
 
-    private void CloseButton_Click(object sender, EventArgs e)
-    {
-      try { Program.Bot.StopReceiving(); }
-      catch { }
-      Application.Exit();
-    }
+    public new Startup Parent;
 
+    #region Textbox Management
     private void CancelKey2(object sender, KeyPressEventArgs e)
     {
       e.Handled = true;
@@ -131,6 +131,26 @@ namespace QuizBot
           #endregion
       }
     }
+    #endregion
+
+    #region Button Events
+    private void StartButton_Click(object sender, EventArgs e)
+    {
+      StartBot();
+    }
+
+    private void CloseButton_Click(object sender, EventArgs e)
+    {
+      try { Program.Bot.StopReceiving(); }
+      catch { }
+      Application.Exit();
+    }
+
+    private void StopButton_Click(object sender, EventArgs e)
+    {
+      StopBot();
+    }
+    #endregion
 
     public void Log(string text, bool timestamp = true)
     {
@@ -141,11 +161,6 @@ namespace QuizBot
     public void LogLine(string text, bool timestamp = true)
     {
       Log(text + "\n", timestamp);
-    }
-
-    private void StartButton_Click(object sender, EventArgs e)
-    {
-      StartBot();
     }
 
     public void StartBot(bool yes = true)
@@ -172,9 +187,10 @@ namespace QuizBot
       return;
     }
 
-    private void StopButton_Click(object sender, EventArgs e)
+    public new void Show()
     {
-      StopBot();
+      Parent.Hide();
+      base.Show();
     }
 
     private AutoCompleteStringCollection AddSuggestStrings()
@@ -251,9 +267,9 @@ namespace QuizBot
       }
       switch (args[1])
       {
-        case "roles": { GameData.InitializeRoles(); break; }
+        case "roles": { GameData.InitializeRoles(true); break; }
         case "messages": { goto case "msgs"; }
-        case "msgs": { GameData.InitializeMessages(); break; }
+        case "msgs": { GameData.InitializeMessages(true); break; }
         default: { throw new ArgumentException(args[1]); }
       }
       return args[1] + " reloaded";
@@ -271,6 +287,15 @@ namespace QuizBot
     {
       test.Stop();
       return "Timer stopped";
+    }
+
+    [Command(Trigger = "json")]
+    private string JSONTest(string[] args)
+    {
+      var test = JsonConvert.SerializeObject(new Callback(new Player(1, "lol", "hi", "there"), "testProtocol", "some data here"));
+      //Console.WriteLine();
+      var player = (Callback)JsonConvert.DeserializeObject(test);
+      return "JSon test";
     }
 
     private void Tick(object sender, EventArgs e)
@@ -292,5 +317,10 @@ namespace QuizBot
       catch (ArgumentException e) { LogLine("Unknown argument: " + e); }
     }
     #endregion
+
+    private void OnFormClose(object sender, FormClosingEventArgs e)
+    {
+      Application.Exit();
+    }
   }
 }

@@ -138,6 +138,7 @@ namespace QuizBot
 			this.Controls.Add(this.commandBox);
 			this.Controls.Add(this.logBox);
 			this.Name = "LogForm";
+      this.FormClosing += new FormClosingEventHandler(OnFormClose);
 			this.statBox.ResumeLayout(false);
 			this.statBox.PerformLayout();
 			this.ResumeLayout(false);

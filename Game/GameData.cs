@@ -10,20 +10,6 @@ namespace QuizBot
 {
   class GameData
   {
-    private class InitException : Exception
-    {
-      public InitException(string message, XElement each) :
-        base("Error while reading roles.xml at line " + (each as System.Xml.IXmlLineInfo).LineNumber + ": ")
-      { }
-
-      public InitException(string message) : 
-        base("Encountered an error while reading roles: " + message) { }
-
-      public InitException(string file, string message) :
-        base("Encountered an error while reading " + file + " " + message)
-      { }
-    }
-
     #region Intialization
     public const string xmlFile = @"C:\Users\Lee Yi\Desktop\Everything, for the moment\Coding\C# Bot\TOS-For-Telegram\Game\Roles.xml";
 
@@ -94,16 +80,22 @@ namespace QuizBot
       return output;
     }
     #endregion
-    public static void InitializeRoles()
+    public static void Log(string text, bool logtoconsole)
+    {
+      if (logtoconsole) Program.ConsoleLog(text);
+      else Program.startup.SetExtraInfo(text);
+    }
+
+    public static void InitializeRoles() { InitializeRoles(false); }
+
+    public static void InitializeRoles(bool logtoconsole)
     {
       Roles = new Dictionary<string, Role>();
       RoleLists = new Triptionary<string, Wrapper, int>();
       Alignments = new Dictionary<int, Alignment>();
       InvestResults = new Dictionary<int, string>();
 
-      try { Program.ConsoleLog("Loading roles"); }
-      catch { }
-
+      Log("Loading roles", logtoconsole);
       try
       {
         if (!File.Exists(xmlFile)) throw new InitException("Failed to open role file");
@@ -111,35 +103,36 @@ namespace QuizBot
         XDocument document = XDocument.Load(xmlFile);
 
         #region Version check
-        Program.ConsoleLog("Checking roles.xml file version");
+        Log("Checking roles.xml file version", logtoconsole);
         if (document.Root.Attribute("version").Value != "1.0")
         {
           throw new InitException("Incorrect role file version");
         }
-        Program.ConsoleLog("File version verified");
+        Log("File version verified", logtoconsole);
         #endregion
 
         #region Alignment
-        Program.ConsoleLog("Reading alignments");
+        Log("Reading alignments", logtoconsole);
         if (!document.Root.HasElement("Alignments")) throw new InitException("Alignments have not been properly defined");
         foreach (var each in document.Root.Element("Alignments").Elements("Alignment"))
         {
           Team temp = GetTeam(each);
           var align = new Alignment(each.TryGetStringElement("Name"), temp);
           Alignments.Add(Alignments.Count, align);
-          Program.ConsoleLog("Alignment \"" + align.Name + "\" registered");
+          Log("Alignment \"" + align.Name + "\" registered", logtoconsole);
         }
-        Program.ConsoleLog("Alignments loaded");
+       Log("Alignments loaded", logtoconsole);
         #endregion
 
         #region Roles
-        Program.ConsoleLog("Reading roles");
+        Log("Reading roles", logtoconsole);
         if (!document.Root.HasElement("Roles")) throw new InitException("Roles have not been properly defined");
         foreach (var each in document.Root.Element("Roles").Elements("Role"))
         {
           var team = GetTeam(each);
           var align = new Alignment(each.TryGetStringElement("Alignment"), team);
           var name = each.TryGetStringElement("Name");
+          var hasActions = GetHasActionValues(each);
 
           #region Get Suspicious
           bool suspicious;
@@ -159,8 +152,6 @@ namespace QuizBot
           }
           #endregion
 
-          var hasActions = GetHasActionValues(each);
-
           //Messages.Add(name + "Assign", each.GetElementValue("OnAssign"));
           Roles.Add(name.ToLower(), new Role
           {
@@ -176,14 +167,16 @@ namespace QuizBot
             Instruction = each.TryGetStringElement("Instruct", true),
             AllowOthers = hasActions[2],
             AllowSelf = hasActions[3]
-        });
-          Program.ConsoleLog("\"" + name + "\" registered");
+          });
+          Log("\"" + name + "\" registered", logtoconsole);
         }
+        if (Roles.Count == 0) throw new InitException("There are no roles defined!");
+
         Program.ConsoleLog("Finished reading roles");
         #endregion
 
         #region Rolelist
-        Program.ConsoleLog("Loading rolelists");
+        Log("Loading rolelists", logtoconsole);
         if (!document.Root.HasElement("Rolelists")) throw new InitException("Rolelists are not defined properly!");
         foreach (var rolelist in document.Root.Element("Rolelists").Elements("Rolelist"))
         {
@@ -231,9 +224,15 @@ namespace QuizBot
 
               int count = 1;
               //If a count is not defined assume it is one
-              if (each.TryGetAttribute("Count", out value)) int.TryParse(value, out count);
+              try { int.TryParse(each.TryGetStringAttribute("Count", true), out count); }
+              catch(Exception) { }
 
-              RoleLists[listname].Add(To_Add, count);
+              try { RoleLists[listname].Add(To_Add, count); }
+              catch(ArgumentException)
+              {
+                throw new InitException("\"" + To_Add.Name + "\" has been defined more than once in "
+                  + listname);
+              }
             }
             catch (InitException e)
             {
@@ -241,35 +240,36 @@ namespace QuizBot
               return;
             }
           }
-          Program.ConsoleLog("Registered new rolelist: " + listname);
+          Log("Registered new rolelist: " + listname, logtoconsole);
         }
+        if (RoleLists.Count == 0) throw new InitException("There are no rolelists defined!");
         Program.ConsoleLog("Finished loading rolelists");
         #endregion
 
         #region Invest messages
-        Program.ConsoleLog("Loading investigation results");
+        Log("Loading investigation results", logtoconsole);
         if (!document.Root.HasElement("InvestResults")) throw new InitException("Invest results have not properly been defined");
         foreach (var each in document.Root.Element("InvestResults").Elements("InvestResult"))
         {
           InvestResults.Add(int.Parse(each.TryGetStringAttribute("Key")), each.TryGetStringElement("Value"));
         }
-        Program.ConsoleLog("Invest results loaded");
+        Log("Invest results loaded", logtoconsole);
         #endregion
       }
       catch(InitException e)
       {
-        InitialErr("Failed to load roles.xml, see console for details", e);
-        return;
+        if (logtoconsole) InitialErr("Failed to load roles.xml, see console for details", e);
+        else throw e;
       }
 
-      try { Program.ConsoleLog("Roles loaded"); }
-      catch { }
+      Program.ConsoleLog("Roles loaded");
     }
 
-    public static void InitializeMessages()
+    public static void InitializeMessages() { InitializeMessages(false); }
+
+    public static void InitializeMessages(bool logtoconsole)
 		{
-			try { Program.ConsoleLog("Loading messages"); }
-			catch { }
+			Log("Loading messages", logtoconsole);
 			Messages = new Dictionary<string, string>();
 
       try
@@ -279,16 +279,18 @@ namespace QuizBot
 
         foreach (var each in doc.Root.Elements("string"))
         {
-          Messages.Add(each.TryGetStringAttribute("key"), each.TryGetStringElement("value"));
+          string key = each.TryGetStringAttribute("key");
+          Messages.Add(key, each.TryGetStringElement("value"));
+          Log("Message\"" + key + "\" registered", logtoconsole);
         }
+        
       }
       catch(InitException e)
       {
         InitialErr("Failed to load messages.xml, see console for details", e);
       }
 
-  		try { Program.ConsoleLog("Loaded messages"); }
-			catch { }
+  		Log("Loaded messages", logtoconsole);
       //ArrangeXML();
 		}
 		#endregion
@@ -337,10 +339,10 @@ namespace QuizBot
       get { return GameData.Joined.Count(x => x.Value.IsAlive); }
     }
 
-    public static Dictionary<int, Player> Alive
-    {
-      get { return Joined.Where(x => x.Value.IsAlive).ToDictionary(x => x.Key, x => x.Value); }
-    }
+    /// <summary>
+    /// Boolean value indicatiing if the mayor has revealed himself
+    /// </summary>
+    public static bool HasRevealed { get; set;}
     #endregion
 
     #region The Dictionaries of Data
@@ -368,7 +370,11 @@ namespace QuizBot
     /// </summary>
     public static Dictionary<int, string> InvestResults;
 
-		#endregion
+    public static Dictionary<int, Player> Alive
+    {
+      get { return Joined.Where(x => x.Value.IsAlive).ToDictionary(x => x.Key, x => x.Value); }
+    }
+    #endregion
 
     public static Player GetPlayer(Player test, bool dead = false)
     {

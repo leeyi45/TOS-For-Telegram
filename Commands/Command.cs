@@ -31,8 +31,10 @@ namespace QuizBot
         if (attribute == null) continue;
         AllCommands.Add(attribute.Trigger, new Tuple<CommandDelegate, Command>(
           (CommandDelegate)Delegate.CreateDelegate(typeof(CommandDelegate), method), attribute));
+        GameData.Log("Command \"" + attribute.Trigger + "\" registered", false);
       }
-		}
+      GameData.Log("", false);
+    }
 
 		//The default parser
 		public static void Parse(Message msg)
