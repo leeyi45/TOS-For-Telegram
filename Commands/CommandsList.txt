@@ -1,5 +1,6 @@
-﻿start - Start a new game
-join - Join a game
+﻿createlobby - Create a lobby
+closelobby - Close the lobby
+join - Join a lobby
 leave - Leave a game
 forcestart - Admin command, force start the game
 config - Admin command, open up configuration options
@@ -9,5 +10,4 @@ listroles - Lists all the currently registered roles
 players - List all players
 version - Shows information about the current version
 say - Sends a message to the group
-startgame - Begins the joining of players
-begin - Begins the game once the minimum number of players has been reached
+startgame - Begins the game once the minimum number of players has been reached

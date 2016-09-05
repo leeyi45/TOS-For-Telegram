@@ -376,26 +376,6 @@ namespace QuizBot
     }
     #endregion
 
-    public static Player GetPlayer(Player test, bool dead = false)
-    {
-      if (!dead)
-      {
-        if (!Alive.ContainsValue(test)) return null;
-        else
-        {
-          return Alive.Values.Where(x => x == test).ToArray()[0];
-        }
-      }
-      else
-      {
-        if (!Joined.ContainsValue(test)) return null;
-        else
-        {
-          return Joined.Values.Where(x => x == test).ToArray()[0];
-        }
-      }
-    }
-
     private static void ArrangeXML()
     {
       var doc = XDocument.Load(messageFile);
@@ -509,6 +489,8 @@ namespace QuizBot
     }
 
     public static bool GetUserId { get; set; } = false;
+
+    public static bool GettingNicknames { get; set; } = false;
 	}
 
   static class XmlExtensions

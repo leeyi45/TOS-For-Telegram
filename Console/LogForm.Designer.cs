@@ -47,9 +47,11 @@ namespace QuizBot
       // 
       // logBox
       // 
+      this.logBox.BackColor = System.Drawing.Color.White;
       this.logBox.Location = new System.Drawing.Point(181, 76);
       this.logBox.Multiline = true;
       this.logBox.Name = "logBox";
+      this.logBox.ReadOnly = true;
       this.logBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
       this.logBox.Size = new System.Drawing.Size(340, 261);
       this.logBox.TabIndex = 1;
@@ -153,7 +155,9 @@ namespace QuizBot
       this.richTextBox1.ReadOnly = true;
       this.richTextBox1.Size = new System.Drawing.Size(273, 36);
       this.richTextBox1.TabIndex = 8;
+      this.richTextBox1.TabStop = false;
       this.richTextBox1.Text = "Quizbot - Town of Salem for Telegram";
+      this.richTextBox1.Enter += new System.EventHandler(this.OnEnter);
       // 
       // LogForm
       // 

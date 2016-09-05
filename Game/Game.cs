@@ -67,7 +67,7 @@ namespace QuizBot
     {
       foreach(var player in ReturnPlayers(GameData.Roles["doctor"]))
       {
-        GameData.GetPlayer(player.ActionTarget).Healed = true;
+        Player.GetPlayer(player.ActionTarget).Healed = true;
       }
     }
 
@@ -83,7 +83,7 @@ namespace QuizBot
         { //Escort visiting SK kills them
           player.Kill(player.ActionTarget);
         }
-        GameData.GetPlayer(player.ActionTarget).IsRoleBlocked = true;
+        Player.GetPlayer(player.ActionTarget).IsRoleBlocked = true;
       }
 
       foreach (var player in ReturnPlayers(GameData.Roles["consort"]))
@@ -96,7 +96,7 @@ namespace QuizBot
         { 
           player.Kill(player.ActionTarget);
         }
-        GameData.GetPlayer(player.ActionTarget).IsRoleBlocked = true;
+        Player.GetPlayer(player.ActionTarget).IsRoleBlocked = true;
       }
     }
 

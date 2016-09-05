@@ -1,16 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using System.Reflection;
-using System.Collections.Generic;
-using System.Threading;
-
+using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-
-using Newtonsoft.Json;
 
 namespace QuizBot
 {
@@ -21,9 +17,9 @@ namespace QuizBot
     //public static LogForm ConsoleForm;
     public static Startup startup;
 
-		[STAThread]
+    [STAThread]
 		static void Main(string[] notused)
-		{
+    { 
       startup = new Startup();
       GameData.BotUsername = Bot.GetMeAsync().Result.Username;
       GameData.StartTime = DateTime.Now.AddHours(-8);
@@ -64,6 +60,11 @@ namespace QuizBot
       if(message.ForwardFrom != null && Settings.GetUserId)
       {
         Bot.SendTextMessageAsync(message.From.Id, Commands.ProcessUserId(message));
+      }
+
+      if(message.Chat.Type == ChatType.Private && Settings.GettingNicknames)
+      {
+        Commands.ProcessNicknames(message);
       }
 
 			ConsoleLog("Message \"" + msgtext + "\" received from " + message.From.FirstName + " " + message.From.LastName);
@@ -168,7 +169,7 @@ namespace QuizBot
       catch (Exception) { }
     }
 
-    public async static void BotMessage(string message)
+    public async static void BotNormalMessage(string message)
     {
       try
       {

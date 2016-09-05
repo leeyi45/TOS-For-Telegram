@@ -8,6 +8,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using static QuizBot.GameData;
 
 namespace QuizBot
 {
@@ -132,20 +133,23 @@ namespace QuizBot
       }
     }
 
-    [Command(Trigger = "begin", InGroupOnly = true, GameStartOnly = true)]
-    private static void Begin(Message msg, string[] args)
+    [Command(Trigger = "startgame", InGroupOnly = true, GameStartOnly = true)]
+    private static void StartGame(Message msg, string[] args)
     {
-      if(GameData.PlayerCount < Settings.MinPlayers)
+      if(PlayerCount < Settings.MinPlayers)
       {
-        Program.BotMessage("NotEnoughPlayers", GameData.PlayerCount, Settings.MinPlayers);
+        Program.BotMessage("NotEnoughPlayers", PlayerCount, Settings.MinPlayers);
+        return;
+      }
+      if((int)GameData.GamePhase > 1)
+      {
+        Program.BotMessage("GameBegun");
         return;
       }
       GameData.GamePhase = GamePhase.Assigning;
       Program.BotMessage("BeginGame");
-      //Run the game on another thread
-      //Keep the main one open for commands
       GameStart = new Thread(new ThreadStart(StartRolesAssign));
-      GameStart.Start();
+      BeginGame();
     }
 
     [Command(Trigger = "players", GameStartOnly = true)]
@@ -173,15 +177,30 @@ namespace QuizBot
     [Command(Trigger = "leave", InGroupOnly = true, GameStartOnly = true)]
     private static void Leave(Message msg, string[] args)
     {
-      if(GameData.Alive.Values.Contains(msg.From))
+      Dictionary<int, Player> searchFrom;
+      if (GameData.GamePhase == GamePhase.Joining ||
+        GameData.GamePhase == GamePhase.Assigning)
       {
-        Program.BotMessage(msg.Chat.Id, "LeftGame", msg.From.Username);
-        GameData.Alive.Values.Where(x => x == msg.From).ToArray()[0].Kill(null);
+        if (Player.GetPlayer(msg.From.Id) != null)
+        {
+          Program.BotMessage(msg.Chat.Id, "LeftGame", msg.From.Username);
+          Joined.Remove(Joined.Where(x => x.Value == msg.From).ToArray()[0].Key);
+        }
+        else Program.BotMessage(msg.Chat.Id, "NotInGame");
       }
-      else Program.BotMessage(msg.Chat.Id, "NotInGame");
+
+      else if (GameData.GamePhase == GamePhase.Running)
+      {
+        if (Player.GetPlayer(msg.From.Id) != null)
+        {
+          Program.BotMessage(msg.Chat.Id, "LeftGame", msg.From.Username);
+          Alive.Values.Where(x => x == msg.From).ToArray()[0].Kill();
+        }
+        else Program.BotMessage(msg.Chat.Id, "NotInGame");
+      }
     }
 
-    [Command(InGroupOnly = true, Trigger = "ping")]
+    [Command(Trigger = "ping", InGroupOnly = true)]
     private static void Ping(Message msg, string[] args)
     {
       var ts = DateTime.UtcNow - msg.Date;
@@ -194,17 +213,30 @@ namespace QuizBot
         ts.ToString("fff'.'ff") + "ms", parseMode: ParseMode.Markdown);
     }
 
-    [Command(Trigger = "startgame")]
-    private static void StartGame(Message msg, string[] args)
+    //The lobby system is still here for when timed joining is reimplemented
+    [Command(Trigger = "createlobby")]
+    private static void CreateLobby(Message msg, string[] args)
     {
       if (GameData.GamePhase == GamePhase.Joining) Program.BotMessage("RunningGameStart");
       else
       {
-        GameData.CurrentGroup = msg.Chat.Id;
+        CurrentGroup = msg.Chat.Id;
         Program.ConsoleLog("Game started!");
-        Program.BotMessage("GameStart", msg.From.Username);
+        Program.BotMessage("LobbyCreated", msg.From.Username);
         GameData.GamePhase = GamePhase.Joining;
-        GameData.Joined.Add(GameData.PlayerCount, msg.From);
+        Joined.Add(PlayerCount, msg.From);
+      }
+    }
+
+    [Command(Trigger = "closelobby", GameStartOnly = true)]
+    private static void CloseLobby(Message msg, string[] args)
+    {
+      if ((int)GameData.GamePhase > 1) Program.BotMessage("GameBegun");
+      else
+      {
+        GameData.GamePhase = GamePhase.Inactive;
+        Joined.Clear();
+        Program.BotMessage("LobbyClosed", msg.From.Username);
       }
     }
 
@@ -405,9 +437,14 @@ namespace QuizBot
     #endregion
 
     #region Assign Roles
-    public static void StartRolesAssign()
+    private static void BeginGame()
+    {
+      if (Settings.UseNicknames) ObtainNicknames();
+      else GameStart.Start();
+    }
+    private static void StartRolesAssign()
 		{
-			var noroles = GameData.Joined;
+			var noroles = Joined;
 			var hasroles = new Dictionary<int, Player>();
       var random = new Random();
 			int totaltoassign = 0;
@@ -423,7 +460,7 @@ namespace QuizBot
         Role assignThis = null;
         for (; i < role.Value; i++)
         {
-          var player = GameData.Joined[randoms[i]];
+          var player = Joined[randoms[i]];
           try
           {
             if (role.Key is Role) assignThis = role.Key as Role;
@@ -468,7 +505,7 @@ namespace QuizBot
         }
       }
 
-      GameData.Joined = hasroles;
+      Joined = hasroles;
       foreach(var each in hasroles)
       {
         each.Value.OnAssignRole();
@@ -476,6 +513,15 @@ namespace QuizBot
       GameData.GamePhase = GamePhase.Running;
       Program.BotMessage("RolesAssigned");
       Game.RunGame();
+    }
+
+    private static void ObtainNicknames()
+    {
+      foreach(var each in Joined.Values)
+      {
+        Program.BotMessage(each.Id, "GetNickname");
+      }
+      Settings.GettingNicknames = true;
     }
     #endregion
 
@@ -516,6 +562,27 @@ namespace QuizBot
         new XElement("Id", forward.Id)));
       doc.Save(WerewolfFile);
       return "User " + forward.Username + " has been registered!";
+    }
+
+    public static void ProcessNicknames(Message msg)
+    {
+      var player = Player.GetPlayer(msg.From.Id);
+      if (player.Nickname != null)
+      {
+        Program.BotMessage(msg.From.Id, "ChangedNickname", msg.Text);
+      }
+      else
+      {
+        Program.BotMessage(msg.From.Id, "GotNickname", msg.Text);
+      }
+      player.Nickname = msg.Text;
+      var count = Joined.Values.Count(x => x.Nickname == null);
+      if(count == 0)
+      {
+        Settings.GettingNicknames = false;
+        GameStart.Start();
+      }
+      else Program.BotMessage("NicknamesLeft", count);
     }
 
     private static Thread GameStart;

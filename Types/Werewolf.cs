@@ -82,7 +82,7 @@ namespace QuizBot
     public bool InPrivateOnly { get; set; } = false;
 
     /// <summary>
-    /// Marks the command as one to be used after a game has been started
+    /// Marks the command as one to be used after a lobby has been created
     /// </summary>
     public bool GameStartOnly { get; set; } = false;
 

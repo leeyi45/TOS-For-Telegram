@@ -97,5 +97,10 @@ namespace QuizBot
     {
       Application.Exit();
     }
+
+    private void OnEnter(object sender, EventArgs e)
+    {
+      ActiveControl = null;
+    }
   }
 }

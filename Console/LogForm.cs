@@ -53,6 +53,11 @@ namespace QuizBot
       }
     }
 
+    private void OnEnter(object sender, EventArgs e)
+    {
+      ActiveControl = null;
+    }
+
     private void TextBoxPress(object sender, KeyEventArgs e)
     {
       switch (e.KeyCode)
@@ -289,6 +294,17 @@ namespace QuizBot
     private string JSONTest(string[] args)
     {
       return "JSon test";
+    }
+
+    [Command(Trigger = "commands")]
+    private string Commands(string[] args)
+    {
+      var output = new StringBuilder("Currently registered commands:\n\n");
+      foreach(var each in ConsoleCommands)
+      {
+        output.AppendLine(each.Key);
+      }
+      return output.ToString();
     }
 
     private void Tick(object sender, EventArgs e)

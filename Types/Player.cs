@@ -2,7 +2,8 @@
 using Newtonsoft.Json.Linq;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
-using System.Reflection;
+using static QuizBot.GameData;
+using System;
 
 namespace QuizBot
 {
@@ -46,10 +47,20 @@ namespace QuizBot
 
     public string LastName { get; private set; }
 
-    public string Username { get; private set; }
+    public string Username
+    {
+      get
+      {
+        if (string.IsNullOrWhiteSpace(Username)) return Name;
+        else return username;
+      }
+      set { username = value; }  
+    }
 
     public int Id { get; private set; }
     #endregion
+
+    private string username;
 
     public string Name { get { return FirstName + " " + LastName; } }
 
@@ -110,6 +121,11 @@ namespace QuizBot
       Program.BotMessage(Id, wasKilledBy.role.Name + " Death");
     }
 
+    public void Kill()
+    {
+      IsAlive = false;
+    }
+
     public async void SendMessage(string message, IReplyMarkup markup = null)
     {
       await Program.Bot.SendTextMessageAsync(Id, message, replyMarkup: markup);
@@ -121,9 +137,28 @@ namespace QuizBot
       Program.BotMessage(Id, "You are the " + role.Name + "!\n", role.Name + "Assign");
     }
 
-    public static Player GetPlayer(long Id)
+    public static Player GetPlayer(long Id, bool dead = false)
     {
-      return GameData.Joined.Values.Where(x => x.Id == Id).ToArray()[0];
+      System.Collections.Generic.Dictionary<int, Player> searchFrom;
+      if (!dead) searchFrom = Joined;
+      else searchFrom = Alive;
+
+      try { return searchFrom.Values.Where(x => x.Id == Id).ToArray()[0]; }
+      catch(IndexOutOfRangeException) { return null; }
+    }
+
+    public static Player GetPlayer(Player test, bool dead = false)
+    {
+      System.Collections.Generic.Dictionary<int, Player> searchFrom;
+      if (!dead) searchFrom = Alive;
+      else searchFrom = Joined;
+
+      if (!searchFrom.ContainsValue(test)) return null;
+      else
+      {
+        try { return searchFrom.Values.Where(x => x == test).ToArray()[0]; }
+        catch(IndexOutOfRangeException) { return null; }
+      }
     }
 
     #region Operators
@@ -144,7 +179,8 @@ namespace QuizBot
 
     public static bool operator ==(Player rhs, User lhs)
     {
-      return (rhs.Id == lhs.Id);
+      try { return (rhs.Id == lhs.Id); }
+      catch(NullReferenceException) { return false; }
     }
 
     public static bool operator !=(Player rhs, User lhs)

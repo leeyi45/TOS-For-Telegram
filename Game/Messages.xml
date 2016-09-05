@@ -19,11 +19,11 @@
   </string>
     
   <string key="NoGameJoin">
-    <value>There is no game in progress, use /start to start one!</value>
+    <value>There is no game in progress, use /createlobby to create a lobby and start one!</value>
   </string>
   
-  <string key="GameStart">
-    <value>{0} has started a game, /join to join!</value>
+  <string key="LobbyCreated">
+    <value>{0} has started created a lobby, /join to join!</value>
   </string>
   
   <string key="RunningGameStart">
@@ -32,6 +32,14 @@
   
   <string key="BeginGame">
     <value>Game started. Please switch over to message the bot to begin</value>
+  </string>
+  
+  <string key="LobbyClosed">
+    <value>The lobby has been closed by {0}</value>
+  </string>
+
+  <string key="GameBegun">
+    <value>The game has already begun!</value>
   </string>
   
   <string key="NotAdminError">
@@ -79,7 +87,7 @@
   </string>
   
   <string key="NotEnoughPlayers">
-    <value>There needs to be at least {0} players to begin\nThere are currently only {1}</value>
+    <value>There needs to be at least {0} players to begin! There are currently only {1}</value>
   </string>
     
   <string key="RolesAssigned">
@@ -92,6 +100,22 @@
   
   <string key="NotInGame">
     <value>You're not in the game!</value>
+  </string>
+
+  <string key="GetNickname">
+    <value>Please send your desired nickname</value>
+  </string>
+
+  <string key="GotNickname">
+    <value>The nickname you have chosen is {0}!</value>
+  </string>
+
+  <string key="ChangedNickname">
+    <value>You have changed your nickname to {0}!</value>
+  </string>
+
+  <string key="NicknamesLeft">
+    <value>Waiting for {0} player(s) to choose their nickname!</value>
   </string>
   
   <!-- Actual messages during the game -->

@@ -24,7 +24,6 @@ namespace QuizBot
     }
 
     #region Windows Form Designer generated code
-
     /// <summary>
     /// Required method for Designer support - do not modify
     /// the contents of this method with the code editor.
@@ -92,6 +91,7 @@ namespace QuizBot
       this.richTextBox1.Size = new System.Drawing.Size(273, 36);
       this.richTextBox1.TabIndex = 4;
       this.richTextBox1.Text = "Quizbot - Town of Salem for Telegram";
+      this.richTextBox1.Enter += new EventHandler(OnEnter);
       // 
       // Startup
       // 
@@ -107,7 +107,6 @@ namespace QuizBot
       this.Shown += new System.EventHandler(this.DoTheLoading);
       this.ResumeLayout(false);
       this.PerformLayout();
-
     }
 
     #endregion
