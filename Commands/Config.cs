@@ -12,21 +12,20 @@ using Telegram.Bot.Types.InlineQueryResults;
 using Telegram.Bot.Types.InputMessageContents;
 using Telegram.Bot.Types.ReplyMarkups;
 
-
 namespace QuizBot
 {
 	class Config
 	{
-		public static void SendInline(User lol)
+		public static void SendInline(User lol, Chat chat)
 		{
 			InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup(new[] 
 			{
 				//Row 1
-				new[] { new InlineKeyboardButton("Wait Time", new Callback(lol, "config", "wait")), new InlineKeyboardButton("Rolelist", new Callback(lol, "Config", "rolelist"))},
+				new[] { new InlineKeyboardButton("Wait Time", new Callback(lol.Id, "config", "wait")), new InlineKeyboardButton("Rolelist", new Callback(lol.Id, "config", "rolelist"))},
 				//Row 2
-				new[] { new InlineKeyboardButton("Max Users", new Callback(lol, "config", "userCount")), new InlineKeyboardButton("this button does nothing")}
+				new[] { new InlineKeyboardButton("Max Users", new Callback(lol.Id, "config", "userCount")), new InlineKeyboardButton("Nicknames", new Callback(lol.Id, "config", "nicknames"))}
 			});
-			Program.Bot.SendTextMessageAsync(lol.Id, "Configuration Options", replyMarkup: keyboard);
+			Program.Bot.SendTextMessageAsync(lol.Id, "Configuration Options for group " + chat.Title, replyMarkup: keyboard);
       Program.ConsoleLog("Sent config markup to " + lol.Username);
     }
 
@@ -36,13 +35,19 @@ namespace QuizBot
       {
         case "userCount":
           {
-            await Program.Bot.SendTextMessageAsync(data.From.Id, "The current maximum number of players is " + Settings.MaxPlayers + ".");
+            await Program.Bot.SendTextMessageAsync(data.From, "The current maximum number of players is " + Settings.MaxPlayers + ".");
             break;
           }
         case "wait":
           {
-            try { await Program.Bot.SendTextMessageAsync(data.From.Id, "The current wait time is " + Settings.JoinTime + " seconds."); }
+            try { await Program.Bot.SendTextMessageAsync(data.From, "The current wait time is " + Settings.JoinTime + " seconds."); }
             catch { }
+            break;
+          }
+        case "nicknames":
+          {
+            Settings.UseNicknames = !Settings.UseNicknames;
+            await Program.Bot.SendTextMessageAsync(data.From, "Allow Nicknames set to: " + Settings.UseNicknames);
             break;
           }
       }

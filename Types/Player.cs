@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
+using Newtonsoft.Json.Linq;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using System.Reflection;
 
 namespace QuizBot
 {
@@ -86,7 +84,7 @@ namespace QuizBot
     private Player killedby;
 
     /// <summary>
-    /// The player which is responsible the player
+    /// The player which is responsible for killing the player
     /// </summary>
     public Player WasKilledBy
     {
@@ -121,6 +119,11 @@ namespace QuizBot
     public void OnAssignRole()
     {
       Program.BotMessage(Id, "You are the " + role.Name + "!\n", role.Name + "Assign");
+    }
+
+    public static Player GetPlayer(long Id)
+    {
+      return GameData.Joined.Values.Where(x => x.Id == Id).ToArray()[0];
     }
 
     #region Operators

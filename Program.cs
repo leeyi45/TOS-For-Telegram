@@ -10,11 +10,7 @@ using Telegram.Bot.Args;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-using System.Xml.Linq;
-using System.Linq;
-
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace QuizBot
 {
@@ -28,10 +24,10 @@ namespace QuizBot
 		[STAThread]
 		static void Main(string[] notused)
 		{
-      //Begin Setting the Bot Event Handlers
-		  GameData.StartTime = DateTime.Now.AddHours(-8);
       startup = new Startup();
       GameData.BotUsername = Bot.GetMeAsync().Result.Username;
+      GameData.StartTime = DateTime.Now.AddHours(-8);
+      Application.EnableVisualStyles();
       Application.Run(startup);
 		}
 
@@ -83,7 +79,7 @@ namespace QuizBot
 		static void OnCallbackQuery(object sender, CallbackQueryEventArgs e)
 		{
       var From = e.CallbackQuery.From;
-      var result = new Callback(e.CallbackQuery.Data);
+      var result = JsonConvert.DeserializeObject<Callback>(e.CallbackQuery.Data);
       try
       {
         Parsers[result.Protocol](result);
@@ -145,7 +141,7 @@ namespace QuizBot
       ConsoleLog(text);
     }
 
-		public static void PrintWait(string text)
+		public static void PrintWait(string text = "")
 		{
 			Console.WriteLine(text);
 			Console.ReadLine();

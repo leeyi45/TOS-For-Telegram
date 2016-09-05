@@ -13,34 +13,27 @@ namespace QuizBot
 {
   class Callback
   {
-    /*
-    public Callback(string protocol, string data)
+    public Callback(int playerId, string protocol, string data)
     {
       Protocol = protocol;
       Data = data;
-    }*/
-
-    public Callback(Player from, string protocol, string data)
-    {
-      Protocol = protocol;
-      Data = data;
-      From = from;
+      From = playerId;
     }
 
-    public Callback(string JSON)
-    {
-      var data = JObject.Parse(JSON);
-      Data = (string)data["Data"];
-      Protocol = (string)data["Protocol"];
-      From = new Player(int.Parse((string)data["From"]["Id"]), (string)data["From"]["Username"],
-        (string)data["From"]["FirstName"], (string)data["From"]["LastName"]);
-    }
-
+    /// <summary>
+    /// The callback protocol
+    /// </summary>
     public string Protocol { get; set; }
 
+    /// <summary>
+    /// The callback data
+    /// </summary>
     public string Data { get; set; }
 
-    public Player From { get; set; }
+    /// <summary>
+    /// The Id of the user who sent the callback
+    /// </summary>
+    public int From { get; set; }
 
     public static implicit operator string(Callback it)
     {

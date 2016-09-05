@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
+using Newtonsoft.Json.Linq;
 
 namespace QuizBot
 {
@@ -69,6 +71,11 @@ namespace QuizBot
         else return "Any";
       }
       set { name = value; }
+    }
+
+    public override string ToString()
+    {
+      return Name;
     }
 
     #region Operators
