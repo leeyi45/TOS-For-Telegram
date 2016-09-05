@@ -106,6 +106,14 @@
   <string key="InvestResult">
     <value>Your target is {0}</value>
   </string>
+
+  <string key="VotingStart">
+    <value>You have {0} seconds to vote on who to lynch!</value>
+  </string>
+
+  <string key="VoteReceived">
+    <value>{0} has voted to lynch {1}!</value>
+  </string>
   
   <string key="Roleblocked">
     <value>You have been roleblocked!</value>

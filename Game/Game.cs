@@ -23,8 +23,7 @@ namespace QuizBot
     public static void RunGame()
     {
       Stopwatch = new System.Diagnostics.Stopwatch();
-      PerformNightCycle = new Thread(new ThreadStart(DoNightCycle));
-      UpdateNightCycle = new Thread(new ThreadStart(UpdateRolesAfterNight));
+      Messages = new Dictionary<int, Tuple<int, int>>();
       while (true)
       {
         #region Night Time
@@ -42,24 +41,28 @@ namespace QuizBot
         #endregion
         AnnounceDeaths();
         #region Voting time
-        Stopwatch.Start();
+        Stopwatch.Reset();
+        VoteCount = GameData.Alive.ToDictionary(x => x.Value.Id, x => 0);
+        Program.BotMessage("VotingStart", Settings.LynchTime);
         while (true)
         {
           if(Stopwatch.ElapsedMilliseconds == Settings.LynchTime * 1000)
           {
+            foreach(var message in Messages.Values)
+            {
+              Program.Bot.EditMessageTextAsync(message.Item1, message.Item2, "Time's up!");
+            }
             Stopwatch.Stop();
             break;
           }
         }
+
         #endregion
         CheckWinConditions();
       }
     }
 
-    private static Thread PerformNightCycle;
-
-    private static Thread UpdateNightCycle;
-
+    #region Night Stuff
     private static void ProcessHeals()
     {
       foreach(var player in ReturnPlayers(GameData.Roles["doctor"]))
@@ -145,8 +148,6 @@ namespace QuizBot
       }
     }
 
-    private static System.Diagnostics.Stopwatch Stopwatch;
-
     private static void UpdateRolesAfterNight()
     {
       //Process the doctors' first
@@ -184,11 +185,21 @@ namespace QuizBot
     private static void DoNightCycle()
     {
       // Step 1: Send the users their options
-      foreach(var player in GameData.Joined.Values.Where(x => x.role.HasNightAction))
+      foreach(var player in GameData.Alive.Values.Where(x => x.role.HasNightAction))
       {
         Program.BotMessage(player.Id, "Instruct", player.role.Instruction);
         Program.Bot.SendTextMessageAsync(player.Id, "", replyMarkup: 
           GetMarkup(player, "NightAction", player.role.AllowSelf, player.role.AllowOthers));
+      }
+    }
+
+    private static void DoLynchCycle()
+    {
+      foreach(var player in GameData.Alive.Values)
+      {
+        var message = Program.Bot.SendTextMessageAsync(player.Id, "Who would you like to lynch?", replyMarkup:
+          GetMarkup(player, "VoteAction", false)).Result;
+        Messages.Add(Messages.Count, new Tuple<int, int>(player.Id, message.MessageId));
       }
     }
 
@@ -203,34 +214,68 @@ namespace QuizBot
       }
     }
 
-    public static InlineKeyboardMarkup GetMarkup(Player self, string protocol, bool allowSelf = true, bool allowOthers = true)
+    public static void ParseNightAction(Callback data)
+    {
+      var target = GetPlayer(int.Parse(data.Data));
+      var player = GetPlayer(data.From);
+      player.ActionTarget = target;
+      Program.BotMessage(data.From, "ChosenTarget", player.ActionTarget.Name);
+    }
+    #endregion
+
+    private static Player GetPlayer(int Id)
+    {
+      return GameData.Alive.Values.Where(x => x.Id == Id).ToArray()[0];
+    }
+
+    #region Lynch Stuff
+    public static void ParseVoteChoice(Callback data)
+    {
+      Program.BotMessage(data.From, "VoteReceived", Player.GetPlayer(int.Parse(data.Data)).Username);
+      VoteCount[int.Parse(data.Data)]++;
+    }
+
+    private static bool GetLynch(out int output)
+    {
+      int value = VoteCount.Values.Max();
+      var values = VoteCount.Where(x => x.Value == value).ToArray();
+      if (values.Length != 1)
+      {
+        output = 0;
+        return false;
+      }
+      else
+      {
+        output = values[0].Key;
+        return true;
+      }
+    }
+
+    private static Dictionary<int, int> VoteCount;
+
+    private static Dictionary<int, Tuple<int, int>> Messages;
+    #endregion
+
+    private static System.Diagnostics.Stopwatch Stopwatch;
+
+    public static InlineKeyboardMarkup GetMarkup(Player self, string protocol, bool allowSelf = true, 
+      bool allowOthers = true)
     {
       var markup = new InlineKeyboardButton[GameData.AliveCount][];
       int i = 0;
       if (!allowOthers)
       {
-        markup[0] = new[] { new InlineKeyboardButton(self.Name, new Callback(self, protocol, self.Id.ToString())) };
+        markup[0] = new[] { new InlineKeyboardButton(self.Name, new Callback(self.Id, protocol, self.Id.ToString())) };
       }
       else
       {
         foreach (var player in GameData.Alive.Values)
         {
           if (!allowSelf && player == self) continue;
-          markup[i] = new[] { new InlineKeyboardButton(player.Name, new Callback(self, protocol, player.Id.ToString())) };
+          markup[i] = new[] { new InlineKeyboardButton(player.Name, new Callback(self.Id, protocol, player.Id.ToString())) };
         }
       }
       return new InlineKeyboardMarkup(markup);
-    }
-
-    public static void ParseNightAction(Callback data)
-    {
-      data.From.ActionTarget = GameData.Alive.Values.Where(x => x.Id == int.Parse(data.Data)).ToArray()[0];
-      Program.BotMessage(data.From.Id, "ChosenTarget", data.From.ActionTarget.Name);
-    }
-
-    public static void ParseVoteChoice(Callback data)
-    {
-
     }
   }
 }
