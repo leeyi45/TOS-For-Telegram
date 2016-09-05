@@ -25,7 +25,7 @@ namespace QuizBot
 				//Row 2
 				new[] { new InlineKeyboardButton("Max Users", new Callback(lol.Id, "config", "userCount")), new InlineKeyboardButton("Nicknames", new Callback(lol.Id, "config", "nicknames"))}
 			});
-			Program.Bot.SendTextMessageAsync(lol.Id, "Configuration Options for group " + chat.Title, replyMarkup: keyboard);
+			Program.Bot.SendTextMessageAsync(lol.Id, "Configuration Options for group: " + chat.Title, replyMarkup: keyboard);
       Program.ConsoleLog("Sent config markup to " + lol.Username);
     }
 

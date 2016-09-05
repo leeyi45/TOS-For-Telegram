@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using static QuizBot.Program;
 
 namespace QuizBot
 {
@@ -17,8 +18,8 @@ namespace QuizBot
 
 		private static void InitialErr(string message, InitException e)
 		{
-      MessageBox.Show(message);
-      Program.ConsoleLog(e.Message);
+      MessageBox.Show(message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+      ConsoleLog(e.Message);
     }
 
     #region Role creation functions
@@ -82,8 +83,8 @@ namespace QuizBot
     #endregion
     public static void Log(string text, bool logtoconsole)
     {
-      if (logtoconsole) Program.ConsoleLog(text);
-      else Program.startup.SetExtraInfo(text);
+      if (logtoconsole) ConsoleLog(text);
+      else startup.SetExtraInfo(text);
     }
 
     public static void InitializeRoles() { InitializeRoles(false); }
@@ -172,7 +173,7 @@ namespace QuizBot
         }
         if (Roles.Count == 0) throw new InitException("There are no roles defined!");
 
-        Program.ConsoleLog("Finished reading roles");
+        ConsoleLog("Finished reading roles");
         #endregion
 
         #region Rolelist
@@ -236,14 +237,14 @@ namespace QuizBot
             }
             catch (InitException e)
             {
-              Program.MessageLog(e.Message);
+              MessageLog(e.Message);
               return;
             }
           }
           Log("Registered new rolelist: " + listname, logtoconsole);
         }
         if (RoleLists.Count == 0) throw new InitException("There are no rolelists defined!");
-        Program.ConsoleLog("Finished loading rolelists");
+        ConsoleLog("Finished loading rolelists");
         #endregion
 
         #region Invest messages
@@ -261,7 +262,7 @@ namespace QuizBot
         InitialErr("Failed to load roles.xml, see console for details", e);
       }
 
-      Program.ConsoleLog("Roles loaded");
+      ConsoleLog("Roles loaded");
     }
 
     public static void InitializeMessages() { InitializeMessages(false); }

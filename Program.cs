@@ -95,40 +95,8 @@ namespace QuizBot
       }
 		}
 
-		/// <summary>
-		/// Send a message using a message with the specified key
-		/// </summary>
-		/// <param name="key">Message key</param>
-		/// <param name="args">Message arguments</param>
-		public async static void BotMessage(string key, params object[] args)
-		{
-      try { await Bot.SendTextMessageAsync(GameData.CurrentGroup, string.Format(GameData.Messages[key], args),
-        parseMode: ParseMode.Markdown); }
-			catch (Telegram.Bot.Exceptions.ApiRequestException) { }
-		}
-
-		/// <summary>
-		/// Send a message to the specified group using a message with specified key
-		/// </summary>
-		/// <param name="id">Group id</param>
-		/// <param name="key">Message Key</param>
-		/// <param name="args">Message Arguments</param>
-		public async static void BotMessage(long id, string key, params object[] args)
-		{
-      try { await Bot.SendTextMessageAsync(id, string.Format(GameData.Messages[key], args), parseMode: ParseMode.Markdown); }
-      catch(Exception) { }
-		}
-
-    public async static void BotMessage(string message)
-    {
-      try
-      {
-        await Bot.SendTextMessageAsync(GameData.CurrentGroup, message, parseMode: ParseMode.Markdown);
-      }
-      catch (Telegram.Bot.Exceptions.ApiRequestException) { }
-    }
-
-		public static void ConsoleLog(string text)
+    #region Console logging
+    public static void ConsoleLog(string text)
 		{
       try { startup.ConsoleForm.Invoke(new Action(() => { startup.ConsoleForm.LogLine(text); })); }
       catch(NullReferenceException) { }
@@ -146,6 +114,7 @@ namespace QuizBot
 			Console.WriteLine(text);
 			Console.ReadLine();
 		}
+    #endregion
 
     #region Extension Methods
     public static string GetName(this User x)
@@ -168,6 +137,44 @@ namespace QuizBot
         else output[i] = x;
       }
       return output;
+    }
+    #endregion
+
+    #region BotMessage
+    /// <summary>
+    /// Send a message using a message with the specified key
+    /// </summary>
+    /// <param name="key">Message key</param>
+    /// <param name="args">Message arguments</param>
+    public async static void BotMessage(string key, params object[] args)
+    {
+      try
+      {
+        await Bot.SendTextMessageAsync(GameData.CurrentGroup, string.Format(GameData.Messages[key], args),
+    parseMode: ParseMode.Markdown);
+      }
+      catch (Telegram.Bot.Exceptions.ApiRequestException) { }
+    }
+
+    /// <summary>
+    /// Send a message to the specified group using a message with specified key
+    /// </summary>
+    /// <param name="id">Group id</param>
+    /// <param name="key">Message Key</param>
+    /// <param name="args">Message Arguments</param>
+    public async static void BotMessage(long id, string key, params object[] args)
+    {
+      try { await Bot.SendTextMessageAsync(id, string.Format(GameData.Messages[key], args), parseMode: ParseMode.Markdown); }
+      catch (Exception) { }
+    }
+
+    public async static void BotMessage(string message)
+    {
+      try
+      {
+        await Bot.SendTextMessageAsync(GameData.CurrentGroup, message, parseMode: ParseMode.Markdown);
+      }
+      catch (Telegram.Bot.Exceptions.ApiRequestException) { }
     }
     #endregion
   }

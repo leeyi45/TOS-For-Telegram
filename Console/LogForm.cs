@@ -1,22 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Reflection;
 
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
-
 using Telegram.Bot.Types.Enums;
 
-//Event Data for the Console
 namespace QuizBot
 {
-  partial class LogForm : Form
+  public partial class LogForm : Form
   {
     public LogForm(Startup parent)
     {
@@ -26,6 +23,7 @@ namespace QuizBot
       test.Interval = 6000;
       test.Tick += new EventHandler(Tick);
       Parent = parent;
+      pastCommands = new Dictionary<int, string>();
     }
 
     public new Startup Parent;
@@ -166,10 +164,10 @@ namespace QuizBot
     public void StartBot(bool yes = true)
     {
       if (Program.Bot.IsReceiving) return;
-      if(yes) Log("Starting...");
+      if (yes) Log("Starting...");
       Thread.Sleep(200);
       Program.Bot.StartReceiving();
-      if(yes) LogLine("Bot started receving messages", false);
+      if (yes) LogLine("Bot started receving messages", false);
       StatusLabel.Text = "Running";
       StatusLabel.ForeColor = Color.ForestGreen;
       GameData.StartTime = DateTime.Now.AddHours(-8);
@@ -178,10 +176,10 @@ namespace QuizBot
     public void StopBot(bool yes = true)
     {
       if (!Program.Bot.IsReceiving) return;
-      if(yes) Log("Stopping... ");
+      if (yes) Log("Stopping... ");
       Thread.Sleep(200);
       Program.Bot.StopReceiving();
-      if(yes) LogLine("Bot stopped receving messages", false);
+      if (yes) LogLine("Bot stopped receving messages", false);
       StatusLabel.Text = "Stopped";
       StatusLabel.ForeColor = Color.Red;
       return;
@@ -259,7 +257,7 @@ namespace QuizBot
     [Command(Trigger = "reload")]
     private string Reload(string[] args)
     {
-      if(args.Length == 1)
+      if (args.Length == 1)
       {
         return "roles - To reload roles.xml\nmsgs - To reload Messages.xml";
       }

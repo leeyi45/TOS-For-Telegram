@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.ComponentModel;
 using System.Threading;
 using System.Windows.Forms;
-using System.ComponentModel;
 
 namespace QuizBot
 {
-  partial class Startup
+  public partial class Startup : Form
   {
     public Startup()
     {
@@ -48,6 +46,7 @@ namespace QuizBot
       ToLoad.Add("Commands", new Action(Commands.InitializeCommands));
       ToLoad.Add("Chats", new Action(Chats.getChats));
       ToLoad.Add("Parsers", new Action(Program.LoadParsers));
+
     }
 
     private void Loading(object sender, DoWorkEventArgs e)
@@ -88,6 +87,7 @@ namespace QuizBot
 
     private void DoTheLoading(object sender, EventArgs e)
     {
+      Activate();
       worker.RunWorkerAsync();
     }
 

@@ -97,8 +97,8 @@
     <Compile Include="Console\LogForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Console\LogForm_Designer.cs">
-      <SubType>Form</SubType>
+    <Compile Include="Console\LogForm.Designer.cs">
+      <DependentUpon>LogForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Game\Game.cs" />
     <Compile Include="Game\GameData.cs" />
@@ -110,11 +110,11 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="Properties\Settings.cs" />
-    <Compile Include="Startup\Startup_Designer.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="Startup\Startup.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Startup\Startup.Designer.cs">
+      <DependentUpon>Startup.cs</DependentUpon>
     </Compile>
     <Compile Include="Types\Callback.cs" />
     <Compile Include="Types\Enums.cs" />
@@ -132,8 +132,8 @@
     <Content Include="WFPMembers.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Startup\Startup_Designer.resx">
-      <DependentUpon>Startup_Designer.cs</DependentUpon>
+    <EmbeddedResource Include="Console\LogForm.resx">
+      <DependentUpon>LogForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
