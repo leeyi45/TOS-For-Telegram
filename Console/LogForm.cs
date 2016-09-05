@@ -200,8 +200,6 @@ namespace QuizBot
       return col;
     }
 
-    private System.Windows.Forms.Timer test;
-
     #region Stuff for the console
     private Dictionary<string, ConsoleCommand> ConsoleCommands;
 
@@ -292,9 +290,6 @@ namespace QuizBot
     [Command(Trigger = "json")]
     private string JSONTest(string[] args)
     {
-      var test = JsonConvert.SerializeObject(new Callback(new Player(1, "lol", "hi", "there"), "testProtocol", "some data here"));
-      //Console.WriteLine();
-      var player = (Callback)JsonConvert.DeserializeObject(test);
       return "JSon test";
     }
 

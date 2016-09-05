@@ -32,4 +32,13 @@ namespace QuizBot
       base("Encountered an error while reading " + file + " " + message)
     { }
   }
+
+  /// <summary>
+  /// Exception class for errors during role assignment
+  /// </summary>
+  class AssignException : GameException
+  {
+    public AssignException(string message) : 
+      base ("Error occurred while assigning roles:" + message) { }
+  }
 }

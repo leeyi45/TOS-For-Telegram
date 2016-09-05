@@ -80,6 +80,7 @@ namespace QuizBot
 
     private void OnLoadFinish(object sender, RunWorkerCompletedEventArgs e)
     {
+      if (e.Error != null) throw e.Error;
       progressBar1.Value = 100;
       ConsoleForm = new LogForm(this);
       ConsoleForm.Show();

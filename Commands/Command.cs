@@ -39,9 +39,8 @@ namespace QuizBot
 		//The default parser
 		public static void Parse(Message msg)
 		{
-      string cmd = msg.Text;
 			//remove the slash as necessary
-			cmd = cmd.ToLower().Substring(1, cmd.Length - 1);
+			string cmd = msg.Text.ToLower().Substring(1, msg.Text.Length - 1);
 			if (string.IsNullOrWhiteSpace(cmd)) return;
 
 			string[] args = cmd.Split(' ');
@@ -69,7 +68,7 @@ namespace QuizBot
 
         if (attribute.GroupAdminOnly && !UpdateHelper.IsGroupAdmin(msg.From.Id, msg.Chat.Id))
         { //If command is admin only and user is not admin
-          Program.BotMessage(msg.Chat.Id, "NotAdminError", msg.From.FirstName);
+          Program.BotMessage(msg.Chat.Id, "NotAdminError", msg.From.Username);
           return;
         }
 
@@ -100,7 +99,7 @@ namespace QuizBot
     {
       //Send the config menu to the player
       Program.BotMessage(msg.Chat.Id, "SentConfig", msg.From.GetName());
-      QuizBot.Config.SendInline(msg.From);
+      QuizBot.Config.SendInline(msg.From, msg.Chat);
     }
 
     [Command(InGroupOnly = true, Trigger = "join", GameStartOnly = true)]
@@ -307,7 +306,7 @@ namespace QuizBot
         string[] name = each.GetElementValue("name").Split(' ');
         otherroles.Add(otherroles.Count, 
           new Player(int.Parse(each.GetElementValue("Id")), each.GetElementValue("username"),
-          name[0], name[1]));
+          name[0], name[name.Length-1]));
       }
       var noroles = otherroles;
       var hasroles = new Dictionary<int, Player>();
@@ -517,12 +516,6 @@ namespace QuizBot
         new XElement("Id", forward.Id)));
       doc.Save(WerewolfFile);
       return "User " + forward.Username + " has been registered!";
-    }
-
-    private class AssignException : Exception
-    {
-      public AssignException(string message) 
-        : base("Error occurred while assigning roles:" + message) { }
     }
 
     private static Thread GameStart;

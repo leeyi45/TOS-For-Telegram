@@ -106,5 +106,17 @@ namespace QuizBot.Properties {
                 this["Voting_Cycle"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseNicknames {
+            get {
+                return ((bool)(this["UseNicknames"]));
+            }
+            set {
+                this["UseNicknames"] = value;
+            }
+        }
     }
 }

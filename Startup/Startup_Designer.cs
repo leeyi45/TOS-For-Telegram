@@ -12,6 +12,7 @@ namespace QuizBot
     private ProgressBar progressBar1;
     private Label InfoLabel;
     private Label ExtraInfo;
+    private RichTextBox richTextBox1;
     private Button CancelButton;
 
     private void InitializeComponent()
@@ -20,11 +21,12 @@ namespace QuizBot
       this.InfoLabel = new System.Windows.Forms.Label();
       this.CancelButton = new System.Windows.Forms.Button();
       this.ExtraInfo = new System.Windows.Forms.Label();
+      this.richTextBox1 = new System.Windows.Forms.RichTextBox();
       this.SuspendLayout();
       // 
       // progressBar1
       // 
-      this.progressBar1.Location = new System.Drawing.Point(25, 64);
+      this.progressBar1.Location = new System.Drawing.Point(25, 102);
       this.progressBar1.Name = "progressBar1";
       this.progressBar1.Size = new System.Drawing.Size(410, 23);
       this.progressBar1.TabIndex = 0;
@@ -32,15 +34,16 @@ namespace QuizBot
       // InfoLabel
       // 
       this.InfoLabel.AutoSize = true;
-      this.InfoLabel.Location = new System.Drawing.Point(22, 32);
+      this.InfoLabel.Font = new System.Drawing.Font("Amatic", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.InfoLabel.Location = new System.Drawing.Point(22, 61);
       this.InfoLabel.Name = "InfoLabel";
-      this.InfoLabel.Size = new System.Drawing.Size(45, 13);
+      this.InfoLabel.Size = new System.Drawing.Size(40, 16);
       this.InfoLabel.TabIndex = 1;
       this.InfoLabel.Text = "Loading";
       // 
       // CancelButton
       // 
-      this.CancelButton.Location = new System.Drawing.Point(25, 114);
+      this.CancelButton.Location = new System.Drawing.Point(25, 156);
       this.CancelButton.Name = "CancelButton";
       this.CancelButton.Size = new System.Drawing.Size(75, 23);
       this.CancelButton.TabIndex = 2;
@@ -51,15 +54,30 @@ namespace QuizBot
       // ExtraInfo
       // 
       this.ExtraInfo.AutoSize = true;
-      this.ExtraInfo.Location = new System.Drawing.Point(22, 48);
+      this.ExtraInfo.Font = new System.Drawing.Font("Amatic", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.ExtraInfo.Location = new System.Drawing.Point(22, 77);
       this.ExtraInfo.Name = "ExtraInfo";
-      this.ExtraInfo.Size = new System.Drawing.Size(45, 13);
+      this.ExtraInfo.Size = new System.Drawing.Size(40, 16);
       this.ExtraInfo.TabIndex = 3;
       this.ExtraInfo.Text = "Loading";
       // 
+      // richTextBox1
+      // 
+      this.richTextBox1.BackColor = System.Drawing.Color.White;
+      this.richTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
+      this.richTextBox1.Font = new System.Drawing.Font("Amatic", 21.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.richTextBox1.Location = new System.Drawing.Point(99, 24);
+      this.richTextBox1.Name = "richTextBox1";
+      this.richTextBox1.ReadOnly = true;
+      this.richTextBox1.Size = new System.Drawing.Size(273, 36);
+      this.richTextBox1.TabIndex = 4;
+      this.richTextBox1.Text = "Quizbot - Town of Salem for Telegram";
+      // 
       // Startup
       // 
+      this.BackColor = System.Drawing.Color.White;
       this.ClientSize = new System.Drawing.Size(465, 200);
+      this.Controls.Add(this.richTextBox1);
       this.Controls.Add(this.ExtraInfo);
       this.Controls.Add(this.CancelButton);
       this.Controls.Add(this.InfoLabel);

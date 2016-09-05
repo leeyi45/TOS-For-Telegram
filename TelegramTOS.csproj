@@ -132,9 +132,6 @@
     <Content Include="WFPMembers.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Console\LogForm.resx">
-      <DependentUpon>LogForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Startup\Startup_Designer.resx">
       <DependentUpon>Startup_Designer.cs</DependentUpon>
     </EmbeddedResource>

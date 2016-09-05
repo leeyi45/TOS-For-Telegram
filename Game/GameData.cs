@@ -100,7 +100,7 @@ namespace QuizBot
       {
         if (!File.Exists(xmlFile)) throw new InitException("Failed to open role file");
 
-        XDocument document = XDocument.Load(xmlFile);
+        XDocument document = XDocument.Load(xmlFile, LoadOptions.SetLineInfo);
 
         #region Version check
         Log("Checking roles.xml file version", logtoconsole);
@@ -256,10 +256,9 @@ namespace QuizBot
         Log("Invest results loaded", logtoconsole);
         #endregion
       }
-      catch(InitException e)
+      catch(InitException e) when (logtoconsole)
       {
-        if (logtoconsole) InitialErr("Failed to load roles.xml, see console for details", e);
-        else throw e;
+        InitialErr("Failed to load roles.xml, see console for details", e);
       }
 
       Program.ConsoleLog("Roles loaded");
@@ -275,7 +274,7 @@ namespace QuizBot
       try
       {
         if (!File.Exists(messageFile)) throw new InitException("Messages", "Missing message file");
-        XDocument doc = XDocument.Load(messageFile);
+        XDocument doc = XDocument.Load(messageFile, LoadOptions.SetLineInfo);
 
         foreach (var each in doc.Root.Elements("string"))
         {
@@ -285,7 +284,7 @@ namespace QuizBot
         }
         
       }
-      catch(InitException e)
+      catch(InitException e) when (logtoconsole)
       {
         InitialErr("Failed to load messages.xml, see console for details", e);
       }
@@ -498,6 +497,15 @@ namespace QuizBot
 		{
 			get { return GameData.RoleLists[CurrentRoleList]; }
 		}
+
+    /// <summary>
+    /// Boolean value indicating if nicknames should be used
+    /// </summary>
+    public static bool UseNicknames
+    {
+      get { return Properties.Settings.Default.UseNicknames; }
+      set { Properties.Settings.Default.UseNicknames = value; }
+    }
 
     public static bool GetUserId { get; set; } = false;
 	}
