@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Protocols>
+  <protocol key="ConfigOptions">
+    <value>config</value>
+  </protocol>
+
+  <protocol key="SelectedConfigOption">
+    <value>change</value>
+  </protocol>
+
+  <protocol key="ChangingConfigOption">
+    <value>changeval</value>
+  </protocol>
+
+  <protocol key="NightActions">
+    <value>nightAction</value>
+  </protocol>
+
+  <protocol key="Vote">
+    <value>voteAction</value>
+  </protocol>
+</Protocols>

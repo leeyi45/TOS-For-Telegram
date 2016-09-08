@@ -65,6 +65,9 @@ namespace QuizBot
       this.commandBox.Size = new System.Drawing.Size(340, 20);
       this.commandBox.TabIndex = 0;
       this.commandBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.TextBoxPress);
+      this.commandBox.AutoCompleteSource = AutoCompleteSource.CustomSource;
+      this.commandBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+      this.commandBox.AutoCompleteCustomSource = AddSuggestStrings();
       // 
       // label1
       // 

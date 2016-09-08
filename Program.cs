@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using System.Reflection;
 using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Args;
@@ -29,22 +30,12 @@ namespace QuizBot
 
     public static void LoadBot()
     {
-
       Bot.OnMessage += OnMessage;
       Bot.OnMessageEdited += OnMessage;
       Bot.OnCallbackQuery += OnCallbackQuery;
-
     }
 
-    static Dictionary<string, Action<Callback>> Parsers;
-
-    public static void LoadParsers()
-    {
-      Parsers = new Dictionary<string, Action<Callback>>();
-      Parsers.Add("config", new Action<Callback>(Config.Parse));
-      Parsers.Add("nightAction", new Action<Callback>(Game.ParseNightAction));
-      Parsers.Add("voteAction", new Action<Callback>(Game.ParseVoteChoice));
-    }
+    public static Dictionary<string, Action<Callback>> Parsers { get; set; }
 
 		static void OnMessage(object sender, MessageEventArgs messageEventArgs)
 		{
@@ -57,15 +48,24 @@ namespace QuizBot
 
 			if (message == null || message.Type != MessageType.TextMessage) return;
 
-      if(message.ForwardFrom != null && Settings.GetUserId)
+      if(message.ForwardFrom != null && CommandVars.GetUserId)
       {
         Bot.SendTextMessageAsync(message.From.Id, Commands.ProcessUserId(message));
       }
 
-      if(message.Chat.Type == ChatType.Private && Settings.GettingNicknames)
+      if(message.Chat.Type == ChatType.Private && CommandVars.GettingNicknames)
       {
         Commands.ProcessNicknames(message);
       }
+
+      try
+      {
+        if (CommandVars.ReceivingVals[message.From.Id].Item1)
+        {
+          Config.ParseValue(message);
+        }
+      }
+      catch(KeyNotFoundException) { }
 
 			ConsoleLog("Message \"" + msgtext + "\" received from " + message.From.FirstName + " " + message.From.LastName);
 
@@ -176,6 +176,19 @@ namespace QuizBot
         await Bot.SendTextMessageAsync(GameData.CurrentGroup, message, parseMode: ParseMode.Markdown);
       }
       catch (Telegram.Bot.Exceptions.ApiRequestException) { }
+    }
+
+    public async static void EditBotMessage(long id, int messageId, string key, params object[] args)
+    {
+      await Bot.EditMessageTextAsync(id, messageId, string.Format(GameData.Messages[key], args),
+        parseMode: ParseMode.Markdown);
+    }
+
+    public async static void EditBotMessage(long id, int messageId, string key, 
+      Telegram.Bot.Types.ReplyMarkups.IReplyMarkup markup, params object[] args)
+    {
+      await Bot.EditMessageTextAsync(id, messageId, string.Format(GameData.Messages[key], args),
+        parseMode: ParseMode.Markdown, replyMarkup: markup);
     }
     #endregion
   }

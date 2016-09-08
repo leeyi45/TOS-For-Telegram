@@ -7,6 +7,7 @@ using System.Xml.Linq;
 
 namespace QuizBot
 {
+  [Serializable]
   /// <summary>
   /// Base exception class
   /// </summary>
@@ -15,6 +16,7 @@ namespace QuizBot
     public GameException(string message) : base(message) { }
   }
 
+  [Serializable]
   /// <summary>
   /// Exception class for Initialization errors
   /// </summary>
@@ -33,6 +35,7 @@ namespace QuizBot
     { }
   }
 
+  [Serializable]
   /// <summary>
   /// Exception class for errors during role assignment
   /// </summary>

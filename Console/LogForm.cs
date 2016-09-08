@@ -17,13 +17,13 @@ namespace QuizBot
   {
     public LogForm(Startup parent)
     {
-      InitializeComponent();
+      pastCommands = new Dictionary<int, string>();
       AddCommands();
+      InitializeComponent();
       test = new System.Windows.Forms.Timer();
       test.Interval = 6000;
       test.Tick += new EventHandler(Tick);
       Parent = parent;
-      pastCommands = new Dictionary<int, string>();
     }
 
     public new Startup Parent;
@@ -72,13 +72,14 @@ namespace QuizBot
         #region Enter
         case Keys.Enter:
           {
-            DebugMenu(commandBox.Text);
             if (!string.IsNullOrWhiteSpace(commandBox.Text))
             {
-              pastCommands.Add(pastCommands.Count + 1, commandBox.Text);
+              var text = commandBox.Text.Trim();
+              DebugMenu(text);
+              pastCommands.Add(pastCommands.Count + 1, text);
+              commandBox.Clear();
+              selectedCommand = 0;
             }
-            commandBox.Clear();
-            selectedCommand = 0;
             break;
           }
         #endregion
@@ -96,6 +97,7 @@ namespace QuizBot
               selectedCommand += 1;
               commandBox.Text = pastCommands[selectedCommand];
             }
+            commandBox.SelectionStart = commandBox.Text.Length;
             break;
           }
         #endregion
@@ -118,6 +120,7 @@ namespace QuizBot
               selectedCommand -= 1;
               commandBox.Text = pastCommands[selectedCommand];
             }
+            commandBox.SelectionStart = commandBox.Text.Length;
             break;
           }
         #endregion
@@ -125,10 +128,7 @@ namespace QuizBot
         //For some reason control a stopped working so I needed to reimplement this
         case Keys.A:
           {
-            if (e.Control)
-            {
-              commandBox.SelectAll();
-            }
+            if (e.Control) commandBox.SelectAll();
             break;
           }
           #endregion
@@ -199,7 +199,7 @@ namespace QuizBot
     private AutoCompleteStringCollection AddSuggestStrings()
     {
       var col = new AutoCompleteStringCollection();
-      col.AddRange(new string[] { "test" });
+      col.AddRange(ConsoleCommands.Keys.ToArray());
       return col;
     }
 
@@ -264,14 +264,15 @@ namespace QuizBot
     {
       if (args.Length == 1)
       {
-        return "roles - To reload roles.xml\nmsgs - To reload Messages.xml";
+        return "roles - To reload roles.xml\nmsgs - To reload Messages.xml\nprotocols - To reload Protocols.xml";
       }
-      switch (args[1])
+      switch (args[1].ToLower())
       {
         case "roles": { GameData.InitializeRoles(true); break; }
         case "messages": { goto case "msgs"; }
         case "msgs": { GameData.InitializeMessages(true); break; }
-        default: { throw new ArgumentException(args[1]); }
+        case "protocols": { GameData.InitializeProtocols(true); break; }
+        default: { return "Unrecognised argument " + args[1]; }
       }
       return args[1] + " reloaded";
     }
@@ -305,6 +306,37 @@ namespace QuizBot
         output.AppendLine(each.Key);
       }
       return output.ToString();
+    }
+
+    [Command(Trigger = "config")]
+    private string Config(string[] args)
+    {
+      switch(args.Length)
+      {
+        case 1:
+          {
+            return "A second argument is required";
+          }
+        case 2:
+          {
+            try { return Settings.GetPropertyValue(args[1]); }
+            catch(KeyNotFoundException) { return "Unrecognised argument: " + args[1]; }
+          }
+        case 3:
+          {
+            try
+            {
+              Settings.SetPropertyValue[args[1]].SetValue(args[2]);
+              return "Set value of " + args[1] + " to " + args[2];
+            }
+            catch(KeyNotFoundException) { return "Unrecognised argument: " + args[1]; }
+            catch(ArgumentException) { return args[2] + " is an invalid value for " + args[1]; }
+          }
+        default:
+          {
+            return "Only 2 to 3 arguments are accepted";
+          }
+      }
     }
 
     private void Tick(object sender, EventArgs e)

@@ -100,4 +100,19 @@ namespace QuizBot
       }
     }
   }
+
+  public class LoadMethod : Attribute
+  {
+    public LoadMethod(string key)
+    {
+      Key = key;
+    }
+
+    public LoadMethod() { }
+
+    /// <summary>
+    /// Key of the method
+    /// </summary>
+    public string Key { get; set; }
+  }
 }

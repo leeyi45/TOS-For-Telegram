@@ -8,7 +8,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace QuizBot
 {
-	class Game
+	static class Game
 	{
     /// <summary>
     /// Return players with the role specified
@@ -216,17 +216,12 @@ namespace QuizBot
 
     public static void ParseNightAction(Callback data)
     {
-      var target = GetPlayer(int.Parse(data.Data));
-      var player = GetPlayer(data.From);
+      var target = Player.GetPlayer(int.Parse(data.Data));
+      var player = Player.GetPlayer(data.From);
       player.ActionTarget = target;
       Program.BotMessage(data.From, "ChosenTarget", player.ActionTarget.Name);
     }
     #endregion
-
-    private static Player GetPlayer(int Id)
-    {
-      return GameData.Alive.Values.Where(x => x.Id == Id).ToArray()[0];
-    }
 
     #region Lynch Stuff
     public static void ParseVoteChoice(Callback data)

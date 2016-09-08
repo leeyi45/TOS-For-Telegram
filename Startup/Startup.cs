@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
 using System.Windows.Forms;
+using System.Reflection;
+using System.Linq;
 
 namespace QuizBot
 {
@@ -39,14 +41,8 @@ namespace QuizBot
 
     private void LoadLoaders()
     {
-      ToLoad = new Dictionary<string, Action>();
-      ToLoad.Add("Bot", new Action(Program.LoadBot));
-      ToLoad.Add("Roles", new Action(GameData.InitializeRoles));
-      ToLoad.Add("Messages", new Action(GameData.InitializeMessages));
-      ToLoad.Add("Commands", new Action(Commands.InitializeCommands));
-      ToLoad.Add("Chats", new Action(Chats.getChats));
-      ToLoad.Add("Parsers", new Action(Program.LoadParsers));
-
+      ToLoad = typeof(StartupLoaders).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).
+        ToDictionary(x => x.Name, x => (Action)Delegate.CreateDelegate(typeof(Action), x));
     }
 
     private void Loading(object sender, DoWorkEventArgs e)
@@ -102,5 +98,33 @@ namespace QuizBot
     {
       ActiveControl = null;
     }
+  }
+
+  static class StartupLoaders
+  {
+    private static void Bot() { Program.LoadBot(); }
+
+    private static void Protocols() { GameData.InitializeProtocols(false); }
+
+    private static void Parsers()
+    {
+      Program.Parsers = new Dictionary<string, Action<Callback>>();
+      Program.Parsers.Add(GameData.Protocols["ConfigOptions"], new Action<Callback>(QuizBot.Config.Parse));
+      Program.Parsers.Add(GameData.Protocols["SelectedConfigOption"], new Action<Callback>(QuizBot.Config.ChangeParse));
+      Program.Parsers.Add(GameData.Protocols["NightActions"], new Action<Callback>(Game.ParseNightAction));
+      Program.Parsers.Add(GameData.Protocols["Vote"], new Action<Callback>(Game.ParseVoteChoice));
+    }
+
+    private static void Roles() { GameData.InitializeRoles(false); }
+
+    private static void Messages() { GameData.InitializeMessages(false); }
+
+    private static void Commands() { QuizBot.Commands.InitializeCommands(); }
+
+    private static void Config() { QuizBot.Config.Load(); }
+
+    private static void Chats() { QuizBot.Chats.getChats(); }
+
+    private static void Settings() { QuizBot.Settings.LoadProperties(); }
   }
 }

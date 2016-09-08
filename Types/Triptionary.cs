@@ -55,6 +55,11 @@ namespace QuizBot
       return store.GetEnumerator();
     }
 
+    public T[] Keys
+    {
+      get { return store.Keys.ToArray(); }
+    }
+
     private void IniCheck(T x)
     {
       //if(store.)

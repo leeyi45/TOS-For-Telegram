@@ -13,6 +13,7 @@ using static QuizBot.GameData;
 namespace QuizBot
 {
 	//Okay this is my work
+  [LoadMethod]
 	public class Commands
 	{
     #region Command Registration
@@ -23,6 +24,7 @@ namespace QuizBot
 
     private static bool TestMode = true;
 
+    [LoadMethod("Commands")]
 		public static void InitializeCommands()
 		{
       //Just means I don't have to add the functions myself cause I'm lazy af
@@ -100,7 +102,7 @@ namespace QuizBot
     {
       //Send the config menu to the player
       Program.BotMessage(msg.Chat.Id, "SentConfig", msg.From.GetName());
-      QuizBot.Config.SendInline(msg.From, msg.Chat);
+      QuizBot.Config.SendInline(msg.From, msg.Chat.Title);
     }
 
     [Command(InGroupOnly = true, Trigger = "join", GameStartOnly = true)]
@@ -177,7 +179,6 @@ namespace QuizBot
     [Command(Trigger = "leave", InGroupOnly = true, GameStartOnly = true)]
     private static void Leave(Message msg, string[] args)
     {
-      Dictionary<int, Player> searchFrom;
       if (GameData.GamePhase == GamePhase.Joining ||
         GameData.GamePhase == GamePhase.Assigning)
       {
@@ -423,19 +424,19 @@ namespace QuizBot
     [Command(Trigger = "getuserid", InPrivateOnly = true, DevOnly = true)]
     private static void GetUserId(Message msg, string[] args)
     {
-      if (!Settings.GetUserId)
+      if (!CommandVars.GetUserId)
       {
-        Settings.GetUserId = true;
+        CommandVars.GetUserId = true;
         Program.Bot.SendTextMessageAsync(msg.Chat.Id, "Forward the messages please");
       }
       else
       {
-        Settings.GetUserId = false;
+        CommandVars.GetUserId = false;
         Program.Bot.SendTextMessageAsync(msg.Chat.Id, "Done registering IDs");
       }
     }
     #endregion
-
+    
     #region Assign Roles
     private static void BeginGame()
     {
@@ -521,7 +522,7 @@ namespace QuizBot
       {
         Program.BotMessage(each.Id, "GetNickname");
       }
-      Settings.GettingNicknames = true;
+      CommandVars.GettingNicknames = true;
     }
     #endregion
 
@@ -579,7 +580,7 @@ namespace QuizBot
       var count = Joined.Values.Count(x => x.Nickname == null);
       if(count == 0)
       {
-        Settings.GettingNicknames = false;
+        CommandVars.GettingNicknames = false;
         GameStart.Start();
       }
       else Program.BotMessage("NicknamesLeft", count);

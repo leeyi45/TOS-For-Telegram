@@ -1,20 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using static QuizBot.Program;
+using System.Reflection;
 
 namespace QuizBot
 {
-  class GameData
+  [LoadMethod]
+  static class GameData
   {
     #region Intialization
-    public const string xmlFile = @"C:\Users\Lee Yi\Desktop\Everything, for the moment\Coding\C# Bot\TOS-For-Telegram\Game\Roles.xml";
+    public static string xmlFile { get { return xmlLocation + @"Roles.xml"; } }
 
-		public const string messageFile = @"C:\Users\Lee Yi\Desktop\Everything, for the moment\Coding\C# Bot\TOS-For-Telegram\Game\Messages.xml";
+    public static string messageFile {get { return xmlLocation + @"Messages.xml"; } }
+
+    public static string protocolFile { get { return xmlLocation + @"Protocols.xml"; } }
+
+    public const string xmlLocation = @"C:\Users\Lee Yi\Desktop\Everything, for the moment\Coding\C# Bot\TOS-For-Telegram\Xml\";
 
 		private static void InitialErr(string message, InitException e)
 		{
@@ -86,9 +91,7 @@ namespace QuizBot
       if (logtoconsole) ConsoleLog(text);
       else startup.SetExtraInfo(text);
     }
-
-    public static void InitializeRoles() { InitializeRoles(false); }
-
+    
     public static void InitializeRoles(bool logtoconsole)
     {
       Roles = new Dictionary<string, Role>();
@@ -265,8 +268,7 @@ namespace QuizBot
       ConsoleLog("Roles loaded");
     }
 
-    public static void InitializeMessages() { InitializeMessages(false); }
-
+    [LoadMethod("Messages")]
     public static void InitializeMessages(bool logtoconsole)
 		{
 			Log("Loading messages", logtoconsole);
@@ -293,6 +295,31 @@ namespace QuizBot
   		Log("Loaded messages", logtoconsole);
       //ArrangeXML();
 		}
+
+    [LoadMethod("Protocols")]
+    public static void InitializeProtocols(bool logtoconsole)
+    {
+      Protocols = new Dictionary<string, string>();
+
+      try
+      {
+        if (!File.Exists(protocolFile)) throw new InitException("Protocols.xml", "Failed to open file");
+        var doc = XDocument.Load(protocolFile, LoadOptions.SetLineInfo);
+
+        if (!doc.Root.HasElement("protocol")) throw new InitException("Protocols.xml", "Failed to find protocols");
+
+        foreach (var each in doc.Root.Elements("protocol"))
+        {
+          var key = each.TryGetStringAttribute("key");
+          Protocols.Add(key, each.TryGetStringElement("value"));
+          Log("Registered protocol: " + key, logtoconsole);
+        }
+      }
+      catch (InitException e) when (logtoconsole)
+      {
+        InitialErr("Failed to load messages.xml, see console for details", e);
+      }
+    }
 		#endregion
 
 		#region The Properties of Data
@@ -349,26 +376,31 @@ namespace QuizBot
     /// <summary>
     /// Dictionary of all the roles currently defined
     /// </summary>
-    public static Dictionary<string, Role> Roles;
+    public static Dictionary<string, Role> Roles { get; set; }
 
 		/// <summary>
 		/// Contains all the rolelists currently defined
 		/// </summary>
-		public static Triptionary<string, Wrapper, int> RoleLists;
+		public static Triptionary<string, Wrapper, int> RoleLists { get; set; }
 
-		public static Dictionary<int, Alignment> Alignments;
+		public static Dictionary<int, Alignment> Alignments { get; set; }
 
 		public static Dictionary<int, Player> Joined = new Dictionary<int, Player>();
+
+    /// <summary>
+    /// Dictionary containing all the protocols
+    /// </summary>
+    public static Dictionary<string, string> Protocols;
 
 		/// <summary>
 		/// Dictionary containing all the messages
 		/// </summary>
-		public static Dictionary<string, string> Messages;
+		public static Dictionary<string, string> Messages { get; set; }
 
     /// <summary>
     /// Dictionary containing all the investigative results
     /// </summary>
-    public static Dictionary<int, string> InvestResults;
+    public static Dictionary<int, string> InvestResults { get; set; }
 
     public static Dictionary<int, Player> Alive
     {
@@ -393,104 +425,6 @@ namespace QuizBot
       }
       doc.Save(messageFile);
     }
-	}
-
-  /// <summary>
-  /// Class containing the settings system
-  /// </summary>
-	class Settings
-	{
-		/// <summary>
-		/// The maximum number of players allowed per game
-		/// </summary>
-		public static int MaxPlayers
-		{
-			get { return Properties.Settings.Default.Max_Users; }
-			set { Properties.Settings.Default.Max_Users = value; }
-		}
-
-    /// <summary>
-    /// The minimum number of players allowed per game
-    /// </summary>
-    public static int MinPlayers
-    {
-      get { return Properties.Settings.Default.Min_Users; }
-      set { Properties.Settings.Default.Min_Users = value; }
-    }
-
-		/// <summary>
-		/// The amount of time the join phase is allocated, in seconds
-		/// </summary>
-		public static int JoinTime
-		{
-			get { return Properties.Settings.Default.Join_Time; }
-			set { Properties.Settings.Default.Join_Time = value; }
-		}
-
-		/// <summary>
-		/// The amount of time the join phase is allocated, in milliseconds
-		/// </summary>
-		public static int JoinTimeMili
-		{
-			get { return Properties.Settings.Default.Join_Time * 1000; }
-		}
-
-    /// <summary>
-    /// The amount of time the night time phase is allocated, in seconds
-    /// </summary>
-    public static int NightTime
-    {
-      get { return Properties.Settings.Default.Night_Cycle; }
-      set { Properties.Settings.Default.Night_Cycle = value; }
-    }
-
-    /// <summary>
-    /// The amount of time the day time phase is allocated, in seconds
-    /// </summary>
-    public static int DayTime
-    {
-      get { return Properties.Settings.Default.Day_Cycle; }
-      set { Properties.Settings.Default.Day_Cycle = value; }
-    }
-
-    /// <summary>
-    /// The amount of time the lynch phase is allocated, in seconds
-    /// </summary>
-    public static int LynchTime
-    {
-      get { return Properties.Settings.Default.Voting_Cycle; }
-      set { Properties.Settings.Default.Voting_Cycle = value; }
-    }
-
-    /// <summary>
-    /// The currently selected rolelist name
-    /// </summary>
-    public static string CurrentRoleList
-		{
-			get { return Properties.Settings.Default.Rolelist; }
-			set { Properties.Settings.Default.Rolelist = value; }
-		}
-
-		/// <summary>
-		/// The currently selected rolelist
-		/// </summary>
-		public static Dictionary<Wrapper, int> CurrentRoles
-		{
-			get { return GameData.RoleLists[CurrentRoleList]; }
-		}
-
-    /// <summary>
-    /// Boolean value indicating if nicknames should be used
-    /// </summary>
-    public static bool UseNicknames
-    {
-      get { return Properties.Settings.Default.UseNicknames; }
-      set { Properties.Settings.Default.UseNicknames = value; }
-    }
-
-    public static bool GetUserId { get; set; } = false;
-
-    public static bool GettingNicknames { get; set; } = false;
 	}
 
   static class XmlExtensions

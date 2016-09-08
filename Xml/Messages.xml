@@ -118,6 +118,14 @@
     <value>Waiting for {0} player(s) to choose their nickname!</value>
   </string>
   
+  <string key="ValueChanged">
+    <value>Value of {0} has been changed to {1}!</value>
+  </string>
+  
+  <string key="InvalidValue">
+    <value>{0} is an invalid value for {1}!</value>
+  </string>
+  
   <!-- Actual messages during the game -->
   <string key="Instruct">
     <value>Choose one person to {0}</value>

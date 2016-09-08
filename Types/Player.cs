@@ -36,10 +36,6 @@ namespace QuizBot
       this.LastName = LastName;
     }
 
-    /*
-    public Player(Role role, string FirstName, string LastName, string Username,
-      int Id, string Nickname, bool IsAlive, bool IsDoused, bool )*/
-
     public Role role { get; set; }
 
     #region User Fields
