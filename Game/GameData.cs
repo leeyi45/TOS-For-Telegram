@@ -145,13 +145,13 @@ namespace QuizBot
             HasDayAction = truevals[0],
             HasNightAction = truevals[1],
             Description = each.TryGetElementValue("Roles.xml", "Description"),
-            NightImmune = falsevals[0],
+            NightImmune = falsevals[1],
             Suspicious = suspicious,
             InvestResult = GetInvestResult(each),
             Instruction = each.TryGetElementValue<string>("Instruct", ""),
             AllowOthers = truevals[2],
             AllowSelf = truevals[3],
-            Unique = falsevals[1]
+            Unique = falsevals[0]
           }, each, "role: " + name);
           Log("\"" + name + "\" registered", logtoconsole);
         }

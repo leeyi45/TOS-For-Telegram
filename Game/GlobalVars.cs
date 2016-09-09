@@ -17,7 +17,32 @@ namespace QuizBot
 
     public static Dictionary<int, Tuple<bool, string>> ReceivingVals { get; set; }
 
-    public static bool Connected { get; set; } = false;
+    public static bool Connected
+    {
+      get { return connected; }
+      set
+      {
+        if(value)
+        {
+          Program.startup.ConsoleForm.Invoke(new Action(() =>
+          {
+            Program.startup.ConsoleForm.connectLabel.Text = "Connected";
+            Program.startup.ConsoleForm.connectLabel.ForeColor = System.Drawing.Color.ForestGreen;
+          }));
+        }
+        else
+        {
+          Program.startup.ConsoleForm.Invoke(new Action(() =>
+          {
+            Program.startup.ConsoleForm.connectLabel.Text = "Disconnected";
+            Program.startup.ConsoleForm.connectLabel.ForeColor = System.Drawing.Color.Red;
+          }));
+        }
+        connected = value;
+      }
+    }
+
+    private static bool connected = false;
   }
 
   /// <summary>

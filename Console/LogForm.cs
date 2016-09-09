@@ -349,6 +349,54 @@ namespace QuizBot
           }
       }
     }
+    
+    [Command(Trigger = "roles")]
+    private string Roles(string[] args)
+    {
+      StringBuilder output;
+      switch (args.Length)
+      {
+        case 1:
+          {
+            output = new StringBuilder("*" + Settings.CurrentRoleList + "*" + "\n\n");
+            foreach (var each in Settings.CurrentRoles)
+            {
+              output.AppendLine(each.Key.Name + ", Count: " + each.Value.ToString());
+            }
+            break;
+          }
+        case 2:
+          {
+            try
+            {
+              var role = GameData.Roles[args[1].ToLower()];
+              output = new StringBuilder("Role Data:\n\n");
+              foreach (var field in typeof(Role).GetProperties(BindingFlags.Instance | BindingFlags.Public))
+              {
+                output.AppendLine(field.Name + ": " + field.GetValue(role).ToString());
+              }
+            }
+            catch (KeyNotFoundException)
+            {
+              output = new StringBuilder("No such role \"" + args[1] + "\" found!");
+            }
+            break;
+          }
+        default:
+          {
+            output = new StringBuilder("Only one or two arguments are accepted");
+            break;
+          }
+      }
+      return output.ToString();
+    }
+
+    [Command(Trigger = "clear")]
+    private string Clear(string[] args)
+    {
+      logBox.Clear();
+      return "Cleared";
+    }
 
     private void Tick(object sender, EventArgs e)
     {

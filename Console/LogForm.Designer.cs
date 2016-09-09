@@ -42,6 +42,8 @@ namespace QuizBot
       this.StopButton = new System.Windows.Forms.Button();
       this.CloseButton = new System.Windows.Forms.Button();
       this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+      this.label4 = new System.Windows.Forms.Label();
+      this.connectLabel = new System.Windows.Forms.Label();
       this.statBox.SuspendLayout();
       this.SuspendLayout();
       // 
@@ -60,14 +62,13 @@ namespace QuizBot
       // 
       // commandBox
       // 
+      this.commandBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+      this.commandBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
       this.commandBox.Location = new System.Drawing.Point(181, 375);
       this.commandBox.Name = "commandBox";
       this.commandBox.Size = new System.Drawing.Size(340, 20);
       this.commandBox.TabIndex = 0;
       this.commandBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.TextBoxPress);
-      this.commandBox.AutoCompleteSource = AutoCompleteSource.CustomSource;
-      this.commandBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
-      this.commandBox.AutoCompleteCustomSource = AddSuggestStrings();
       // 
       // label1
       // 
@@ -90,6 +91,8 @@ namespace QuizBot
       // 
       // statBox
       // 
+      this.statBox.Controls.Add(this.connectLabel);
+      this.statBox.Controls.Add(this.label4);
       this.statBox.Controls.Add(this.StatusLabel);
       this.statBox.Controls.Add(this.label3);
       this.statBox.Location = new System.Drawing.Point(12, 13);
@@ -162,6 +165,25 @@ namespace QuizBot
       this.richTextBox1.Text = "Quizbot - Town of Salem for Telegram";
       this.richTextBox1.Enter += new System.EventHandler(this.OnEnter);
       // 
+      // label4
+      // 
+      this.label4.AutoSize = true;
+      this.label4.Location = new System.Drawing.Point(7, 38);
+      this.label4.Name = "label4";
+      this.label4.Size = new System.Drawing.Size(64, 13);
+      this.label4.TabIndex = 3;
+      this.label4.Text = "Connection:";
+      // 
+      // connectLabel
+      // 
+      this.connectLabel.AutoSize = true;
+      this.connectLabel.ForeColor = System.Drawing.Color.Red;
+      this.connectLabel.Location = new System.Drawing.Point(77, 38);
+      this.connectLabel.Name = "connectLabel";
+      this.connectLabel.Size = new System.Drawing.Size(73, 13);
+      this.connectLabel.TabIndex = 4;
+      this.connectLabel.Text = "Disconnected";
+      // 
       // LogForm
       // 
       this.BackColor = System.Drawing.Color.White;
@@ -201,5 +223,7 @@ namespace QuizBot
     #endregion
 
     private RichTextBox richTextBox1;
+    public Label connectLabel;
+    private Label label4;
   }
 }
