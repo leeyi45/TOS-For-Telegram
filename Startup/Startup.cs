@@ -56,16 +56,20 @@ namespace QuizBot
         catch (InitException ex)
         {
           switch (MessageBox.Show(ex.Message, "Error",
-            MessageBoxButtons.RetryCancel, MessageBoxIcon.Error))
+            MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error, MessageBoxDefaultButton.Button3))
           {
             case DialogResult.Retry:
               {
                 goto retry;
               }
-            case DialogResult.Cancel:
+            case DialogResult.Abort:
               {
                 Application.Exit();
                 break;
+              }
+            case DialogResult.Ignore:
+              {
+                continue;
               }
           }
         }
