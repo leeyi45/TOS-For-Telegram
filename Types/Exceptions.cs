@@ -22,16 +22,12 @@ namespace QuizBot
   /// </summary>
   class InitException : GameException
   {
-    public InitException(string message, XElement each) :
-      base("Error while reading roles.xml at line " + (each as System.Xml.IXmlLineInfo).LineNumber + ": ")
+    public InitException(string file, string message, XElement each) :
+      base("Error while reading " + file + " at line " + (each as System.Xml.IXmlLineInfo).LineNumber + ": ")
     { }
 
     public InitException(string message) :
       base("Encountered an error while reading roles: " + message)
-    { }
-
-    public InitException(string file, string message) :
-      base("Encountered an error while reading " + file + " " + message)
     { }
   }
 

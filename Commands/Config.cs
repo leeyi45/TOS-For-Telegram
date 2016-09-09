@@ -14,7 +14,6 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace QuizBot
 {
-  [LoadMethod]
 	static class Config
 	{
     private static InlineKeyboardButton GetButton(string text, int Id, string protocol, string data)

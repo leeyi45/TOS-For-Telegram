@@ -178,6 +178,15 @@ namespace QuizBot
       catch (Telegram.Bot.Exceptions.ApiRequestException) { }
     }
 
+    public async static void BotNormalMessage(long Id, string message)
+    {
+      try
+      {
+        await Bot.SendTextMessageAsync(Id, message, parseMode: ParseMode.Markdown);
+      }
+      catch (Telegram.Bot.Exceptions.ApiRequestException) { }
+    }
+
     public async static void EditBotMessage(long id, int messageId, string key, params object[] args)
     {
       await Bot.EditMessageTextAsync(id, messageId, string.Format(GameData.Messages[key], args),

@@ -12,8 +12,6 @@ using static QuizBot.GameData;
 
 namespace QuizBot
 {
-	//Okay this is my work
-  [LoadMethod]
 	public class Commands
 	{
     #region Command Registration
@@ -435,6 +433,36 @@ namespace QuizBot
         Program.Bot.SendTextMessageAsync(msg.Chat.Id, "Done registering IDs");
       }
     }
+
+    [Command(Trigger = "reload", GroupAdminOnly = true, InGroupOnly = true)]
+    private static void Reload(Message msg, string[] args)
+    {
+      if(args.Length < 2)
+      {
+        Program.BotMessage(msg.Chat.Id, "NotEnoughArgs", "2", "reload");
+      }
+      else
+      {
+        var output = "";
+        try
+        {
+          switch (args[1].ToLower())
+          {
+            case "roles": { InitializeRoles(true); break; }
+            case "messages": { goto case "msgs"; }
+            case "msgs": { InitializeMessages(true); break; }
+            case "protocols": { InitializeProtocols(true); break; }
+            default: { throw new ArgumentException(); }
+          }
+          output = args[1] + " reloaded";
+        }
+        catch(ArgumentException)
+        {
+          output = "Unrecognised argument " + args[1];
+        }
+        Program.BotNormalMessage(msg.Chat.Id, output);
+      }
+    }
     #endregion
     
     #region Assign Roles
@@ -467,19 +495,25 @@ namespace QuizBot
             if (role.Key is Role) assignThis = role.Key as Role;
             else
             {
-              var assignThese = new Role[] { };
-              if (role.Key is Alignment)
+              while (true)
               {
-                if ((role.Key as Alignment).Name == "Any") assignThese = GameData.Roles.Values.ToArray();
-                else assignThese = GameData.Roles.Values.Where(x => x.Alignment == (role.Key as Alignment))
+                var assignThese = new Role[] { };
+                if (role.Key is Alignment)
+                {
+                  if ((role.Key as Alignment).Name == "Any") assignThese = GameData.Roles.Values.ToArray();
+                  else assignThese = GameData.Roles.Values.Where(x => x.Alignment == (role.Key as Alignment))
+                      .ToArray();
+                }
+                else if (role.Key is TeamWrapper)
+                {
+                  assignThese = GameData.Roles.Values.Where(x => x.team == (role.Key as TeamWrapper).team)
                     .ToArray();
+                }
+                assignThis = assignThese[random.Next(0, assignThese.Length)];
+                if (!(assignThis.Unique && hasroles.Values.Count(x => x.role == assignThis) >= 1)) break;
+                //If the role is unique and there's already such an assignment try again
+                //If not break
               }
-              else if (role.Key is TeamWrapper)
-              {
-                assignThese = GameData.Roles.Values.Where(x => x.team == (role.Key as TeamWrapper).team)
-                  .ToArray();
-              }
-              assignThis = assignThese[random.Next(0, assignThese.Length)];
             }
           }
           catch (IndexOutOfRangeException)

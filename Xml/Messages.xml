@@ -101,6 +101,10 @@
   <string key="NotInGame">
     <value>You're not in the game!</value>
   </string>
+  
+  <string key="NotEnoughArgs">
+    <value>There needs to be at least {0} arguments for the command {1}</value>
+  </string>
 
   <string key="GetNickname">
     <value>Please send your desired nickname</value>

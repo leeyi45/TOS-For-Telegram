@@ -107,7 +107,7 @@ namespace QuizBot
   /// </summary>
 	public class Role : Wrapper
   {
-    [Obsolete("Use the array constructor instead", false)]
+    [Obsolete("Use an array constructor instead", false)]
     public Role(string _name, Team _team, string d, Alignment a, bool n, bool day)
     {
       Name = _name;
@@ -160,6 +160,11 @@ namespace QuizBot
     /// Boolean value indicating if it is suspicious
     /// </summary>
     public bool Suspicious { get; set; }
+
+    /// <summary>
+    /// Boolean value indicating if the role is unique
+    /// </summary>
+    public bool Unique { get; set; }
 
     // The following two fields are for sending the callback data
     public bool AllowOthers { get; set; }

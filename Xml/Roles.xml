@@ -79,6 +79,7 @@
       <HasNightAction>False</HasNightAction>
       <OnAssign>You may reveal yourself for your vote to count as 3!</OnAssign>
       <Invest>2</Invest>
+      <Unique>True</Unique>
     </Role>
 
     <Role>
@@ -220,9 +221,11 @@
       <Role Alignment="Any" Count="35"/>
     </Rolelist>
 	</Rolelists>
-
-   <!-- Messages might be a little biased -->
-  <InvestResults> <!-- "Your target is " + message below-->
+  
+   <!-- Please note that the keys defined below need to correspond with those defined
+        with the roles above
+        Messages might be a little biased -->
+  <InvestResults> <!-- "Your target " + message below-->
     <InvestResult Key="1"> <!-- Escort and Consort-->
       <Value>is skilled at disrupting others.</Value>
     </InvestResult>
