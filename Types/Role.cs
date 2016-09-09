@@ -43,10 +43,7 @@ namespace QuizBot
     /// <summary>
     /// Initializes an "Any" attribute
     /// </summary>
-    public Alignment()
-    {
-      Name = "Any";
-    }
+    public Alignment() { Name = "Any"; }
 
     public Alignment(string name, Team team)
     {
@@ -89,9 +86,15 @@ namespace QuizBot
       return !(Rhs == lhs);
     }
 
+    public static implicit operator Alignment(string test)
+    {
+      return Parse(test);
+    }
+
     public override bool Equals(object obj)
     {
-      return base.Equals(obj);
+      if (obj is Alignment) return this == (Alignment)obj;
+      else return base.Equals(obj);
     }
 
     public override int GetHashCode()
@@ -185,7 +188,8 @@ namespace QuizBot
 
     public override bool Equals(object obj)
     {
-      return base.Equals(obj);
+      if (obj is Role) return this == (Role)obj;
+      else return base.Equals(obj);
     }
 
     public override int GetHashCode()

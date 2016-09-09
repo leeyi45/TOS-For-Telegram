@@ -23,11 +23,12 @@ namespace QuizBot
   class InitException : GameException
   {
     public InitException(string file, string message, XElement each) :
-      base("Error while reading " + file + " at line " + (each as System.Xml.IXmlLineInfo).LineNumber + ": ")
+      base("Error while reading " + file + " at line " + (each as System.Xml.IXmlLineInfo).LineNumber + 
+        ": " + message)
     { }
 
     public InitException(string message) :
-      base("Encountered an error while reading roles: " + message)
+      base("Encountered an error during initialization: " + message)
     { }
   }
 

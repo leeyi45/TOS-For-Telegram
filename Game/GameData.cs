@@ -9,7 +9,6 @@ using System.Reflection;
 
 namespace QuizBot
 {
-  [LoadMethod]
   static class GameData
   {
     #region Intialization
@@ -33,61 +32,32 @@ namespace QuizBot
       throw new InitException("Roles.xml", "Failed to get " + message, each);
     }
 
-    private static bool[] GetHasActionValues(XElement each)
+    private static bool[] GetBooleanValues(XElement each, bool defaultVal, params string[] data)
     {
-      bool[] values = new bool[5];
-      string[] data = { "HasDayAction", "HasNightAction", "AllowSelf", "AllowOthers", "Unique" };
-      string parse;
-      for (int i = 0; i < values.Length; i++)
-      {
-        parse = each.TryGetStringElement(data[i], true);
-        bool temp;
-        if (!bool.TryParse(parse, out temp))
-        {
-          if (data[i] == "Unique") temp = false;
-          else temp = true;
-        }
-        values[i] = temp;
-      }
-      return values;
+      return (from dat in data
+              select each.TryGetElementValue(dat, defaultVal: defaultVal)).ToArray();
     }
 
     private static Team GetTeam(XElement each)
     {
-      Team team;
-      try { team = (Team)Enum.Parse(typeof(Team), each.TryGetStringElement("Team")); }
+      try { return (Team)Enum.Parse(typeof(Team), each.TryGetElementValue<string>("Team")); }
       catch (ArgumentException)
       {
         throw new InitException("Roles.xml", 
-          "Only \"Town\", \"Mafia\" and \"Neutral\" are acceptable values for \"Team\"", each); }
-      return team;
+          "Only \"Town\", \"Mafia\" and \"Neutral\" are acceptable values for \"Team\"", each);
+      }
     }
 
     private static Alignment GetAlignment(XElement each, Team team)
     {
       string alignStr;
       if (!each.TryGetElement("Alignment", out alignStr)) Error("alignment", each);
-      return new Alignment(each.TryGetStringElement("Name"), team);
-    }
-
-    private static bool GetNightImmune(XElement each)
-    {
-      bool nightImmune = false;
-      string boolParse;
-      if (each.TryGetElement("NightImmune", out boolParse))
-      {
-        try { nightImmune = bool.Parse(boolParse); }
-        catch (FormatException)
-        {
-          Error("night immunity value", each);
-        }
-      }
-      return nightImmune;
+      return new Alignment(each.TryGetElementValue<string>("Name"), team);
     }
 
     private static int GetInvestResult(XElement each)
     {
-      string parse = each.TryGetStringElement("Invest");
+      var parse = each.TryGetElementValue<string>("Invest");
       int output;
       if (!int.TryParse(parse, out output)) Error("invest result", each);
       return output;
@@ -128,7 +98,7 @@ namespace QuizBot
         foreach (var each in document.Root.Element("Alignments").Elements("Alignment"))
         {
           Team temp = GetTeam(each);
-          var name = each.TryGetStringElement("Name");
+          var name = each.TryGetElementValue("Roles.xml", "Name");
           var align = new Alignment(name, temp);
           Alignments.Add(Alignments.Count, align, each, "Alignment: " + name);
           Log("Alignment \"" + align.Name + "\" registered", logtoconsole);
@@ -142,9 +112,11 @@ namespace QuizBot
         foreach (var each in document.Root.Element("Roles").Elements("Role"))
         {
           var team = GetTeam(each);
-          var align = new Alignment(each.TryGetStringElement("Alignment"), team);
-          var name = each.TryGetStringElement("Name");
-          var hasActions = GetHasActionValues(each);
+          var align = new Alignment(each.TryGetElementValue("Roles.xml", "Alignment"), team);
+          var name = each.TryGetElementValue("Roles.xml", "Name");
+          var truevals = GetBooleanValues(each, true, "HasDayAction", "HasNightAction", "AllowOthers",
+            "AllowSelf");
+          var falsevals = GetBooleanValues(each, false, "Unique", "NightImmune");
 
           #region Get Suspicious
           bool suspicious;
@@ -170,16 +142,16 @@ namespace QuizBot
             Name = name,
             team = team,
             Alignment = align,
-            HasDayAction = hasActions[0],
-            HasNightAction = hasActions[1],
-            Description = each.TryGetStringElement("Description"),
-            NightImmune = GetNightImmune(each),
+            HasDayAction = truevals[0],
+            HasNightAction = truevals[1],
+            Description = each.TryGetElementValue("Roles.xml", "Description"),
+            NightImmune = falsevals[0],
             Suspicious = suspicious,
             InvestResult = GetInvestResult(each),
-            Instruction = each.TryGetStringElement("Instruct", true),
-            AllowOthers = hasActions[2],
-            AllowSelf = hasActions[3],
-            Unique = hasActions[4]
+            Instruction = each.TryGetElementValue<string>("Instruct", ""),
+            AllowOthers = truevals[2],
+            AllowSelf = truevals[3],
+            Unique = falsevals[1]
           }, each, "role: " + name);
           Log("\"" + name + "\" registered", logtoconsole);
         }
@@ -193,16 +165,30 @@ namespace QuizBot
         if (!document.Root.HasElement("Rolelists")) throw new InitException("Rolelists are not defined properly!");
         foreach (var rolelist in document.Root.Element("Rolelists").Elements("Rolelist"))
         {
-          var listname = rolelist.TryGetStringAttribute("Name");
+          var listname = rolelist.TryGetAttributeValue<string>("Name");
           foreach (var each in rolelist.Elements("Role"))
           {
+            #region Deal with the count
+            var count = each.TryGetElementValue("Count", 1);
+            //If a count is not defined assume it is one
+            //if (!int.TryParse(each.TryGetStringAttribute("Count", true), out count)) count = 1;
+            if (count < 1) throw new InitException("Roles.xml", "The count must be greater than one!", each);
+            #endregion
+
             var To_Add = new Wrapper();
             string value = "";
+
             #region Normal Role Definition
             if (each.TryGetAttribute("Name", out value))
             { //Normal role definition
               value = value.ToLower();
-              try { To_Add = Roles[value]; }
+              try
+              {
+                To_Add = Roles[value];
+                if ((To_Add as Role).Unique && count != 1)
+                  throw new InitException("Roles.xml",
+                    "The role " + To_Add.Name + " is unique! (There cannot be more than one)", each);
+              }
               catch (KeyNotFoundException)
               {
                 throw new InitException("Roles.xml", "Role \"" + value + "\" does not exist!", each);
@@ -238,17 +224,6 @@ namespace QuizBot
               #endregion
               else throw new InitException("Roles.xml", "Unrecognised role definition", each);
             }
-            int count = 1;
-            //If a count is not defined assume it is one
-            try { int.TryParse(each.TryGetStringAttribute("Count", true), out count); }
-            catch(Exception) { }
-
-            if (To_Add is Role)
-            {
-              if ((To_Add as Role).Unique && count != 1)
-                throw new InitException("Roles.xml",
-                  "The role " + To_Add.Name + " is unique! (There cannot be more than one)", each);
-            }
 
             RoleLists[listname].Add(To_Add, count, each, "definition in " + listname + ": " + To_Add.Name);
           }
@@ -263,15 +238,8 @@ namespace QuizBot
         if (!document.Root.HasElement("InvestResults")) throw new InitException("Invest results have not properly been defined");
         foreach (var each in document.Root.Element("InvestResults").Elements("InvestResult"))
         {
-          try
-          {
-            InvestResults.Add(int.Parse(each.TryGetStringAttribute("Key")), each.TryGetStringElement("Value"), each,
-            "Invest Result");
-          }
-          catch (FormatException)
-          {
-            throw new InitException("Roles.xml", "The invest result key must be an integer!", each);
-          }
+          InvestResults.Add(each.TryGetAttributeValue<int>("Key"), each.TryGetElementValue("Roles.xml", "Value"), each,
+          "Invest Result");
         }
         Log("Invest results loaded", logtoconsole);
         #endregion
@@ -295,8 +263,9 @@ namespace QuizBot
 
         foreach (var each in doc.Root.Elements("string"))
         {
-          string key = each.TryGetStringAttribute("key");
-          Messages.Add(key, each.TryGetStringElement("value"), each, "message: " + key, "Messages.xml");
+          var key = each.TryGetAttributeValue("Messages.xml", "key");
+          Messages.Add(key, each.TryGetElementValue("Messages.xml", "value"), each, "message: " + key, 
+            "Messages.xml");
           Log("Message\"" + key + "\" registered", logtoconsole);
         }
         
@@ -310,6 +279,7 @@ namespace QuizBot
       //ArrangeXML();
 		}
 
+    //May be possible to combine with InitializeMessages
     public static void InitializeProtocols(bool logtoconsole)
     {
       Protocols = new Dictionary<string, string>();
@@ -320,8 +290,9 @@ namespace QuizBot
 
         foreach (var each in doc.Root.Elements("protocol"))
         {
-          var key = each.TryGetStringAttribute("key");
-          Protocols.Add(key, each.TryGetStringElement("value"), each, "protocol: " + key, "Protocols.xml");
+          var key = each.TryGetAttributeValue("Protocols.xml", "key");
+          Protocols.Add(key, each.TryGetElementValue("Protocols.xml", "value"), 
+            each, "protocol: " + key, "Protocols.xml");
           Log("Registered protocol: " + key, logtoconsole);
         }
       }
@@ -435,6 +406,7 @@ namespace QuizBot
 
   static class GameDataExtensions
   {
+    /*
     public static string GetAttributeValue(this XElement x, XName name)
     {
       return x.Attribute(name).Value;
@@ -443,6 +415,15 @@ namespace QuizBot
     public static string GetElementValue(this XElement x, XName name)
     {
       return x.Element(name).Value;
+    }*/
+
+    public static bool HasElement(this XElement element, XName name)
+    {
+      foreach (var each in element.Elements())
+      {
+        if (each.Name == name) return true;
+      }
+      return false;
     }
 
     public static bool TryGetAttribute(this XElement x, XName name, out string output)
@@ -473,37 +454,111 @@ namespace QuizBot
       }
     }
 
-    public static string TryGetStringElement(this XElement each, string name, bool allowNull = false)
+    //Null values are not allowed
+    /// <summary>
+    /// Returns the value of the element, converted to the specified type, allowing for a default
+    /// value to be returned if an exception occurs
+    /// </summary>
+    /// <typeparam name="T">The type to return</typeparam>
+    /// <param name="x">The element to get the value from</param>
+    /// <param name="name">The name of the value to get</param>
+    /// <param name="handle">Boolean value indicating if exceptions should be handled</param>
+    /// <returns>The value of the element</returns>
+    public static T TryGetElementValue<T>(this XElement x, string name, bool handle = true)
+    {
+      string message;
+      try { return (T)Convert.ChangeType(x.Element(name).Value, typeof(T)); }
+      catch(NullReferenceException) when (handle) { message = "Failed to get " + name; }
+      catch(FormatException) when (handle)
+      { message = "Invalid value for " + name + ", " + nameof(T) + " expected!"; }
+      catch(InvalidCastException) when (handle)
+      { message = "Invalid value for " + name + ", " + nameof(T) + " expected!"; }
+      throw new InitException("Roles.xml", message, x);
+    }
+
+    //Null values are allowed
+    /// <summary>
+    /// Returns the value of the element, converted to the specified type, allowing for a default
+    /// value to be returned if an exception occurs
+    /// </summary>
+    /// <typeparam name="T">The type to return</typeparam>
+    /// <param name="x">The element to get the value from</param>
+    /// <param name="name">The name of the value to get</param>
+    /// <param name="defaultVal">The default value to return</param>
+    /// <returns>The value of the element</returns>
+    public static T TryGetElementValue<T>(this XElement x, string name, T defaultVal)
+    {
+      try { return (T)Convert.ChangeType(x.Element(name).Value, typeof(T)); }
+      catch { return defaultVal; }
+    }
+
+    //No conversion is required (string value)
+    /// <summary>
+    /// Returns the string value of the element
+    /// </summary>
+    /// <param name="x">The parent element</param>
+    /// <param name="file">The name of the file</param>
+    /// <param name="name">The name of the element</param>
+    /// <returns>The string value of the element</returns>
+    public static string TryGetElementValue(this XElement x, string file, string name)
     {
       string output;
-      if (!each.TryGetElement(name, out output))
-      {
-        if (!allowNull) GameData.Error(name, each);
-        else return string.Empty;
-      }
-      if (string.IsNullOrWhiteSpace(output) && !allowNull) GameData.Error(name, each);
+      if (!x.TryGetElement(name, out output))
+        throw new InitException(file, "Failed to get " + name, x);
       return output;
     }
 
-    public static string TryGetStringAttribute(this XElement each, string name, bool allowNull = false)
+    //Null values are not allowed
+    /// <summary>
+    /// Returns the value of the attribute, converted to the specified type, allowing for a default
+    /// value to be returned if an exception occurs
+    /// </summary>
+    /// <typeparam name="T">The type to return</typeparam>
+    /// <param name="x">The attribute to get the value from</param>
+    /// <param name="name">The name of the value to get</param>
+    /// <param name="handle">Boolean value indicating if exceptions should be handled</param>
+    /// <returns>The value of the attribute</returns>
+    public static T TryGetAttributeValue<T>(this XElement x, string name, bool handle = true)
     {
-      string output;
-      if (!each.TryGetAttribute(name, out output))
-      {
-        if (!allowNull) GameData.Error(name, each);
-        else return string.Empty;
-      }
-      if (string.IsNullOrWhiteSpace(output) && !allowNull) GameData.Error(name, each);
-      return output;
+      string message;
+      try { return (T)Convert.ChangeType(x.Attribute(name).Value, typeof(T)); }
+      catch (NullReferenceException) when (handle) { message = "Failed to get " + name; }
+      catch (FormatException) when (handle)
+      { message = "Invalid value for " + name + ", " + nameof(T) + " expected!"; }
+      catch (InvalidCastException) when (handle)
+      { message = "Invalid value for " + name + ", " + nameof(T) + " expected!"; }
+      throw new InitException("Roles.xml", message, x);
     }
 
-    public static bool HasElement(this XElement element, XName name)
+    //Null values are allowed
+    /// <summary>
+    /// Returns the value of the attribute, converted to the specified type, allowing for a default
+    /// value to be returned if an exception occurs
+    /// </summary>
+    /// <typeparam name="T">The type to return</typeparam>
+    /// <param name="x">The element to get the value from</param>
+    /// <param name="name">The name of the attribute to get</param>
+    /// <param name="defaultVal">The default value to return</param>
+    /// <returns>The value of the attribute</returns>
+    public static T TryGetAttributeValue<T>(this XElement x, string name, T defaultVal)
     {
-      foreach(var each in element.Elements())
-      {
-        if (each.Name == name) return true;
-      }
-      return false;
+      try { return (T)Convert.ChangeType(x.Attribute(name).Value, typeof(T)); }
+      catch { return defaultVal; }
+    }
+
+    //No conversion is required (string value)
+    /// <summary>
+    /// Returns the string value of the attribute
+    /// </summary>
+    /// <param name="x">The parent element</param>
+    /// <param name="file">The name of the file</param>
+    /// <param name="name">The name of the attribute</param>
+    /// <returns>The string value of the attribute</returns>
+    public static string TryGetAttributeValue(this XElement x, string file, string name)
+    {
+      string output;
+      if (!x.TryGetAttribute(name, out output)) throw new InitException(file, "Failed to get " + name, x);
+      return output;
     }
 
     public static void Add<TKey, TValue>(this Dictionary<TKey, TValue> it, TKey key, TValue value,

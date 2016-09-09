@@ -102,7 +102,7 @@ namespace QuizBot
 
   static class StartupLoaders
   {
-    private static void Bot() { Program.LoadBot(); }
+    private static void Bot() { Program.TryToBot(false); }
 
     private static void Protocols() { GameData.InitializeProtocols(false); }
 

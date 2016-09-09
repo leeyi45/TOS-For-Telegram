@@ -16,6 +16,8 @@ namespace QuizBot
     public static bool GettingConfigOption { get; set; } = false;
 
     public static Dictionary<int, Tuple<bool, string>> ReceivingVals { get; set; }
+
+    public static bool Connected { get; set; } = false;
   }
 
   /// <summary>
@@ -129,28 +131,40 @@ namespace QuizBot
       get { return GameData.RoleLists[CurrentRoleList]; }
     }
 
-    private static Dictionary<string, SettingInfo> details;
+    public static Dictionary<string, SettingInfo> SetPropertyValue { get; private set; }
 
-    public static Dictionary<string, SettingInfo> SetPropertyValue
+    /// <summary>
+    /// Returns an enumerator to iterate through all the settings
+    /// </summary>
+    public static IEnumerable<PropertyInfo> AllSettings
     {
-      get { return details; }
+      get
+      {
+        return from each in typeof(Settings).GetProperties(BindingFlags.Static | BindingFlags.Public)
+               where each.GetCustomAttribute(typeof(SettingDetail)) != null
+               select each;
+      }
     }
 
-    public static int SettingCount { get { return settingcount; } }
+    public static int SettingCount { get; private set; }
 
-    private static int settingcount;
-
+    /// <summary>
+    /// Loads all the properties into a dictionary
+    /// </summary>
     public static void LoadProperties()
     {
-      settingcount = typeof(Settings).GetProperties(BindingFlags.Static | BindingFlags.Public).
-          Where(x => x.CanRead && x.CanWrite).Count();
-      details = typeof(Settings).GetProperties(BindingFlags.Static | BindingFlags.Public).
-          Where(x => x.CanRead && x.CanWrite).ToDictionary(x => x.Name, x =>
+      SettingCount = AllSettings.Count();
+      SetPropertyValue = AllSettings.ToDictionary(x => x.Name, x =>
           {
             return new SettingInfo((SettingDetail)x.GetCustomAttribute(typeof(SettingDetail)), x);
           });
     }
 
+    /// <summary>
+    /// Returns the value of the property with the given key
+    /// </summary>
+    /// <param name="key">The name of the property</param>
+    /// <returns>The value of the property as a string</returns>
     public static string GetPropertyValue(string key)
     {
       return SetPropertyValue[key].Info.GetValue(null).ToString();
@@ -210,7 +224,7 @@ namespace QuizBot
       set { details.OnSelect = value; }
     }
 
-    public PropertyInfo Info { get; set;}
+    public PropertyInfo Info { get; set; }
 
     public void SetValue(object val)
     {

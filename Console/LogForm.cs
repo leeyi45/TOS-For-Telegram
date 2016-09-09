@@ -168,6 +168,11 @@ namespace QuizBot
 
     public void StartBot(bool yes = true)
     {
+      if(!CommandVars.Connected)
+      {
+        Program.ConsoleLog("Bot is currently not connected!\nUse reload bot!");
+        return;
+      }
       if (Program.Bot.IsReceiving) return;
       if (yes) Log("Starting...");
       Thread.Sleep(200);
@@ -272,6 +277,7 @@ namespace QuizBot
         case "messages": { goto case "msgs"; }
         case "msgs": { GameData.InitializeMessages(true); break; }
         case "protocols": { GameData.InitializeProtocols(true); break; }
+        case "bot": { Program.TryToBot(true); break; }
         default: { return "Unrecognised argument " + args[1]; }
       }
       return args[1] + " reloaded";
@@ -315,11 +321,16 @@ namespace QuizBot
       {
         case 1:
           {
-            return "A second argument is required";
+            var output = new StringBuilder("Config Options: \n");
+            foreach(var each in Settings.AllSettings)
+            {
+              output.AppendLine(each.Name);
+            }
+            return output.ToString();
           }
         case 2:
           {
-            try { return Settings.GetPropertyValue(args[1]); }
+            try { return "The value of " + args[1] + " is: " + Settings.GetPropertyValue(args[1]); }
             catch(KeyNotFoundException) { return "Unrecognised argument: " + args[1]; }
           }
         case 3:

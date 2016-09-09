@@ -334,9 +334,10 @@ namespace QuizBot
       var doc = XDocument.Load(WerewolfFile);
       foreach(var each in doc.Root.Elements("member"))
       {
-        string[] name = each.GetElementValue("name").Split(' ');
+        string[] name = each.TryGetElementValue("WFPMembers.xml", "name").Split(' ');
         otherroles.Add(otherroles.Count, 
-          new Player(int.Parse(each.GetElementValue("Id")), each.GetElementValue("username"),
+          new Player(int.Parse(each.TryGetElementValue("WFPMembers.xml", "Id")), 
+          each.TryGetElementValue("WFPMembers.xml", "username"),
           name[0], name[name.Length-1]));
       }
       var noroles = otherroles;

@@ -22,18 +22,10 @@ namespace QuizBot
 		static void Main(string[] notused)
     { 
       startup = new Startup();
-      GameData.BotUsername = Bot.GetMeAsync().Result.Username;
       GameData.StartTime = DateTime.Now.AddHours(-8);
       Application.EnableVisualStyles();
       Application.Run(startup);
 		}
-
-    public static void LoadBot()
-    {
-      Bot.OnMessage += OnMessage;
-      Bot.OnMessageEdited += OnMessage;
-      Bot.OnCallbackQuery += OnCallbackQuery;
-    }
 
     public static Dictionary<string, Action<Callback>> Parsers { get; set; }
 
@@ -95,6 +87,54 @@ namespace QuizBot
           result.Protocol + "\"");
       }
 		}
+
+    public static void TryToBot(bool logtoconsole)
+    {
+      bool lol = true;
+      while (lol)
+      {
+        try
+        {
+          GameData.Log("Connecting to bot", logtoconsole);
+          //Test if the bot is working
+          GameData.BotUsername = Bot.GetMeAsync().Result.Username;
+          GameData.Log("Connected to bot", logtoconsole);
+          CommandVars.Connected = true;
+          break;
+        }
+        catch when (!logtoconsole)
+        {
+          switch (MessageBox.Show("Failed to connect to the telegram servers", "Connection Error",
+            MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error, MessageBoxDefaultButton.Button3))
+          {
+            case DialogResult.Abort:
+              {
+                Application.Exit();
+                break;
+              }
+            case DialogResult.Ignore:
+              {
+                lol = false;
+                break;
+              }
+            case DialogResult.Retry:
+              {
+                break;
+              }
+          }
+        }
+        catch
+        {
+          ConsoleLog("Failed to connect to the telegram server");
+          break;
+        }
+      }
+      GameData.Log("Loading bot handlers", false);
+      Bot.OnMessage += OnMessage;
+      Bot.OnMessageEdited += OnMessage;
+      Bot.OnCallbackQuery += OnCallbackQuery;
+      GameData.Log("Loaded bot handlers", false);
+    }
 
     #region Console logging
     public static void ConsoleLog(string text)
