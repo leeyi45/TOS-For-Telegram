@@ -56,7 +56,7 @@ namespace QuizBot
 
     private static Dictionary<int, Tuple<string, int>> MessageIds;
 
-    private static Dictionary<string, Action> Functions;
+    //private static Dictionary<string, Action> Functions;
 
     private static string GetProtocol(string key)
     {
@@ -66,7 +66,7 @@ namespace QuizBot
     public static void Load()
     {
       MessageIds = new Dictionary<int, Tuple<string, int>>();
-      Functions = new Dictionary<string, Action>();
+      //Functions = new Dictionary<string, Action>();
       CommandVars.ReceivingVals = new Dictionary<int, Tuple<bool, string>>();
     }
 

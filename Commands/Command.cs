@@ -22,7 +22,6 @@ namespace QuizBot
 
     private static bool TestMode = true;
 
-    [LoadMethod("Commands")]
 		public static void InitializeCommands()
 		{
       //Just means I don't have to add the functions myself cause I'm lazy af

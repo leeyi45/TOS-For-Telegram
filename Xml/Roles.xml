@@ -214,6 +214,7 @@
 			<Role Name ="Serial Killer"/>
       <Role Alignment="Town Support"/>
       <Role Name = "Jester"/>
+      <Role Name = "Mayor" Count="1"/>
       <Role Team="Town" Count="2"/>
 		</Rolelist>
     
@@ -226,7 +227,7 @@
         with the roles above
         Messages might be a little biased -->
   <InvestResults> <!-- "Your target " + message below-->
-    <InvestResult Key="1"> <!-- Escort and Consort-->
+    <InvestResult Key="cal"> <!-- Escort and Consort-->
       <Value>is skilled at disrupting others.</Value>
     </InvestResult>
     
