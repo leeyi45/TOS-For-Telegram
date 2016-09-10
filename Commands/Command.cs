@@ -117,16 +117,16 @@ namespace QuizBot
       }
       else if (GameData.GamePhase == GamePhase.Joining)
       { //Join the player thanks
-        if(GameData.PlayerCount == Settings.MaxPlayers)
+        if(PlayerCount == Settings.MaxPlayers)
         {
           Program.BotMessage(msg.Chat.Id, "MaxPlayersReached");
           return;
         }
-        Program.BotMessage(msg.Chat.Id, "PlayerJoin", player.Username, GameData.PlayerCount,
+        Program.BotMessage(msg.Chat.Id, "PlayerJoin", player.Username, PlayerCount,
           Settings.MinPlayers, Settings.MaxPlayers);
         Program.BotMessage(msg.From.Id, "JoinGameSuccess", msg.Chat.Title);
-        GameData.Joined.Add(GameData.PlayerCount, player);
-        if(GameData.PlayerCount >= Settings.MinPlayers)
+        Joined.Add(player);
+        if(PlayerCount >= Settings.MinPlayers)
         {
           Program.BotMessage(msg.Chat.Id, "MinPlayersReached");
         }
@@ -158,8 +158,8 @@ namespace QuizBot
       var output = new StringBuilder("*Players: *" + GameData.AliveCount + "/" + GameData.PlayerCount + "\n\n");
       foreach (var each in GameData.Joined)
       {
-        output.Append(each.Value.Username);
-        if (!each.Value.IsAlive) output.Append(": " + each.Value.role.ToString());
+        output.Append(each.Username);
+        if (!each.IsAlive) output.Append(": " + each.role.ToString());
         output.Append("\n");
       }
       Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Markdown);
@@ -183,7 +183,7 @@ namespace QuizBot
         if (Player.GetPlayer(msg.From.Id) != null)
         {
           Program.BotMessage(msg.Chat.Id, "LeftGame", msg.From.Username);
-          Joined.Remove(Joined.Where(x => x.Value == msg.From).ToArray()[0].Key);
+          Joined.Remove(Joined.Where(x => x == msg.From).ToArray()[0]);
         }
         else Program.BotMessage(msg.Chat.Id, "NotInGame");
       }
@@ -193,7 +193,7 @@ namespace QuizBot
         if (Player.GetPlayer(msg.From.Id) != null)
         {
           Program.BotMessage(msg.Chat.Id, "LeftGame", msg.From.Username);
-          Alive.Values.Where(x => x == msg.From).ToArray()[0].Kill();
+          Alive.Where(x => x == msg.From).ToArray()[0].Kill();
         }
         else Program.BotMessage(msg.Chat.Id, "NotInGame");
       }
@@ -223,7 +223,7 @@ namespace QuizBot
         Program.ConsoleLog("Game started!");
         Program.BotMessage("LobbyCreated", msg.From.Username);
         GameData.GamePhase = GamePhase.Joining;
-        Joined.Add(PlayerCount, msg.From);
+        Joined.Add(msg.From);
       }
     }
 
@@ -475,7 +475,7 @@ namespace QuizBot
     private static void StartRolesAssign()
 		{
 			var noroles = Joined;
-			var hasroles = new Dictionary<int, Player>();
+      var hasroles = new List<Player>();
       var random = new Random();
 			int totaltoassign = 0;
       GameData.GamePhase = GamePhase.Assigning;
@@ -511,7 +511,7 @@ namespace QuizBot
                     .ToArray();
                 }
                 assignThis = assignThese[random.Next(0, assignThese.Length)];
-                if (!(assignThis.Unique && hasroles.Values.Count(x => x.role == assignThis) >= 1)) break;
+                if (!(assignThis.Unique && hasroles.Count(x => x.role == assignThis) >= 1)) break;
                 //If the role is unique and there's already such an assignment try again
                 //If not break
               }
@@ -522,8 +522,8 @@ namespace QuizBot
             throw new AssignException("There is no role defined for " + role.Key.Name);
           }
           player.role = assignThis;
-          hasroles.Add(hasroles.Count, player);
-          noroles.Remove(randoms[i]);
+          hasroles.Add(player);
+          noroles.Remove(player);
         }
 
         //If there are no more players to assign
@@ -536,15 +536,15 @@ namespace QuizBot
       {
         foreach(var each in noroles)
         {
-          each.Value.role = GameData.Roles["villager"];
-          hasroles.Add(hasroles.Count, each.Value);
+          each.role = GameData.Roles["villager"];
+          hasroles.Add(each);
         }
       }
 
       Joined = hasroles;
       foreach(var each in hasroles)
       {
-        each.Value.OnAssignRole();
+        each.OnAssignRole();
       }
       GameData.GamePhase = GamePhase.Running;
       Program.BotMessage("RolesAssigned");
@@ -553,7 +553,7 @@ namespace QuizBot
 
     private static void ObtainNicknames()
     {
-      foreach(var each in Joined.Values)
+      foreach(var each in Joined)
       {
         Program.BotMessage(each.Id, "GetNickname");
       }
@@ -569,7 +569,7 @@ namespace QuizBot
     public static void EndGame()
 		{
 			GameData.GamePhase = GamePhase.Inactive;
-			GameData.Joined = new Dictionary<int, Player>();
+			Joined = new List<Player>();
 		}
 
     private const string WerewolfFile = @"C:\Users\Lee Yi\Desktop\Everything, for the moment\Coding\C# Bot\TOS-For-Telegram\WFPMembers.xml";
@@ -612,7 +612,7 @@ namespace QuizBot
         Program.BotMessage(msg.From.Id, "GotNickname", msg.Text);
       }
       player.Nickname = msg.Text;
-      var count = Joined.Values.Count(x => x.Nickname == null);
+      var count = Joined.Count(x => x.Nickname == null);
       if(count == 0)
       {
         CommandVars.GettingNicknames = false;

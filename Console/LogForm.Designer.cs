@@ -36,14 +36,20 @@ namespace QuizBot
       this.label1 = new System.Windows.Forms.Label();
       this.label2 = new System.Windows.Forms.Label();
       this.statBox = new System.Windows.Forms.GroupBox();
+      this.protocolStatus = new System.Windows.Forms.Label();
+      this.label7 = new System.Windows.Forms.Label();
+      this.messageStatus = new System.Windows.Forms.Label();
+      this.label6 = new System.Windows.Forms.Label();
+      this.roleStatus = new System.Windows.Forms.Label();
+      this.label5 = new System.Windows.Forms.Label();
+      this.connectLabel = new System.Windows.Forms.Label();
+      this.label4 = new System.Windows.Forms.Label();
       this.StatusLabel = new System.Windows.Forms.Label();
       this.label3 = new System.Windows.Forms.Label();
       this.StartButton = new System.Windows.Forms.Button();
       this.StopButton = new System.Windows.Forms.Button();
       this.CloseButton = new System.Windows.Forms.Button();
       this.richTextBox1 = new System.Windows.Forms.RichTextBox();
-      this.label4 = new System.Windows.Forms.Label();
-      this.connectLabel = new System.Windows.Forms.Label();
       this.statBox.SuspendLayout();
       this.SuspendLayout();
       // 
@@ -91,6 +97,12 @@ namespace QuizBot
       // 
       // statBox
       // 
+      this.statBox.Controls.Add(this.protocolStatus);
+      this.statBox.Controls.Add(this.label7);
+      this.statBox.Controls.Add(this.messageStatus);
+      this.statBox.Controls.Add(this.label6);
+      this.statBox.Controls.Add(this.roleStatus);
+      this.statBox.Controls.Add(this.label5);
       this.statBox.Controls.Add(this.connectLabel);
       this.statBox.Controls.Add(this.label4);
       this.statBox.Controls.Add(this.StatusLabel);
@@ -102,11 +114,87 @@ namespace QuizBot
       this.statBox.TabStop = false;
       this.statBox.Text = "Stats";
       // 
+      // protocolStatus
+      // 
+      this.protocolStatus.AutoSize = true;
+      this.protocolStatus.ForeColor = System.Drawing.Color.Red;
+      this.protocolStatus.Location = new System.Drawing.Point(77, 85);
+      this.protocolStatus.Name = "protocolStatus";
+      this.protocolStatus.Size = new System.Drawing.Size(63, 13);
+      this.protocolStatus.TabIndex = 10;
+      this.protocolStatus.Text = "Not Loaded";
+      // 
+      // label7
+      // 
+      this.label7.AutoSize = true;
+      this.label7.Location = new System.Drawing.Point(7, 85);
+      this.label7.Name = "label7";
+      this.label7.Size = new System.Drawing.Size(54, 13);
+      this.label7.TabIndex = 9;
+      this.label7.Text = "Protocols:";
+      // 
+      // messageStatus
+      // 
+      this.messageStatus.AutoSize = true;
+      this.messageStatus.ForeColor = System.Drawing.Color.Red;
+      this.messageStatus.Location = new System.Drawing.Point(77, 72);
+      this.messageStatus.Name = "messageStatus";
+      this.messageStatus.Size = new System.Drawing.Size(63, 13);
+      this.messageStatus.TabIndex = 8;
+      this.messageStatus.Text = "Not Loaded";
+      // 
+      // label6
+      // 
+      this.label6.AutoSize = true;
+      this.label6.Location = new System.Drawing.Point(7, 72);
+      this.label6.Name = "label6";
+      this.label6.Size = new System.Drawing.Size(58, 13);
+      this.label6.TabIndex = 7;
+      this.label6.Text = "Messages:";
+      // 
+      // roleStatus
+      // 
+      this.roleStatus.AutoSize = true;
+      this.roleStatus.ForeColor = System.Drawing.Color.Red;
+      this.roleStatus.Location = new System.Drawing.Point(77, 55);
+      this.roleStatus.Name = "roleStatus";
+      this.roleStatus.Size = new System.Drawing.Size(63, 13);
+      this.roleStatus.TabIndex = 6;
+      this.roleStatus.Text = "Not Loaded";
+      // 
+      // label5
+      // 
+      this.label5.AutoSize = true;
+      this.label5.Location = new System.Drawing.Point(7, 55);
+      this.label5.Name = "label5";
+      this.label5.Size = new System.Drawing.Size(37, 13);
+      this.label5.TabIndex = 5;
+      this.label5.Text = "Roles:";
+      // 
+      // connectLabel
+      // 
+      this.connectLabel.AutoSize = true;
+      this.connectLabel.ForeColor = System.Drawing.Color.Red;
+      this.connectLabel.Location = new System.Drawing.Point(77, 38);
+      this.connectLabel.Name = "connectLabel";
+      this.connectLabel.Size = new System.Drawing.Size(73, 13);
+      this.connectLabel.TabIndex = 4;
+      this.connectLabel.Text = "Disconnected";
+      // 
+      // label4
+      // 
+      this.label4.AutoSize = true;
+      this.label4.Location = new System.Drawing.Point(7, 38);
+      this.label4.Name = "label4";
+      this.label4.Size = new System.Drawing.Size(64, 13);
+      this.label4.TabIndex = 3;
+      this.label4.Text = "Connection:";
+      // 
       // StatusLabel
       // 
       this.StatusLabel.AutoSize = true;
       this.StatusLabel.ForeColor = System.Drawing.Color.Red;
-      this.StatusLabel.Location = new System.Drawing.Point(54, 20);
+      this.StatusLabel.Location = new System.Drawing.Point(77, 20);
       this.StatusLabel.Name = "StatusLabel";
       this.StatusLabel.Size = new System.Drawing.Size(47, 13);
       this.StatusLabel.TabIndex = 2;
@@ -165,25 +253,6 @@ namespace QuizBot
       this.richTextBox1.Text = "Quizbot - Town of Salem for Telegram";
       this.richTextBox1.Enter += new System.EventHandler(this.OnEnter);
       // 
-      // label4
-      // 
-      this.label4.AutoSize = true;
-      this.label4.Location = new System.Drawing.Point(7, 38);
-      this.label4.Name = "label4";
-      this.label4.Size = new System.Drawing.Size(64, 13);
-      this.label4.TabIndex = 3;
-      this.label4.Text = "Connection:";
-      // 
-      // connectLabel
-      // 
-      this.connectLabel.AutoSize = true;
-      this.connectLabel.ForeColor = System.Drawing.Color.Red;
-      this.connectLabel.Location = new System.Drawing.Point(77, 38);
-      this.connectLabel.Name = "connectLabel";
-      this.connectLabel.Size = new System.Drawing.Size(73, 13);
-      this.connectLabel.TabIndex = 4;
-      this.connectLabel.Text = "Disconnected";
-      // 
       // LogForm
       // 
       this.BackColor = System.Drawing.Color.White;
@@ -219,11 +288,15 @@ namespace QuizBot
     private Label label3;
     private Label StatusLabel;
     private Label label1;
-
-    #endregion
-
     private RichTextBox richTextBox1;
-    public Label connectLabel;
+    private Label connectLabel;
     private Label label4;
+    private Label roleStatus;
+    private Label label5;
+    private Label protocolStatus;
+    private Label label7;
+    private Label messageStatus;
+    private Label label6;
+    #endregion
   }
 }

@@ -71,9 +71,10 @@ namespace QuizBot
     
     public static void InitializeRoles(bool logtoconsole)
     {
+      CommandVars.RolesLoaded = false;
       Roles = new Dictionary<string, Role>();
       RoleLists = new Triptionary<string, Wrapper, int>();
-      Alignments = new Dictionary<int, Alignment>();
+      Alignments = new List<Alignment>();
       InvestResults = new Dictionary<int, string>();
 
       Log("Loading roles", logtoconsole);
@@ -100,7 +101,7 @@ namespace QuizBot
           Team temp = GetTeam(each);
           var name = each.TryGetElementValue("Roles.xml", "Name");
           var align = new Alignment(name, temp);
-          Alignments.Add(Alignments.Count, align, each, "Alignment: " + name);
+          Alignments.Add(align);
           Log("Alignment \"" + align.Name + "\" registered", logtoconsole);
         }
        Log("Alignments loaded", logtoconsole);
@@ -250,11 +251,13 @@ namespace QuizBot
       }
 
       Log("Roles loaded", logtoconsole);
+      CommandVars.RolesLoaded = true;
     }
 
     public static void InitializeMessages(bool logtoconsole)
 		{
-			Log("Loading messages", logtoconsole);
+      CommandVars.MessagesLoaded = false;
+      Log("Loading messages", logtoconsole);
 			Messages = new Dictionary<string, string>();
       try
       {
@@ -276,12 +279,14 @@ namespace QuizBot
       }
 
   		Log("Loaded messages", logtoconsole);
+      CommandVars.MessagesLoaded = true;
       //ArrangeXML();
-		}
+    }
 
     //May be possible to combine with InitializeMessages
     public static void InitializeProtocols(bool logtoconsole)
     {
+      CommandVars.ProtocolsLoaded = false;
       Protocols = new Dictionary<string, string>();
       try
       {
@@ -300,6 +305,7 @@ namespace QuizBot
       {
         InitialErr("Failed to load messages.xml, see console for details", e);
       }
+      CommandVars.ProtocolsLoaded = true;
     }
 		#endregion
 
@@ -340,7 +346,7 @@ namespace QuizBot
     /// </summary>
     public static int AliveCount
     {
-      get { return GameData.Joined.Count(x => x.Value.IsAlive); }
+      get { return Alive.Count; }
     }
 
     /// <summary>
@@ -360,9 +366,9 @@ namespace QuizBot
 		/// </summary>
 		public static Triptionary<string, Wrapper, int> RoleLists { get; set; }
 
-		public static Dictionary<int, Alignment> Alignments { get; set; }
+		public static List<Alignment> Alignments { get; set; }
 
-		public static Dictionary<int, Player> Joined = new Dictionary<int, Player>();
+    public static List<Player> Joined = new List<Player>();
 
     /// <summary>
     /// Dictionary containing all the protocols
@@ -379,9 +385,9 @@ namespace QuizBot
     /// </summary>
     public static Dictionary<int, string> InvestResults { get; set; }
 
-    public static Dictionary<int, Player> Alive
+    public static List<Player> Alive
     {
-      get { return Joined.Where(x => x.Value.IsAlive).ToDictionary(x => x.Key, x => x.Value); }
+      get { return Joined.Where(x => x.IsAlive).ToList(); }
     }
     #endregion
 
@@ -406,17 +412,6 @@ namespace QuizBot
 
   static class GameDataExtensions
   {
-    /*
-    public static string GetAttributeValue(this XElement x, XName name)
-    {
-      return x.Attribute(name).Value;
-    }
-
-    public static string GetElementValue(this XElement x, XName name)
-    {
-      return x.Element(name).Value;
-    }*/
-
     public static bool HasElement(this XElement element, XName name)
     {
       foreach (var each in element.Elements())

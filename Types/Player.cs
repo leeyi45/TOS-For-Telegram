@@ -135,24 +135,24 @@ namespace QuizBot
 
     public static Player GetPlayer(long Id, bool dead = false)
     {
-      System.Collections.Generic.Dictionary<int, Player> searchFrom;
+      System.Collections.Generic.List<Player> searchFrom;
       if (!dead) searchFrom = Joined;
       else searchFrom = Alive;
 
-      try { return searchFrom.Values.Where(x => x.Id == Id).ToArray()[0]; }
+      try { return searchFrom.Where(x => x.Id == Id).ToArray()[0]; }
       catch(IndexOutOfRangeException) { return null; }
     }
 
     public static Player GetPlayer(Player test, bool dead = false)
     {
-      System.Collections.Generic.Dictionary<int, Player> searchFrom;
+      System.Collections.Generic.List<Player> searchFrom;
       if (!dead) searchFrom = Alive;
       else searchFrom = Joined;
 
-      if (!searchFrom.ContainsValue(test)) return null;
+      if (!searchFrom.Contains(test)) return null;
       else
       {
-        try { return searchFrom.Values.Where(x => x == test).ToArray()[0]; }
+        try { return searchFrom.Where(x => x == test).ToArray()[0]; }
         catch(IndexOutOfRangeException) { return null; }
       }
     }

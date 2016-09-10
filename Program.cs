@@ -16,7 +16,7 @@ namespace QuizBot
 		internal static readonly TelegramBotClient Bot = new TelegramBotClient(Chats.BotToken);
 
     //public static LogForm ConsoleForm;
-    public static Startup startup;
+    public static Startup startup { get; set; }
 
     [STAThread]
 		static void Main(string[] notused)

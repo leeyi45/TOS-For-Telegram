@@ -17,7 +17,7 @@ namespace QuizBot
     /// <returns>An array containing the players that fit the definition</returns>
     public static Player[] ReturnPlayers(Role condition)
     {
-      return GameData.Alive.Values.Where(x => x.role == condition).ToArray();
+      return GameData.Alive.Where(x => x.role == condition).ToArray();
     }
 
     public static void RunGame()
@@ -42,7 +42,7 @@ namespace QuizBot
         AnnounceDeaths();
         #region Voting time
         Stopwatch.Reset();
-        VoteCount = GameData.Alive.ToDictionary(x => x.Value.Id, x => 0);
+        VoteCount = GameData.Alive.ToDictionary(x => x.Id, x => 0);
         Program.BotMessage("VotingStart", Settings.LynchTime);
         while (true)
         {
@@ -102,9 +102,9 @@ namespace QuizBot
 
     private static void AnnounceRB()
     {
-      foreach (var player in GameData.Alive.Where(x => x.Value.role != GameData.Roles["serial killer"]))
+      foreach (var player in GameData.Alive.Where(x => x.role != GameData.Roles["serial killer"]))
       { //SK cannot be rbed
-        if(player.Value.IsRoleBlocked) Program.BotMessage(player.Value.Id, "Roleblocked");
+        if(player.IsRoleBlocked) Program.BotMessage(player.Id, "Roleblocked");
       }
     }
 
@@ -169,7 +169,7 @@ namespace QuizBot
     private static void AnnounceDeaths()
     { //Announce all the deaths
       StringBuilder output = new StringBuilder("");
-      foreach(var dead in GameData.Joined.Values.Where(x => !x.IsAlive))
+      foreach(var dead in GameData.Joined.Where(x => !x.IsAlive))
       {
         if (dead.WasKilledBy != null)
         {
@@ -185,7 +185,7 @@ namespace QuizBot
     private static void DoNightCycle()
     {
       // Step 1: Send the users their options
-      foreach(var player in GameData.Alive.Values.Where(x => x.role.HasNightAction))
+      foreach(var player in GameData.Alive.Where(x => x.role.HasNightAction))
       {
         Program.BotMessage(player.Id, "Instruct", player.role.Instruction);
         Program.Bot.SendTextMessageAsync(player.Id, "", replyMarkup: 
@@ -195,7 +195,7 @@ namespace QuizBot
 
     private static void DoLynchCycle()
     {
-      foreach(var player in GameData.Alive.Values)
+      foreach(var player in GameData.Alive)
       {
         var message = Program.Bot.SendTextMessageAsync(player.Id, "Who would you like to lynch?", replyMarkup:
           GetMarkup(player, "VoteAction", false)).Result;
@@ -264,7 +264,7 @@ namespace QuizBot
       }
       else
       {
-        foreach (var player in GameData.Alive.Values)
+        foreach (var player in GameData.Alive)
         {
           if (!allowSelf && player == self) continue;
           markup[i] = new[] { new InlineKeyboardButton(player.Name, new Callback(self.Id, protocol, player.Id.ToString())) };

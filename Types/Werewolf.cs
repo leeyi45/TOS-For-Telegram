@@ -37,7 +37,7 @@ namespace QuizBot
     {
       foreach (var each in GameData.Joined)
       {
-        if (x == each.Value) return true;
+        if (x == each) return true;
       }
       return false;
     }

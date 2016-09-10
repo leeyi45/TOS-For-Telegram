@@ -22,27 +22,119 @@ namespace QuizBot
       get { return connected; }
       set
       {
-        if(value)
+        try
         {
-          Program.startup.ConsoleForm.Invoke(new Action(() =>
+          if (value)
           {
-            Program.startup.ConsoleForm.connectLabel.Text = "Connected";
-            Program.startup.ConsoleForm.connectLabel.ForeColor = System.Drawing.Color.ForestGreen;
-          }));
-        }
-        else
-        {
-          Program.startup.ConsoleForm.Invoke(new Action(() =>
+            Program.startup.ConsoleForm.Invoke(new Action(() =>
+            {
+              Program.startup.ConsoleForm.SwitchLabelState("connect", "Connected", true);
+            }));
+          }
+          else
           {
-            Program.startup.ConsoleForm.connectLabel.Text = "Disconnected";
-            Program.startup.ConsoleForm.connectLabel.ForeColor = System.Drawing.Color.Red;
-          }));
+            Program.startup.ConsoleForm.Invoke(new Action(() =>
+            {
+              Program.startup.ConsoleForm.SwitchLabelState("connect", "Disconnected", false);
+            }));
+          }
         }
+        catch(Exception) { }
         connected = value;
       }
     }
 
+    public static bool RolesLoaded
+    {
+      get { return rolesloaded; }
+      set
+      {
+        try
+        {
+          if (value)
+          {
+            Program.startup.ConsoleForm.Invoke(new Action(() =>
+            {
+              Program.startup.ConsoleForm.SwitchLabelState("role", "Loaded", true);
+            }));
+
+          }
+          else
+          {
+            Program.startup.ConsoleForm.Invoke(new Action(() =>
+            {
+              Program.startup.ConsoleForm.SwitchLabelState("role", "Not Loaded", false);
+            }));
+          }
+        }
+        catch(Exception) { }
+        rolesloaded = value;
+      }
+    }
+
+    public static bool MessagesLoaded
+    {
+      get { return messagesloaded; }
+      set
+      {
+        try
+        {
+          if (value)
+          {
+            Program.startup.ConsoleForm.Invoke(new Action(() =>
+            {
+              Program.startup.ConsoleForm.SwitchLabelState("message", "Loaded", true);
+            }));
+          }
+          else
+          {
+            Program.startup.ConsoleForm.Invoke(new Action(() =>
+            {
+              Program.startup.ConsoleForm.SwitchLabelState("message", "Not Loaded", false);
+            }));
+          }
+        }
+        catch (Exception) { }
+        messagesloaded = value;
+      }
+    }
+
+    public static bool ProtocolsLoaded
+    {
+      get { return protocolsloaded; }
+      set
+      {
+        try
+        {
+          if (value)
+          {
+            Program.startup.ConsoleForm.Invoke(new Action(() =>
+            {
+              Program.startup.ConsoleForm.SwitchLabelState("protocol", "Loaded", true);
+            }));
+          }
+          else
+          {
+            Program.startup.ConsoleForm.Invoke(new Action(() =>
+            {
+              Program.startup.ConsoleForm.SwitchLabelState("protocol", "Not Loaded", false);
+            }));
+          }
+        }
+        catch (Exception) { }
+        protocolsloaded = value;
+      }
+    }
+
+    #region Hidden fields
     private static bool connected = false;
+
+    private static bool rolesloaded = false;
+
+    private static bool messagesloaded = false;
+
+    private static bool protocolsloaded = false;
+    #endregion
   }
 
   /// <summary>
@@ -156,6 +248,9 @@ namespace QuizBot
       get { return GameData.RoleLists[CurrentRoleList]; }
     }
 
+    /// <summary>
+    /// Dictionary containing the data of all the current settings
+    /// </summary>
     public static Dictionary<string, SettingInfo> SetPropertyValue { get; private set; }
 
     /// <summary>
@@ -171,6 +266,9 @@ namespace QuizBot
       }
     }
 
+    /// <summary>
+    /// Integer value indicating the number of settings currently defined
+    /// </summary>
     public static int SettingCount { get; private set; }
 
     /// <summary>

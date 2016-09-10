@@ -13,6 +13,7 @@ namespace QuizBot
     public Startup()
     {
       InitializeComponent();
+      ConsoleForm = new LogForm(this);
       LoadLoaders();
       progressBar1.Step = 100 / ToLoad.Count;
       worker = new BackgroundWorker();
@@ -81,7 +82,6 @@ namespace QuizBot
     {
       if (e.Error != null) throw e.Error;
       progressBar1.Value = 100;
-      ConsoleForm = new LogForm(this);
       ConsoleForm.Show();
     }
 

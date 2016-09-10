@@ -20,6 +20,8 @@ namespace QuizBot
       pastCommands = new Dictionary<int, string>();
       AddCommands();
       InitializeComponent();
+      commandBox.AutoCompleteCustomSource = AddSuggestStrings();
+      AddLabels();
       test = new System.Windows.Forms.Timer();
       test.Interval = 6000;
       test.Tick += new EventHandler(Tick);
@@ -178,8 +180,7 @@ namespace QuizBot
       Thread.Sleep(200);
       Program.Bot.StartReceiving();
       if (yes) LogLine("Bot started receving messages", false);
-      StatusLabel.Text = "Running";
-      StatusLabel.ForeColor = Color.ForestGreen;
+      SwitchLabelState("running", "Running", true);
       GameData.StartTime = DateTime.Now.AddHours(-8);
     }
 
@@ -190,9 +191,15 @@ namespace QuizBot
       Thread.Sleep(200);
       Program.Bot.StopReceiving();
       if (yes) LogLine("Bot stopped receving messages", false);
-      StatusLabel.Text = "Stopped";
-      StatusLabel.ForeColor = Color.Red;
+      SwitchLabelState("running", "Stopped", false);
       return;
+    }
+
+    public void SwitchLabelState(string key, string text, bool value)
+    {
+      Labels[key].Text = text;
+      if (value) Labels[key].ForeColor = Color.ForestGreen;
+      else Labels[key].ForeColor = Color.Red;
     }
 
     public new void Show()
@@ -211,6 +218,8 @@ namespace QuizBot
     #region Stuff for the console
     private Dictionary<string, ConsoleCommand> ConsoleCommands;
 
+    private Dictionary<string, Label> Labels;
+
     private delegate string ConsoleCommand(string[] args);
 
     private void AddCommands()
@@ -225,6 +234,16 @@ namespace QuizBot
             typeof(ConsoleCommand), this, method));
         }
       }
+    }
+
+    private void AddLabels()
+    {
+      Labels = new Dictionary<string, Label>();
+      Labels.Add("protocol", protocolStatus);
+      Labels.Add("message", messageStatus);
+      Labels.Add("connect", connectLabel);
+      Labels.Add("role", roleStatus);
+      Labels.Add("running", StatusLabel);
     }
 
     #region Console Commands
