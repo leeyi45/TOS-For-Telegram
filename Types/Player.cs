@@ -1,9 +1,9 @@
-﻿using System.Linq;
-using Newtonsoft.Json.Linq;
+﻿using System;
+using System.Linq;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using static QuizBot.GameData;
-using System;
 
 namespace QuizBot
 {
@@ -155,6 +155,30 @@ namespace QuizBot
         try { return searchFrom.Where(x => x == test).ToArray()[0]; }
         catch(IndexOutOfRangeException) { return null; }
       }
+    }
+
+    public static bool IsGroupAdmin(Update update)
+    {
+      return IsGroupAdmin(update.Message.From.Id, update.Message.Chat.Id);
+    }
+
+    public static bool IsGroupAdmin(int user, long group)
+    {
+      //fire off admin request
+      try
+      {
+        var admin = Program.Bot.GetChatMemberAsync(group, user).Result;
+        return admin.Status == ChatMemberStatus.Administrator || admin.Status == ChatMemberStatus.Creator;
+      }
+      catch
+      {
+        return false;
+      }
+    }
+
+    public static bool HasJoined(Player x)
+    {
+      return Joined.Contains(x);
     }
 
     #region Operators

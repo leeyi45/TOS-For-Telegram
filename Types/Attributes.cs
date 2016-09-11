@@ -14,33 +14,7 @@ namespace QuizBot
   */
   internal static class UpdateHelper
   {
-    internal static bool IsGroupAdmin(Update update)
-    {
-      return IsGroupAdmin(update.Message.From.Id, update.Message.Chat.Id);
-    }
 
-    internal static bool IsGroupAdmin(int user, long group)
-    {
-      //fire off admin request
-      try
-      {
-        var admin = Program.Bot.GetChatMemberAsync(group, user).Result;
-        return admin.Status == ChatMemberStatus.Administrator || admin.Status == ChatMemberStatus.Creator;
-      }
-      catch
-      {
-        return false;
-      }
-    }
-
-    public static bool HasJoined(Player x)
-    {
-      foreach (var each in GameData.Joined)
-      {
-        if (x == each) return true;
-      }
-      return false;
-    }
   }
 
   //Class originally defined in the werewolf for telegram
@@ -101,18 +75,25 @@ namespace QuizBot
     }
   }
 
-  public class LoadMethod : Attribute
+  //My own work tyvm
+  public class ConsoleCommand : Attribute
   {
-    public LoadMethod(string key)
+    public ConsoleCommand(string trigger, params string[] args)
     {
-      Key = key;
+      Trigger = trigger;
+      Args = args;
+      IsMetaData = false;
     }
 
-    public LoadMethod() { }
+    public ConsoleCommand(bool IsMetaData = true)
+    {
+      this.IsMetaData = IsMetaData;
+    }
 
-    /// <summary>
-    /// Key of the method
-    /// </summary>
-    public string Key { get; set; }
+    public string Trigger { get; set; }
+
+    public string[] Args { get; set; }
+
+    public bool IsMetaData { get; set; }
   }
 }
