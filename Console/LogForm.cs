@@ -18,7 +18,6 @@ namespace QuizBot
     public LogForm(Startup parent)
     {
       pastCommands = new Dictionary<int, string>();
-      CommandContainer = new AllCommands(this);
       InitializeComponent();
       AddLabels();
       test = new System.Windows.Forms.Timer();
@@ -206,6 +205,7 @@ namespace QuizBot
     public new void Show()
     {
       Parent.Hide();
+      CommandContainer = new AllCommands(this);
       commandBox.AutoCompleteCustomSource = AddSuggestStrings();
       base.Show();
     }
@@ -268,6 +268,10 @@ namespace QuizBot
         this.parent = parent;
         ConsoleCommands = AddCommands();
         Metadata = AddMetadata();
+        Data = new Dictionary<string, object>();
+        Data.Add("messages", GameData.Messages);
+        Data.Add("protocols", GameData.Protocols);
+        Data.Add("commands", ConsoleCommands.Keys.ToList());
       }
 
       private LogForm parent;
@@ -305,6 +309,8 @@ namespace QuizBot
         }
         return metadata;
       }
+
+      private Dictionary<string, object> Data;
 
       #region Commands
       [ConsoleCommand("say")]
@@ -382,17 +388,6 @@ namespace QuizBot
         return "JSon test";
       }
 
-      [ConsoleCommand("commands")]
-      private string Commands(string[] args)
-      {
-        var output = new StringBuilder("Currently registered commands:\n\n");
-        foreach (var each in ConsoleCommands)
-        {
-          output.AppendLine(each.Key);
-        }
-        return output.ToString();
-      }
-
       [ConsoleCommand("config")]
       private string Config(string[] args)
       {
@@ -440,7 +435,7 @@ namespace QuizBot
               output = new StringBuilder("Currently Registered Roles \n\n");
               foreach (var each in GameData.Roles)
               {
-                output.AppendLine(each.Value.Name + ": " + each.Value.Description);
+                output.AppendLine(each.Value.ToString());
               }
               break;
             }
@@ -488,7 +483,7 @@ namespace QuizBot
               output = new StringBuilder("Rolelists:");
               foreach (var each in GameData.RoleLists)
               {
-                output.AppendLine(((KeyValuePair<string, Dictionary<Wrapper, int>>)each).Key);
+                output.AppendLine(each.Key);
               }
               break;
             }
@@ -516,7 +511,73 @@ namespace QuizBot
         }
         return output.ToString();
       }
+
+      [ConsoleCommand("protocols")]
+      private string Protocols(string[] args)
+      {
+        StringBuilder output = new StringBuilder("Protocols:");
+        output.AppendLine();
+        foreach (var each in (from each in GameData.Protocols
+                              select each.Key + ": " + each.Value))
+        {
+          output.AppendLine(each);
+        }
+        return output.ToString();
+      }
+
+      [ConsoleCommand("list")]
+      private string List(string[] args)
+      {
+        try { return concater(args[1].ToLower()); }
+        catch (IndexOutOfRangeException)
+        {
+          return concater(Data.Keys);
+        }
+        catch (KeyNotFoundException)
+        {
+          return "Invalid argument " + args[1];
+        }
+      }
       #endregion
+
+      private string concater(string text)
+      {
+        StringBuilder output;
+        var thing = Data[text];
+        if (thing is Dictionary<string, string>)
+        {
+          output = new StringBuilder(text + ":");
+          output.AppendLine();
+          foreach (var each in (from each in (Data[text] as Dictionary<string, string>)
+                                select each.Key + ": " + each.Value))
+          {
+            output.AppendLine(each);
+          }
+        }
+        else
+        {
+          output = new StringBuilder();
+          output.AppendLine();
+          foreach (var each in thing as IEnumerable<string>)
+          {
+            output.AppendLine(each);
+          }
+        }
+        output.AppendLine();
+        return output.ToString();
+      }
+
+      private string concater(IEnumerable<string> it)
+      {
+        var output = new StringBuilder();
+        output.AppendLine();
+        foreach (var each in it)
+        {
+          output.AppendLine(each);
+        }
+        output.AppendLine();
+        return output.ToString();
+      }
 
       #region Metadata
       [ConsoleCommand]
@@ -536,6 +597,12 @@ namespace QuizBot
       private string[] RoleLists()
       {
         return GameData.RoleLists.Keys.ToArray();
+      }
+
+      [ConsoleCommand]
+      private string[] List()
+      {
+        return Data.Keys.ToArray();
       }
       #endregion
 

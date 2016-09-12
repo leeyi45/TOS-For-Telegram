@@ -175,6 +175,16 @@ namespace QuizBot
     public bool AllowSelf { get; set; }
     #endregion
 
+    public override string ToString()
+    {
+      return Name + ": " + Description;
+    }
+
+    public string ToString(bool thing)
+    {
+      return base.ToString();
+    }
+
     #region Operators
     public static bool operator ==(Role rhs, Role lhs)
     {
@@ -184,6 +194,16 @@ namespace QuizBot
     public static bool operator !=(Role rhs, Role lhs)
     {
       return !(rhs == lhs);
+    }
+
+    public static bool operator ==(Role lhs, string rhs)
+    {
+      return rhs == lhs.Name.ToLower();
+    }
+
+    public static bool operator !=(Role lhs, string rhs)
+    {
+      return !(lhs == rhs);
     }
 
     public override bool Equals(object obj)

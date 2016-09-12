@@ -75,7 +75,7 @@ namespace QuizBot
       var result = JsonConvert.DeserializeObject<Callback>(e.CallbackQuery.Data);
       try
       {
-        Parsers[result.Protocol](result);
+        Commands.GameInstances[result.Group].Parsers[result.Protocol](result);
       }
       catch(NullReferenceException)
       {
@@ -139,8 +139,7 @@ namespace QuizBot
     #region Console logging
     public static void ConsoleLog(string text)
 		{
-      try { startup.ConsoleForm.Invoke(new Action(() => { startup.ConsoleForm.LogLine(text); })); }
-      catch(NullReferenceException) { }
+      try { startup.ConsoleForm?.Invoke(new Action(() => { startup.ConsoleForm.LogLine(text); })); }
       catch(InvalidOperationException) { }
 		}
 

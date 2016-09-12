@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Threading;
 using System.Windows.Forms;
 using System.Reflection;
 using System.Linq;
@@ -14,12 +13,9 @@ namespace QuizBot
     {
       InitializeComponent();
       ConsoleForm = new LogForm(this);
-      LoadLoaders();
-      progressBar1.Step = 100 / ToLoad.Count;
       worker = new BackgroundWorker();
       worker.DoWork += new DoWorkEventHandler(Loading);
       worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(OnLoadFinish);
-      //DoTheLoading();
     }
 
     private void SetLabelText(string text, bool loading = true)
@@ -36,21 +32,26 @@ namespace QuizBot
       ExtraInfo.Invoke(new Action(() => { ExtraInfo.Text = text; }));
     }
 
-    private Dictionary<string, Action> ToLoad;
+    public void SetExtraInfo(string text, int amount)
+    {
+      ExtraInfo.Invoke(new Action(() => { ExtraInfo.Text = text; }));
+      progressBar1.Invoke(new Action(() => 
+      {
+        progressBar1.Step = amount;
+        progressBar1.PerformStep();
+      }));
+    }
 
     private BackgroundWorker worker;
 
-    private void LoadLoaders()
-    {
-      ToLoad = typeof(StartupLoaders).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).
-        ToDictionary(x => x.Name, x => (Action)Delegate.CreateDelegate(typeof(Action), x));
-    }
-
     private void Loading(object sender, DoWorkEventArgs e)
     {
+      var ToLoad = typeof(StartupLoaders).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).
+  ToDictionary(x => x.Name, x => (Action)Delegate.CreateDelegate(typeof(Action), x));
+      this.Invoke(new Action(() => progressBar1.Step = 100 / ToLoad.Count));
+
       foreach (var each in ToLoad)
       {
-        Thread.Sleep(200);
         SetLabelText(each.Key);
         retry:
         try { each.Value(); }
@@ -59,19 +60,9 @@ namespace QuizBot
           switch (MessageBox.Show(ex.Message, "Error",
             MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error, MessageBoxDefaultButton.Button3))
           {
-            case DialogResult.Retry:
-              {
-                goto retry;
-              }
-            case DialogResult.Abort:
-              {
-                Application.Exit();
-                break;
-              }
-            case DialogResult.Ignore:
-              {
-                continue;
-              }
+            case DialogResult.Retry: { goto retry; }
+            case DialogResult.Abort: { Application.Exit(); break; }
+            case DialogResult.Ignore: { continue; }
           }
         }
         progressBar1.Invoke(new Action(progressBar1.PerformStep));
@@ -108,20 +99,32 @@ namespace QuizBot
   {
     private static void Bot() { Program.TryToBot(false); }
 
-    private static void Protocols() { GameData.InitializeProtocols(false); }
+    //private static void Protocols() { GameData.InitializeProtocols(false); }
+
+    private static void Others() { GameData.InitializeOthers(false); }
 
     private static void Parsers()
     {
-      Program.Parsers = new Dictionary<string, Action<Callback>>();
-      Program.Parsers.Add(GameData.Protocols["ConfigOptions"], new Action<Callback>(QuizBot.Config.Parse));
-      Program.Parsers.Add(GameData.Protocols["SelectedConfigOption"], new Action<Callback>(QuizBot.Config.ChangeParse));
-      Program.Parsers.Add(GameData.Protocols["NightActions"], new Action<Callback>(Game.ParseNightAction));
-      Program.Parsers.Add(GameData.Protocols["Vote"], new Action<Callback>(Game.ParseVoteChoice));
+      try
+      {
+        if (!CommandVars.protocolsLoaded) throw new KeyNotFoundException();
+
+        Program.Parsers = new Dictionary<string, Action<Callback>>();
+        Program.Parsers.Add(GameData.Protocols["ConfigOptions"], new Action<Callback>(QuizBot.Config.Parse));
+        Program.Parsers.Add(GameData.Protocols["SelectedConfigOption"], new Action<Callback>(QuizBot.Config.ChangeParse));
+        //Program.Parsers.Add(GameData.Protocols["NightActions"], new Action<Callback>(Game.ParseNightAction));
+        //Program.Parsers.Add(GameData.Protocols["Vote"], new Action<Callback>(Game.ParseVoteChoice));
+      }
+      catch(KeyNotFoundException)
+      {
+        MessageBox.Show("Protocols.xml was not loaded, skipping the loading of parsers", "Warning",
+  MessageBoxButtons.OK, MessageBoxIcon.Warning);
+      }
     }
 
     private static void Roles() { GameData.InitializeRoles(false); }
 
-    private static void Messages() { GameData.InitializeMessages(false); }
+   // private static void Messages() { GameData.InitializeMessages(false); }
 
     private static void Commands() { QuizBot.Commands.InitializeCommands(); }
 

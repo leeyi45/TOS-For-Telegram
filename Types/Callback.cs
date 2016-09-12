@@ -11,13 +11,21 @@ using Newtonsoft.Json;
 
 namespace QuizBot
 {
-  class Callback
+  public class Callback
   {
     public Callback(int playerId, string protocol, string data)
     {
       Protocol = protocol;
       Data = data;
       From = playerId;
+    }
+
+    public Callback(int group, int playerId, string protocol, string data)
+    {
+      Protocol = protocol;
+      Data = data;
+      From = playerId;
+      Group = group;
     }
 
     /// <summary>
@@ -34,6 +42,8 @@ namespace QuizBot
     /// The Id of the user who sent the callback
     /// </summary>
     public int From { get; set; }
+
+    public int Group { get; set; }
 
     public static implicit operator string(Callback it)
     {

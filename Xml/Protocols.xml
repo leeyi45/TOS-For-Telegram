@@ -13,10 +13,10 @@
   </protocol>
 
   <protocol key="NightActions">
-    <value>nightAction</value>
+    <value>night</value>
   </protocol>
 
   <protocol key="Vote">
-    <value>voteAction</value>
+    <value>vote</value>
   </protocol>
 </Protocols>

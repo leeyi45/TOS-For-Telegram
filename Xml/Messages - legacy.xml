@@ -1,173 +1,173 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!--This system is based off the werewolf language system-->
-<messages version="1.0">
+<strings version="1.0">
   <!--Administration events-->
-  <message key="PlayerJoin">
+  <string key="PlayerJoin">
     <value>{0} has joined the game! {1} players, {2} minimum, {3} maximum</value>
-  </message>
+  </string>
   
-  <message key="Leave">
+  <string key="Leave">
     <value>{0} has left the game!</value>
-  </message>
+  </string>
     
-  <message key="AlreadyJoin">
+  <string key="AlreadyJoin">
     <value>You have already joined!</value>
-  </message>
+  </string>
   
-  <message key="GameRunningJoin">
+  <string key="GameRunningJoin">
     <value>You cannot join now, a game is already in progress!</value>
-  </message>
+  </string>
     
-  <message key="NoGameJoin">
+  <string key="NoGameJoin">
     <value>There is no game in progress, use /createlobby to create a lobby and start one!</value>
-  </message>
+  </string>
   
-  <message key="LobbyCreated">
+  <string key="LobbyCreated">
     <value>{0} has started created a lobby, /join to join!</value>
-  </message>
+  </string>
   
-  <message key="RunningGameStart">
+  <string key="RunningGameStart">
     <value>A game has already been started! /join to join!</value>
-  </message>
+  </string>
   
-  <message key="BeginGame">
+  <string key="BeginGame">
     <value>Game started. Please switch over to message the bot to begin</value>
-  </message>
+  </string>
   
-  <message key="LobbyClosed">
+  <string key="LobbyClosed">
     <value>The lobby has been closed by {0}</value>
-  </message>
+  </string>
 
-  <message key="GameBegun">
+  <string key="GameBegun">
     <value>The game has already begun!</value>
-  </message>
+  </string>
   
-  <message key="NotAdminError">
+  <string key="NotAdminError">
     <value>{0}, you are not an admin!</value>
-  </message>
+  </string>
     
-  <message key="NotDevError">
+  <string key="NotDevError">
     <value>{0}, you are not a developer!</value>
-  </message>
+  </string>
   
-  <message key="JoinSeconds">
+  <string key="JoinSeconds">
     <value>{0} seconds left to /join</value>
-  </message>
+  </string>
   
-  <message key="SentConfig">
+  <string key="SentConfig">
     <value>{0}, I have sent you the config via PM</value>
-  </message>
+  </string>
   
-  <message key="RoleNotFound">
+  <string key="RoleNotFound">
     <value>Role "{0}" not found!</value>
-  </message>
+  </string>
   
-  <message key="PleaseStartBot">
+  <string key="PleaseStartBot">
     <value>{0}, click @quiztestbot and start the bot so as to enable PM!</value>
-  </message>
+  </string>
   
-  <message key="ForceGameEnd">
+  <string key="ForceGameEnd">
     <value>Game has been forcefully ended by {0}!</value>
-  </message>
+  </string>
   
-  <message key="PrivateOnly">
+  <string key="PrivateOnly">
     <value>This command can only be used in a private chat!</value>
-  </message>
+  </string>
   
-  <message key="MaxPlayersReached">
+  <string key="MaxPlayersReached">
     <value>You cannot join! The maxmimum number of players has been reached!</value>
-  </message>
+  </string>
   
-  <message key="MinPlayersReached">
+  <string key="MinPlayersReached">
     <value>{0} players have joined! /begin to begin the game!</value>
-  </message>
+  </string>
   
-  <message key="TimeLeft">
+  <string key="TimeLeft">
     <value>{0} seconds left to /join!</value>
-  </message>
+  </string>
   
-  <message key="NotEnoughPlayers">
+  <string key="NotEnoughPlayers">
     <value>There needs to be at least {0} players to begin! There are currently only {1}</value>
-  </message>
+  </string>
     
-  <message key="RolesAssigned">
+  <string key="RolesAssigned">
     <value>The roles have been assigned, and the game begins!</value>
-  </message>
+  </string>
   
-  <message key="LeftGame">
+  <string key="LeftGame">
     <value>{0} has left the game!</value>
-  </message>
+  </string>
   
-  <message key="NotInGame">
+  <string key="NotInGame">
     <value>You're not in the game!</value>
-  </message>
+  </string>
   
-  <message key="NotEnoughArgs">
+  <string key="NotEnoughArgs">
     <value>There needs to be at least {0} arguments for the command {1}</value>
-  </message>
+  </string>
 
-  <message key="GetNickname">
+  <string key="GetNickname">
     <value>Please send your desired nickname</value>
-  </message>
+  </string>
 
-  <message key="GotNickname">
+  <string key="GotNickname">
     <value>The nickname you have chosen is {0}!</value>
-  </message>
+  </string>
 
-  <message key="ChangedNickname">
+  <string key="ChangedNickname">
     <value>You have changed your nickname to {0}!</value>
-  </message>
+  </string>
 
-  <message key="NicknamesLeft">
+  <string key="NicknamesLeft">
     <value>Waiting for {0} player(s) to choose their nickname!</value>
-  </message>
+  </string>
   
-  <message key="ValueChanged">
+  <string key="ValueChanged">
     <value>Value of {0} has been changed to {1}!</value>
-  </message>
+  </string>
   
-  <message key="InvalidValue">
+  <string key="InvalidValue">
     <value>{0} is an invalid value for {1}!</value>
-  </message>
+  </string>
   
   <!-- Actual messages during the game -->
-  <message key="Instruct">
+  <string key="Instruct">
     <value>Choose one person to {0}</value>
-  </message>
+  </string>
 
-  <message key="ChosenTarget">
+  <string key="ChosenTarget">
     <value>You have chosen {0}</value>
-  </message>
+  </string>
 
-  <message key="InvestResult">
+  <string key="InvestResult">
     <value>Your target is {0}</value>
-  </message>
+  </string>
 
-  <message key="VotingStart">
+  <string key="VotingStart">
     <value>You have {0} seconds to vote on who to lynch!</value>
-  </message>
+  </string>
 
-  <message key="VoteReceived">
+  <string key="VoteReceived">
     <value>{0} has voted to lynch {1}!</value>
-  </message>
+  </string>
   
-  <message key="Roleblocked">
+  <string key="Roleblocked">
     <value>You have been roleblocked!</value>
-  </message>
+  </string>
   <!-- Death Messages -->
-  <message key="Serial Killer Death">
+  <string key="Serial Killer Death">
     <value>You have been stabbed by the Serial Killer!</value>
-  </message>
+  </string>
 
-  <message key="Serial Killer PublicDeath">
+  <string key="Serial Killer PublicDeath">
     <value>{0} was brutally stabbed by the serial killer last night!</value>
-  </message>
+  </string>
 
-  <message key="Mafioso Death">
+  <string key="Mafioso Death">
     <value>You have been assasinated by the Mafia in the dead of night!</value>
-  </message>
+  </string>
 
-  <message key="Mafioso PublicDeath">
+  <string key="Mafioso PublicDeath">
     <value>The Mafia ordered the assasination of {0}, and was found dead in his house in the morning!</value>
-  </message>
-</messages>
+  </string>
+</strings>

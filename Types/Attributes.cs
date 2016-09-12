@@ -8,15 +8,6 @@ using Telegram.Bot.Types.Enums;
 
 namespace QuizBot
 {
-  /* The following classes are not my own work, but taken from the 
-  * werewolf for telegram bot
-  * https://github.com/parabola949/Werewolf/
-  */
-  internal static class UpdateHelper
-  {
-
-  }
-
   //Class originally defined in the werewolf for telegram
   public class Command : Attribute
   {
@@ -55,10 +46,16 @@ namespace QuizBot
     /// </summary>
     public bool InPrivateOnly { get; set; } = false;
 
+    [Obsolete("Use GameInstance", true)]
     /// <summary>
     /// Marks the command as one to be used after a lobby has been created
     /// </summary>
     public bool GameStartOnly { get; set; } = false;
+
+    /// <summary>
+    /// Marks the command to be used after a lobby has been created
+    /// </summary>
+    public bool GameInstance { get; set; } = false;
 
     private bool testmode = false;
 

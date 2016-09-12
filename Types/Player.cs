@@ -3,6 +3,7 @@ using System.Linq;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using System.Collections.Generic;
 using static QuizBot.GameData;
 
 namespace QuizBot
@@ -135,7 +136,7 @@ namespace QuizBot
 
     public static Player GetPlayer(long Id, bool dead = false)
     {
-      System.Collections.Generic.List<Player> searchFrom;
+      List<Player> searchFrom;
       if (!dead) searchFrom = Joined;
       else searchFrom = Alive;
 

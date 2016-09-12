@@ -118,10 +118,17 @@
       <DependentUpon>LogForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Game\Game.cs" />
+    <Compile Include="Game\Game2.cs" />
+    <Compile Include="Game\Game3.cs" />
     <Compile Include="Game\GameData.cs" />
     <Compile Include="Game\GlobalVars.cs" />
     <Compile Include="Libraries\Disp.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Properties\Settings1.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -140,10 +147,11 @@
     <Compile Include="Types\Player.cs" />
     <Compile Include="Types\Role.cs" />
     <Compile Include="Types\Triptionary.cs" />
-    <Compile Include="Types\Werewolf.cs" />
+    <Compile Include="Types\Attributes.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Commands\CommandsList.txt" />
+    <Content Include="Xml\Messages - legacy.xml" />
     <Content Include="Xml\Messages.xml" />
     <Content Include="Xml\Protocols.xml" />
     <Content Include="Xml\Roles - legacy.xml" />
@@ -153,6 +161,10 @@
   <ItemGroup>
     <EmbeddedResource Include="Console\LogForm.resx">
       <DependentUpon>LogForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
