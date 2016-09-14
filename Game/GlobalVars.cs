@@ -149,7 +149,6 @@ namespace QuizBot
     public static int MaxPlayers
     {
       get { return Properties.Settings.Default.Max_Users; }
-      set { Properties.Settings.Default.Max_Users = value; }
     }
 
     [SettingDetail("Min Player Count", "Recommended not to change")]
@@ -159,7 +158,6 @@ namespace QuizBot
     public static int MinPlayers
     {
       get { return Properties.Settings.Default.Min_Users; }
-      set { Properties.Settings.Default.Min_Users = value; }
     }
 
     [SettingDetail("Join Time", "Not currently in use")]
@@ -169,7 +167,6 @@ namespace QuizBot
     public static int JoinTime
     {
       get { return Properties.Settings.Default.Join_Time; }
-      set { Properties.Settings.Default.Join_Time = value; }
     }
 
     /// <summary>
@@ -187,7 +184,6 @@ namespace QuizBot
     public static int NightTime
     {
       get { return Properties.Settings.Default.Night_Cycle; }
-      set { Properties.Settings.Default.Night_Cycle = value; }
     }
 
     [SettingDetail("Day Duration")]
@@ -197,7 +193,6 @@ namespace QuizBot
     public static int DayTime
     {
       get { return Properties.Settings.Default.Day_Cycle; }
-      set { Properties.Settings.Default.Day_Cycle = value; }
     }
 
     [SettingDetail("Lynch Duration")]
@@ -207,7 +202,6 @@ namespace QuizBot
     public static int LynchTime
     {
       get { return Properties.Settings.Default.Voting_Cycle; }
-      set { Properties.Settings.Default.Voting_Cycle = value; }
     }
 
     [SettingDetail("Rolelist")]
@@ -217,17 +211,6 @@ namespace QuizBot
     public static string CurrentRoleList
     {
       get { return Properties.Settings.Default.Rolelist; }
-      set
-      {
-        if(GameData.RoleLists.Keys.Contains(value))
-        {
-          Properties.Settings.Default.Rolelist = value;
-        }
-        else
-        {
-          throw new ArgumentException("No such rolelist");
-        }
-      }
     }
 
     [SettingDetail("Nicknames")]
@@ -237,7 +220,6 @@ namespace QuizBot
     public static bool UseNicknames
     {
       get { return Properties.Settings.Default.UseNicknames; }
-      set { Properties.Settings.Default.UseNicknames = value; }
     }
 
     /// <summary>
