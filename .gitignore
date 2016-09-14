@@ -250,4 +250,5 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+*.xml
 /Chats.cs
