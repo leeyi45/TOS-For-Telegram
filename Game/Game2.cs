@@ -44,6 +44,8 @@ namespace QuizBot
       CurrentGroup = group;
       GroupName = groupName;
       CommandContainer = new GameCommands(this);
+      Parsers = new Dictionary<string, Action<Callback>>();
+      Protocols = GameData.Protocols;
 
       Parsers.Add(Protocols["NightActions"], new Action<Callback>(ParseNightAction));
       Parsers.Add(Protocols["Vote"], new Action<Callback>(ParseVoteChoice));
@@ -57,6 +59,8 @@ namespace QuizBot
       this.settings = settings;
       Parsers = new Dictionary<string, Action<Callback>>();
       CommandContainer = new GameCommands(this);
+      Parsers = new Dictionary<string, Action<Callback>>();
+      Protocols = GameData.Protocols;
 
       Parsers.Add(Protocols["NightActions"], new Action<Callback>(ParseNightAction));
       Parsers.Add(Protocols["Vote"], new Action<Callback>(ParseVoteChoice));
@@ -72,31 +76,6 @@ namespace QuizBot
     {
       try { return Joined.Where(x => x.Id == Id).ToArray().Length == 1; }
       catch (IndexOutOfRangeException) { return false; }
-    }
-
-    public void Refresh(Message msg)
-    {
-      if(GameStarted)
-      {
-        BotMessage("GameRunningRefresh");
-        return;
-      }
-      Rolelist = GameData.RoleLists[QuizBot.Settings.CurrentRoleList];
-      Roles = GameData.Roles;
-      CurrentGroup = msg.Chat.Id;
-      GameMessages = GameData.Messages;
-      Protocols = GameData.Protocols;
-      Alignments = GameData.Alignments;
-      GamePhase = GamePhase.Joining;
-
-      Stopwatch = new System.Diagnostics.Stopwatch();
-      Messages = new Dictionary<int, Tuple<int, int>>();
-      Joined = new List<Player>();
-      settings = new Settings(QuizBot.Settings.AllSettings);
-      Parsers = new Dictionary<string, Action<Callback>>();
-
-      Parsers.Add(Protocols["NightActions"], new Action<Callback>(ParseNightAction));
-      Parsers.Add(Protocols["Vote"], new Action<Callback>(ParseVoteChoice));
     }
 
     private void StartRolesAssign()

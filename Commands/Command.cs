@@ -157,12 +157,6 @@ namespace QuizBot
       Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Markdown);
     }
 
-    [Command(Trigger = "Refresh")]
-    private static void Refresh(Message msg, string[] args)
-    {
-      GameInstances[msg.Chat.Id].Refresh(msg);
-    }
-
     [Command(Trigger = "listroles")]
     private static void ListRoles(Message msg, string[] args)
     {

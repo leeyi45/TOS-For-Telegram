@@ -20,13 +20,12 @@ namespace QuizBot
       /// Constructor to create new settings class
       /// </summary>
       /// <param name="Info">Property values</param>
-      public Settings(IEnumerable<PropertyInfo> Info)
+      public Settings(IEnumerable<SettingDetail> Info)
       {
-        var properties = AllSettings.ToDictionary(x => x.Name, x => x);
-
+        CreateProperties();
         foreach (var info in Info)
         {
-          var prop = properties[info.Name];
+          var prop = SetPropertyValue[info.Name];
           prop.SetValue(this, info.GetValue(null));
         }
       }
@@ -37,33 +36,49 @@ namespace QuizBot
       /// <param name="element">Settings XElement</param>
       public Settings(XElement element)
       {
-        var properties = AllSettings.ToDictionary(x => x.Name, x => x);
-        var quizbotsettings = QuizBot.Settings.AllSettings.ToDictionary(x => x.Name, x => x);
+        CreateProperties();
+        var quizbotsettings = QuizBot.Settings.SetPropertyValue;
         foreach (var each in element.Elements())
         {
-          var prop = properties[each.Name.ToString()];
+          var prop = SetPropertyValue[each.Name.ToString()];
           string val;
           element.TryGetElement(each.Name, out val);
           if(string.IsNullOrWhiteSpace(val)) val = quizbotsettings[
             each.Name.ToString()].GetValue(null).ToString();
-          prop.SetValue(this, Convert.ChangeType(val, prop.PropertyType));
+          prop.SetValue(this, Convert.ChangeType(val, prop.Info.PropertyType));
         }
       }
 
+      private void CreateProperties()
+      {
+        SettingCount = AllSettings.Count();
+        SetPropertyValue = AllSettings.ToDictionary(x => x.Name, x => x);
+      }
+
+      public int SettingCount { get; private set; }
+
+      [SettingDetail("Max Player Count")]
       public int MaxPlayers { get; private set; }
 
+      [SettingDetail("Min Player Count")]
       public int MinPlayers { get; private set; }
 
+      [SettingDetail("Use Nicknames")]
       public bool UseNicknames { get; private set; }
 
+      [SettingDetail("Lynch Duration")]
       public int LynchTime { get; private set; }
 
+      [SettingDetail("Night Duration")]
       public int NightTime { get; private set; }
 
+      [SettingDetail("Day Duration")]
       public int DayTime { get; private set; }
 
+      [SettingDetail("Join Duration", extramsg: "Currently not in use")]
       public int JoinTime { get; private set; }
 
+      [SettingDetail("Rolelist")]
       public string CurrentRoleList
       {
         get { return rolelist; }
@@ -76,13 +91,23 @@ namespace QuizBot
 
       private string rolelist;
 
-      public IEnumerable<PropertyInfo> AllSettings
+      public IEnumerable<SettingDetail> AllSettings
       {
-        get {
-          return from prop in typeof(Settings).GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                 where prop.CanRead && prop.CanWrite
-                 select prop; }
+        get
+        {
+          foreach (var each in typeof(Settings).GetProperties(BindingFlags.Instance | BindingFlags.Public))
+          {
+            var attri = each.GetCustomAttribute<SettingDetail>();
+            if (attri != null && each.CanRead && each.CanWrite)
+            {
+              attri.Info = each;
+              yield return attri;
+            }
+          }
+        }
       }
+
+      public Dictionary<string, SettingDetail> SetPropertyValue { get; set; }
 
       public XElement ToXElement()
       {
@@ -203,7 +228,6 @@ namespace QuizBot
     {
       Commands.GameInstances = new Dictionary<long, Game>();
       var doc = GDExtensions.SafeLoad("InstanceData.xml");
-      var defaultSettings = QuizBot.Settings.AllSettings.ToDictionary(x => x.Name, x => x);
       foreach(var each in doc.Root.Elements("Instance"))
       {
         int group;

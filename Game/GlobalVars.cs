@@ -251,18 +251,24 @@ namespace QuizBot
     /// <summary>
     /// Dictionary containing the data of all the current settings
     /// </summary>
-    public static Dictionary<string, SettingInfo> SetPropertyValue { get; private set; }
+    public static Dictionary<string, SettingDetail> SetPropertyValue { get; private set; }
 
     /// <summary>
     /// Returns an enumerator to iterate through all the settings
     /// </summary>
-    public static IEnumerable<PropertyInfo> AllSettings
+    public static IEnumerable<SettingDetail> AllSettings
     {
       get
       {
-        return from each in typeof(Settings).GetProperties(BindingFlags.Static | BindingFlags.Public)
-               where each.GetCustomAttribute(typeof(SettingDetail)) != null
-               select each;
+        foreach(var each in typeof(Settings).GetProperties(BindingFlags.Static | BindingFlags.Public))
+        {
+          var attri = each.GetCustomAttribute<SettingDetail>();
+          if(attri != null)
+          {
+            attri.Info = each;
+            yield return attri;
+          }
+        }
       }
     }
 
@@ -277,10 +283,7 @@ namespace QuizBot
     public static void LoadProperties()
     {
       SettingCount = AllSettings.Count();
-      SetPropertyValue = AllSettings.ToDictionary(x => x.Name, x =>
-          {
-            return new SettingInfo((SettingDetail)x.GetCustomAttribute(typeof(SettingDetail)), x);
-          });
+      SetPropertyValue = AllSettings.ToDictionary(x => x.Name, x => x);
     }
 
     /// <summary>
@@ -294,7 +297,7 @@ namespace QuizBot
     }
   }
 
-  class SettingDetail : Attribute
+  public class SettingDetail : Attribute
   {
     public SettingDetail(string displayName, string onselect = "", string extramsg = "")
     {
@@ -308,6 +311,8 @@ namespace QuizBot
     /// </summary>
     public string DisplayName { get; set; }
 
+    public string Name { get { return Info.Name; } }
+
     /// <summary>
     /// Any extra messages to send the user
     /// </summary>
@@ -317,35 +322,6 @@ namespace QuizBot
     /// Message to send on option select
     /// </summary>
     public string OnSelect { get; set; }
-  }
-
-  class SettingInfo
-  {
-    public SettingInfo(SettingDetail details, PropertyInfo info)
-    {
-      this.details = details;
-      Info = info;
-    }
-
-    private SettingDetail details;
-
-    public string DisplayName
-    {
-      get { return details.DisplayName; }
-      set { details.DisplayName = value; }
-    }
-
-    public string ExtraMessage
-    {
-      get { return details.ExtraMessage; }
-      set { details.ExtraMessage = value; }
-    }
-
-    public string OnSelect
-    {
-      get { return details.OnSelect; }
-      set { details.OnSelect = value; }
-    }
 
     public PropertyInfo Info { get; set; }
 
@@ -353,5 +329,16 @@ namespace QuizBot
     {
       Info.SetValue(null, Convert.ChangeType(val, Info.PropertyType));
     }
+
+    public void SetValue(object target, object val)
+    {
+      Info.SetValue(target, Convert.ChangeType(val, Info.PropertyType));
+    }
+
+    public object GetValue(object target)
+    {
+      return Info.GetValue(target);
+    }
+
   }
 }
