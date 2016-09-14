@@ -180,7 +180,7 @@ namespace QuizBot
       Thread.Sleep(200);
       Program.Bot.StartReceiving();
       if (yes) LogLine("Bot started receving messages", false);
-      SwitchLabelState("running", "Running", true);
+      SwitchLabelState("running", true);
       GameData.StartTime = DateTime.Now.AddHours(-8);
     }
 
@@ -191,15 +191,21 @@ namespace QuizBot
       Thread.Sleep(200);
       Program.Bot.StopReceiving();
       if (yes) LogLine("Bot stopped receving messages", false);
-      SwitchLabelState("running", "Stopped", false);
+      SwitchLabelState("running", false);
       return;
     }
 
-    public void SwitchLabelState(string key, string text, bool value)
+    public void SwitchLabelState(string key, bool value)
     {
-      Labels[key].Text = text;
-      if (value) Labels[key].ForeColor = Color.ForestGreen;
-      else Labels[key].ForeColor = Color.Red;
+      Labels[key].SetLabelInfo(value);
+    }
+
+    public void UpdateLabels()
+    { //Seems stupid, but it does the trick
+      CommandVars.messagesLoaded = CommandVars.messagesLoaded;
+      CommandVars.protocolsLoaded = CommandVars.protocolsLoaded;
+      CommandVars.Connected = CommandVars.Connected;
+      CommandVars.RolesLoaded = CommandVars.RolesLoaded;
     }
 
     public new void Show()
@@ -215,6 +221,11 @@ namespace QuizBot
       Application.Exit();
     }
 
+    private void OnFormShow(object sender, EventArgs e)
+    {
+      UpdateLabels();
+    }
+
     #region Stuff for the console
     private AutoCompleteStringCollection AddSuggestStrings()
     {
@@ -227,7 +238,7 @@ namespace QuizBot
       return col;
     }
 
-    private Dictionary<string, Label> Labels;
+    private Dictionary<string, StatusLabel> Labels;
 
     private delegate string CommandDelegate(string[] args);
 
@@ -235,12 +246,12 @@ namespace QuizBot
 
     private void AddLabels()
     {
-      Labels = new Dictionary<string, Label>();
+      Labels = new Dictionary<string, StatusLabel>();
       Labels.Add("protocol", protocolStatus);
       Labels.Add("message", messageStatus);
       Labels.Add("connect", connectLabel);
       Labels.Add("role", roleStatus);
-      Labels.Add("running", StatusLabel);
+      Labels.Add("running", stateLabel);
     }
 
     private void Tick(object sender, EventArgs e)
@@ -630,5 +641,33 @@ namespace QuizBot
 
     }
     #endregion
+
+    public class StatusLabel : Label
+    {
+      public StatusLabel() : base() { }
+
+      public void SetLabelInfo(bool state)
+      {
+        Invoke(new Action<bool>(setlabelinfo));
+      }
+
+      private void setlabelinfo(bool state)
+      {
+        if (state)
+        {
+          Text = TrueStateText;
+          ForeColor = Color.ForestGreen;
+        }
+        else
+        {
+          Text = FalseStateText;
+          ForeColor = Color.Red;
+        }
+      }
+
+      public string TrueStateText { get; set; } = "Loaded";
+
+      public string FalseStateText { get; set; } = "Not Loaded";
+    }
   }
 }

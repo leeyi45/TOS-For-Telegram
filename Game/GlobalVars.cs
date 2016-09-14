@@ -24,20 +24,7 @@ namespace QuizBot
       {
         try
         {
-          if (value)
-          {
-            Program.startup.ConsoleForm?.Invoke(new Action(() =>
-            {
-              Program.startup.ConsoleForm.SwitchLabelState("connect", "Connected", true);
-            }));
-          }
-          else
-          {
-            Program.startup.ConsoleForm?.Invoke(new Action(() =>
-            {
-              Program.startup.ConsoleForm.SwitchLabelState("connect", "Disconnected", false);
-            }));
-          }
+          Program.startup.ConsoleForm.SwitchLabelState("connect", value);
         }
         catch(Exception) { }
         connected = value;
@@ -51,23 +38,9 @@ namespace QuizBot
       {
         try
         {
-          if (value)
-          {
-            Program.startup.ConsoleForm.Invoke(new Action(() =>
-            {
-              Program.startup.ConsoleForm.SwitchLabelState("role", "Loaded", true);
-            }));
-
-          }
-          else
-          {
-            Program.startup.ConsoleForm.Invoke(new Action(() =>
-            {
-              Program.startup.ConsoleForm.SwitchLabelState("role", "Not Loaded", false);
-            }));
-          }
+          Program.startup.ConsoleForm.SwitchLabelState("role", value);
         }
-        catch(Exception) { }
+        catch (Exception) { }
         rolesloaded = value;
       }
     }
@@ -79,20 +52,7 @@ namespace QuizBot
       {
         try
         {
-          if (value)
-          {
-            Program.startup.ConsoleForm.Invoke(new Action(() =>
-            {
-              Program.startup.ConsoleForm.SwitchLabelState("message", "Loaded", true);
-            }));
-          }
-          else
-          {
-            Program.startup.ConsoleForm.Invoke(new Action(() =>
-            {
-              Program.startup.ConsoleForm.SwitchLabelState("message", "Not Loaded", false);
-            }));
-          }
+          Program.startup.ConsoleForm.SwitchLabelState("message", value);
         }
         catch (Exception) { }
         messagesloaded = value;
@@ -106,20 +66,7 @@ namespace QuizBot
       {
         try
         {
-          if (value)
-          {
-            Program.startup.ConsoleForm.Invoke(new Action(() =>
-            {
-              Program.startup.ConsoleForm.SwitchLabelState("protocol", "Loaded", true);
-            }));
-          }
-          else
-          {
-            Program.startup.ConsoleForm.Invoke(new Action(() =>
-            {
-              Program.startup.ConsoleForm.SwitchLabelState("protocol", "Not Loaded", false);
-            }));
-          }
+          Program.startup.ConsoleForm.SwitchLabelState("protocol", value);
         }
         catch (Exception) { }
         protocolsloaded = value;

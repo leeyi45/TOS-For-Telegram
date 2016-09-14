@@ -36,15 +36,15 @@ namespace QuizBot
       this.label1 = new System.Windows.Forms.Label();
       this.label2 = new System.Windows.Forms.Label();
       this.statBox = new System.Windows.Forms.GroupBox();
-      this.protocolStatus = new System.Windows.Forms.Label();
+      this.protocolStatus = new QuizBot.LogForm.StatusLabel();
       this.label7 = new System.Windows.Forms.Label();
-      this.messageStatus = new System.Windows.Forms.Label();
+      this.messageStatus = new QuizBot.LogForm.StatusLabel();
       this.label6 = new System.Windows.Forms.Label();
-      this.roleStatus = new System.Windows.Forms.Label();
+      this.roleStatus = new QuizBot.LogForm.StatusLabel();
       this.label5 = new System.Windows.Forms.Label();
-      this.connectLabel = new System.Windows.Forms.Label();
+      this.connectLabel = new QuizBot.LogForm.StatusLabel();
       this.label4 = new System.Windows.Forms.Label();
-      this.StatusLabel = new System.Windows.Forms.Label();
+      this.stateLabel = new QuizBot.LogForm.StatusLabel();
       this.label3 = new System.Windows.Forms.Label();
       this.StartButton = new System.Windows.Forms.Button();
       this.StopButton = new System.Windows.Forms.Button();
@@ -105,7 +105,7 @@ namespace QuizBot
       this.statBox.Controls.Add(this.label5);
       this.statBox.Controls.Add(this.connectLabel);
       this.statBox.Controls.Add(this.label4);
-      this.statBox.Controls.Add(this.StatusLabel);
+      this.statBox.Controls.Add(this.stateLabel);
       this.statBox.Controls.Add(this.label3);
       this.statBox.Location = new System.Drawing.Point(12, 13);
       this.statBox.Name = "statBox";
@@ -117,12 +117,14 @@ namespace QuizBot
       // protocolStatus
       // 
       this.protocolStatus.AutoSize = true;
+      this.protocolStatus.FalseStateText = null;
       this.protocolStatus.ForeColor = System.Drawing.Color.Red;
       this.protocolStatus.Location = new System.Drawing.Point(77, 85);
       this.protocolStatus.Name = "protocolStatus";
       this.protocolStatus.Size = new System.Drawing.Size(63, 13);
       this.protocolStatus.TabIndex = 10;
       this.protocolStatus.Text = "Not Loaded";
+      this.protocolStatus.TrueStateText = null;
       // 
       // label7
       // 
@@ -136,12 +138,14 @@ namespace QuizBot
       // messageStatus
       // 
       this.messageStatus.AutoSize = true;
+      this.messageStatus.FalseStateText = null;
       this.messageStatus.ForeColor = System.Drawing.Color.Red;
       this.messageStatus.Location = new System.Drawing.Point(77, 72);
       this.messageStatus.Name = "messageStatus";
       this.messageStatus.Size = new System.Drawing.Size(63, 13);
       this.messageStatus.TabIndex = 8;
       this.messageStatus.Text = "Not Loaded";
+      this.messageStatus.TrueStateText = null;
       // 
       // label6
       // 
@@ -155,12 +159,14 @@ namespace QuizBot
       // roleStatus
       // 
       this.roleStatus.AutoSize = true;
+      this.roleStatus.FalseStateText = "";
       this.roleStatus.ForeColor = System.Drawing.Color.Red;
       this.roleStatus.Location = new System.Drawing.Point(77, 55);
       this.roleStatus.Name = "roleStatus";
       this.roleStatus.Size = new System.Drawing.Size(63, 13);
       this.roleStatus.TabIndex = 6;
       this.roleStatus.Text = "Not Loaded";
+      this.roleStatus.TrueStateText = null;
       // 
       // label5
       // 
@@ -174,12 +180,14 @@ namespace QuizBot
       // connectLabel
       // 
       this.connectLabel.AutoSize = true;
+      this.connectLabel.FalseStateText = "Disconnected";
       this.connectLabel.ForeColor = System.Drawing.Color.Red;
       this.connectLabel.Location = new System.Drawing.Point(77, 38);
       this.connectLabel.Name = "connectLabel";
       this.connectLabel.Size = new System.Drawing.Size(73, 13);
       this.connectLabel.TabIndex = 4;
       this.connectLabel.Text = "Disconnected";
+      this.connectLabel.TrueStateText = "Connected";
       // 
       // label4
       // 
@@ -190,15 +198,17 @@ namespace QuizBot
       this.label4.TabIndex = 3;
       this.label4.Text = "Connection:";
       // 
-      // StatusLabel
+      // stateLabel
       // 
-      this.StatusLabel.AutoSize = true;
-      this.StatusLabel.ForeColor = System.Drawing.Color.Red;
-      this.StatusLabel.Location = new System.Drawing.Point(77, 20);
-      this.StatusLabel.Name = "StatusLabel";
-      this.StatusLabel.Size = new System.Drawing.Size(47, 13);
-      this.StatusLabel.TabIndex = 2;
-      this.StatusLabel.Text = "Stopped";
+      this.stateLabel.AutoSize = true;
+      this.stateLabel.FalseStateText = "Stopped";
+      this.stateLabel.ForeColor = System.Drawing.Color.Red;
+      this.stateLabel.Location = new System.Drawing.Point(77, 20);
+      this.stateLabel.Name = "stateLabel";
+      this.stateLabel.Size = new System.Drawing.Size(47, 13);
+      this.stateLabel.TabIndex = 2;
+      this.stateLabel.Text = "Stopped";
+      this.stateLabel.TrueStateText = "Running";
       // 
       // label3
       // 
@@ -267,7 +277,8 @@ namespace QuizBot
       this.Controls.Add(this.commandBox);
       this.Controls.Add(this.logBox);
       this.Name = "LogForm";
-      this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.OnFormClose);
+      this.FormClosing += this.OnFormClose;
+      this.Shown += this.OnFormShow;
       this.statBox.ResumeLayout(false);
       this.statBox.PerformLayout();
       this.ResumeLayout(false);
@@ -286,16 +297,16 @@ namespace QuizBot
     private Button StopButton;
     private Button CloseButton;
     private Label label3;
-    private Label StatusLabel;
+    private StatusLabel stateLabel;
     private Label label1;
     private RichTextBox richTextBox1;
-    private Label connectLabel;
+    private StatusLabel connectLabel;
     private Label label4;
-    private Label roleStatus;
+    private StatusLabel roleStatus;
     private Label label5;
-    private Label protocolStatus;
+    private StatusLabel protocolStatus;
     private Label label7;
-    private Label messageStatus;
+    private StatusLabel messageStatus;
     private Label label6;
     #endregion
   }
