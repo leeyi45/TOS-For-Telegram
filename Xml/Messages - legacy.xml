@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!--This system is based off the werewolf language system-->
+<!--Last Modified: 12/09/16-->
 <strings version="1.0">
   <!--Administration events-->
   <string key="PlayerJoin">

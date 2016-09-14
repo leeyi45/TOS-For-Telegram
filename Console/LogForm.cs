@@ -538,6 +538,28 @@ namespace QuizBot
           return "Invalid argument " + args[1];
         }
       }
+
+      [ConsoleCommand("instances")]
+      private string Instances(string[] args)
+      {
+        var output = new StringBuilder("Current instances:");
+        output.AppendLine();
+        foreach(var each in Commands.GameInstances.Keys)
+        {
+          output.AppendLine(each.ToString());
+        }
+        return output.ToString();
+      }
+
+      [ConsoleCommand("test")]
+      private string Test(string[] args)
+      {
+        var doc = GDExtensions.SafeLoad("InstanceData.xml");
+        var element1 = doc.Root.Element("Instance");
+        var element2 = element1.Element("Settings");
+        Program.ConsoleLog(element2.TryGetElementValue("InstanceData.xml", "MaxPlayers"));
+        return element2.Name.ToString();
+      }
       #endregion
 
       private string concater(string text)

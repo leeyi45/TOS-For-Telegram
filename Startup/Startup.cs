@@ -71,9 +71,16 @@ namespace QuizBot
 
     private void OnLoadFinish(object sender, RunWorkerCompletedEventArgs e)
     {
-      if (e.Error != null) throw e.Error;
-      progressBar1.Value = 100;
-      ConsoleForm.Show();
+      try
+      {
+        if (e.Error != null) throw e.Error;
+        progressBar1.Value = 100;
+        ConsoleForm.Show();
+      }
+      finally
+      {
+        Program.OnClosing(null, null);
+      }
     }
 
     private void DoTheLoading(object sender, EventArgs e)
@@ -133,5 +140,7 @@ namespace QuizBot
     private static void Chats() { QuizBot.Chats.getChats(); }
 
     private static void Settings() { QuizBot.Settings.LoadProperties(); }
+
+    private static void Instances() { Game.LoadInstances(); }
   }
 }

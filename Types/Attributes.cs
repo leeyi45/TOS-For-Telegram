@@ -46,16 +46,15 @@ namespace QuizBot
     /// </summary>
     public bool InPrivateOnly { get; set; } = false;
 
-    [Obsolete("Use GameInstance", true)]
     /// <summary>
     /// Marks the command as one to be used after a lobby has been created
     /// </summary>
     public bool GameStartOnly { get; set; } = false;
 
     /// <summary>
-    /// Marks the command to be used after a lobby has been created
+    /// Marks the command as a non instance command
     /// </summary>
-    public bool GameInstance { get; set; } = false;
+    public bool IsNotInstance { get; set; } = true;
 
     private bool testmode = false;
 
@@ -70,6 +69,8 @@ namespace QuizBot
         testmode = value;
       }
     }
+
+    public Game.CommandDelegate Info { get; set; }
   }
 
   //My own work tyvm

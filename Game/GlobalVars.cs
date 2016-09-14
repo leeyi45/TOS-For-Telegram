@@ -26,14 +26,14 @@ namespace QuizBot
         {
           if (value)
           {
-            Program.startup.ConsoleForm.Invoke(new Action(() =>
+            Program.startup.ConsoleForm?.Invoke(new Action(() =>
             {
               Program.startup.ConsoleForm.SwitchLabelState("connect", "Connected", true);
             }));
           }
           else
           {
-            Program.startup.ConsoleForm.Invoke(new Action(() =>
+            Program.startup.ConsoleForm?.Invoke(new Action(() =>
             {
               Program.startup.ConsoleForm.SwitchLabelState("connect", "Disconnected", false);
             }));
@@ -72,7 +72,7 @@ namespace QuizBot
       }
     }
 
-    public static bool MessagesLoaded
+    public static bool messagesLoaded
     {
       get { return messagesloaded; }
       set
@@ -99,7 +99,7 @@ namespace QuizBot
       }
     }
 
-    public static bool ProtocolsLoaded
+    public static bool protocolsLoaded
     {
       get { return protocolsloaded; }
       set

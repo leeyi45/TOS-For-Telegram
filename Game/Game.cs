@@ -194,12 +194,12 @@ namespace QuizBot
 
     private void CheckWinConditions()
     {
-      switch(GameData.AliveCount)
-      {
-        case 1:
-          {
-            break;
-          }
+      if(Alive.TrueForAll(x => x.team == Team.Town || x.role.Alignment == "neutral benign"))
+      { //Town wins if all left are town or non killing neutrals
+        foreach(var each in Alive.Where(x => x.team == Team.Town || x.role.Alignment == "neutral benign"))
+        {
+          each.Won = true;
+        }
       }
     }
 

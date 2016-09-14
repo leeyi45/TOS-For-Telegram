@@ -15,8 +15,7 @@ namespace QuizBot
 	public class Commands
 	{
     #region Command Registration
-    public static Dictionary<string, Tuple<CommandDelegate, Command>> AllCommands = 
-      new Dictionary<string, Tuple<CommandDelegate, Command>>();
+    public static Dictionary<string, Command> AllCommands = new Dictionary<string, Command>();
 
 		public delegate void CommandDelegate(Message msg, string[] args);
 
@@ -25,15 +24,21 @@ namespace QuizBot
 		public static void InitializeCommands()
 		{
       //Just means I don't have to add the functions myself cause I'm lazy af
+      Log("Registering commands", false);
       foreach(var method in typeof(Commands).GetMethods(BindingFlags.NonPublic | BindingFlags.Static))
       {
-        Command attribute = method.GetCustomAttribute(typeof(Command)) as Command;
-        if (attribute == null) continue;
-        AllCommands.Add(attribute.Trigger, new Tuple<CommandDelegate, Command>(
-          (CommandDelegate)Delegate.CreateDelegate(typeof(CommandDelegate), method), attribute));
-        GameData.Log("Command \"" + attribute.Trigger + "\" registered", false);
+        var attri = method.GetCustomAttribute<Command>();
+        if(attri != null)
+        {
+          attri.Info = (Game.CommandDelegate)Delegate.CreateDelegate(typeof(Game.CommandDelegate), method);
+          AllCommands.Add(attri.Trigger, attri);
+          Log("Command \"" + attri.Trigger + "\" registered", false);
+        }
       }
-      GameData.Log("", false);
+
+      Log("Loading Blocked People", false);
+      var doc = GDExtensions.SafeLoad("UserData.xml");
+      BlockedPeople = doc.Root.Elements("Id").Select(x => x.Value).ToList();
     }
 
 		//The default parser
@@ -45,58 +50,33 @@ namespace QuizBot
 
 			string[] args = cmd.Split(' ');
 			//Remove the @quiztestbot
-			if (args[0].Contains(BotUsername)) args[0] = args[0].Replace(BotUsername, ""); ;
+			if (args[0].Contains(BotUsername)) args[0] = args[0].Replace("@" + BotUsername, "");
+      //Program.PrintWait("the arg is " + args[0]);
 
-      try
+      //Check stuff
+      Command attribute;
+
+      if(!AllCommands.TryGetValue(args[0], out attribute))
       {
-        //Check stuff
-        Command attribute = AllCommands[args[0]].Item2;
-
-        #region Checks
-        if (attribute.InGroupOnly &&
-          (msg.Chat.Type == ChatType.Private || msg.Chat.Type == ChatType.Channel))
-        { //If the chat is not a group and the command is group only
-          Program.BotMessage(msg.Chat.Id, "GroupOnly");
+        //Check for game instance
+        if(GameInstances.Keys.Contains(msg.Chat.Id))
+        { //Game Instance exists
+          if(!GameInstances[msg.Chat.Id].AllCommands.TryGetValue(args[0], out attribute))
+          { //No such command in game instance
+            throw new InvalidCommandException(args[0]);
+          }
+        }
+        else
+        { //Game Instance does not exist
+          Program.BotMessage(msg.Chat.Id, "NoInstance");
           return;
         }
-
-        if (attribute.InPrivateOnly && msg.Chat.Type != ChatType.Private)
-        { //If the chat is not private and the command is private only
-          Program.BotMessage(msg.Chat.Id, "PrivateOnly");
-          return;
-        }
-
-        if (attribute.GroupAdminOnly && !Player.IsGroupAdmin(msg.From.Id, msg.Chat.Id))
-        { //If command is admin only and user is not admin
-          Program.BotMessage(msg.Chat.Id, "NotAdminError", msg.From.Username);
-          return;
-        }
-
-        if(attribute.DevOnly && msg.From.Id != Chats.chats["dev"])
-        { //User is not dev
-          Program.BotMessage(msg.Chat.Id, "NotDevError", msg.From.Username);
-          return;
-        }
-
-        /*
-        if(attribute.GameStartOnly && !GameStarted)
-        { //Game has not been started
-          Program.BotMessage(msg.Chat.Id, "NoGameJoin");
-          return;
-        }*/
-
-        if(attribute.GameInstance && !GameInstances.ContainsKey(msg.Chat.Id))
-        {
-          Program.BotMessage(msg.Chat.Id, "NoGameJoin");
-          return;
-        }
-        #endregion
-
-        AllCommands[args[0]].Item1(msg, args);
       }
-      catch (KeyNotFoundException)
-      { //Unrecognised command
-      }
+
+      if (!CommandCheck(attribute, msg)) return;
+
+      if (attribute.IsNotInstance) attribute.Info(msg, args);
+      else GameInstances[msg.Chat.Id].AllCommands[args[0]].Info(msg, args);
 		}
     #endregion
 
@@ -109,34 +89,17 @@ namespace QuizBot
       QuizBot.Config.SendInline(msg.From, msg.Chat.Title);
     }
 
-    [Command(InGroupOnly = true, Trigger = "join", GameInstance = true)]
-    private static void Join(Message msg, string[] args)
+    [Command(Trigger = "createinstance", InGroupOnly = true)]
+    private static void CreateInstance(Message msg, string[] args)
     {
-      GameInstances[msg.Chat.Id].Join(msg);
-    }
-
-    [Command(Trigger = "startgame", InGroupOnly = true, GameInstance = true)]
-    private static void StartGame(Message msg, string[] args)
-    {
-      GameInstances[msg.Chat.Id].StartGame();
-    }
-
-    [Command(Trigger = "players", GameInstance = true)]
-    private static void Players(Message msg, string[] args)
-    {
-      GameInstances[msg.Chat.Id].Players();
-    }
-
-    [Command(Trigger = "say", InPrivateOnly = true, GameInstance = true)]
-    private static void Say(Message msg, string[] args)
-    {
-      GameInstances[msg.Chat.Id].Say(msg, args);
-    }
-
-    [Command(Trigger = "leave", InGroupOnly = true, GameInstance = true)]
-    private static void Leave(Message msg, string[] args)
-    {
-      GameInstances[msg.Chat.Id].Leave(msg);
+      if(GameInstances.Keys.Contains(msg.Chat.Id))
+      {
+        Program.BotMessage(msg.Chat.Id, "HasInstance");
+      }
+      else
+      {
+        GameInstances.Add(msg.Chat.Id, new Game(msg));
+      }
     }
 
     [Command(Trigger = "ping", InGroupOnly = true)]
@@ -150,23 +113,6 @@ namespace QuizBot
       ts = DateTime.UtcNow - send;
       Program.Bot.EditMessageTextAsync(msg.Chat.Id, result.MessageId, message + "\nTime to send ping message: " +
         ts.ToString("fff'.'ff") + "ms", parseMode: ParseMode.Markdown);
-    }
-
-    //The lobby system is still here for when timed joining is reimplemented
-    [Command(Trigger = "createlobby")]
-    private static void CreateLobby(Message msg, string[] args)
-    {
-      try { GameInstances.Add(msg.Chat.Id, new Game(Settings.CurrentRoleList, msg)); }
-      catch(ArgumentException)
-      {
-        Program.BotMessage(msg.Chat.Id, "RunningGameStart");
-      }
-    }
-
-    [Command(Trigger = "closelobby", GameInstance = true)]
-    private static void CloseLobby(Message msg, string[] args)
-    {
-      GameInstances[msg.Chat.Id].CloseLobby(msg);
     }
 
     [Command(Trigger = "roles")]
@@ -211,6 +157,12 @@ namespace QuizBot
       Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Markdown);
     }
 
+    [Command(Trigger = "Refresh")]
+    private static void Refresh(Message msg, string[] args)
+    {
+      GameInstances[msg.Chat.Id].Refresh(msg);
+    }
+
     [Command(Trigger = "listroles")]
     private static void ListRoles(Message msg, string[] args)
     {
@@ -236,7 +188,7 @@ namespace QuizBot
     [Command(Trigger = "getchatid")]
     private static void GetChatId(Message msg, string[] args)
     {
-      Program.Bot.SendTextMessageAsync(msg.Chat.Id, "The chat ID is: " + msg.Chat.Id.ToString());
+      Program.BotMessage(msg.Chat.Id, "GetChatID", msg.Chat.Id.ToString());
     }
     
     [Command(Trigger = "getcommands")]
@@ -394,8 +346,22 @@ namespace QuizBot
         Program.BotNormalMessage(msg.Chat.Id, output);
       }
     }
+
+    [Command(Trigger = "block", GroupAdminOnly = true)]
+    private static void Block(Message msg, string[] args)
+    {
+      try { BlockedPeople.Add(args[1]); }
+      catch(IndexOutOfRangeException) { Program.BotMessage(msg.Chat.Id, "BlockError");  }
+    }
+
+    [Command(Trigger = "unblock", GroupAdminOnly = true)]
+    private static void Unblock(Message msg, string[] args)
+    {
+      try { BlockedPeople.Remove(args[1]); }
+      catch (IndexOutOfRangeException) { Program.BotMessage(msg.Chat.Id, "BlockError"); }
+    }
     #endregion
-    
+
     /*
     #region Assign Roles
     private static void BeginGame()
@@ -497,18 +463,60 @@ namespace QuizBot
       Program.PrintWait("Waiting");
     }
 
+    public static bool CommandCheck(Command attribute, Message msg)
+    {
+      if (attribute.InGroupOnly &&
+  (msg.Chat.Type == ChatType.Private || msg.Chat.Type == ChatType.Channel))
+      { //If the chat is not a group and the command is group only
+        Program.BotMessage(msg.Chat.Id, "GroupOnly");
+        return false;
+      }
+
+      if (attribute.InPrivateOnly && msg.Chat.Type != ChatType.Private)
+      { //If the chat is not private and the command is private only
+        Program.BotMessage(msg.Chat.Id, "PrivateOnly");
+        return false;
+      }
+
+      if (attribute.GroupAdminOnly && !Player.IsGroupAdmin(msg.From.Id, msg.Chat.Id))
+      { //If command is admin only and user is not admin
+        Program.BotMessage(msg.Chat.Id, "NotAdminError", msg.From.Username);
+        return false;
+      }
+
+      if (attribute.DevOnly && msg.From.Id != Chats.chats["dev"])
+      { //User is not dev
+        Program.BotMessage(msg.Chat.Id, "NotDevError", msg.From.Username);
+        return false;
+      }
+
+      try
+      {
+        if (attribute.GameStartOnly && !GameInstances[msg.Chat.Id].GameStarted)
+        {
+          throw new KeyNotFoundException();
+        }
+      }
+      catch(KeyNotFoundException)
+      {
+        Program.BotMessage(msg.Chat.Id, "NoGameJoin");
+        return false;
+      }
+      return true;
+    }
+
     public static void EndGame()
 		{
 			GameData.GamePhase = GamePhase.Inactive;
 			Joined = new List<Player>();
 		}
 
-    private const string WerewolfFile = @"C:\Users\Lee Yi\Desktop\Everything, for the moment\Coding\C# Bot\TOS-For-Telegram\WFPMembers.xml";
+    private const string WerewolfFile = @"WFPMembers.xml";
 
     //Use this to add new users
     public static string ProcessUserId(Message msg)
     {
-      XDocument doc = XDocument.Load(WerewolfFile);
+      XDocument doc = GDExtensions.SafeLoad(WerewolfFile);
       User forward = msg.ForwardFrom;
       foreach(var element in doc.Root.Elements("member"))
       {
@@ -527,7 +535,7 @@ namespace QuizBot
         new XElement("username", username),
         new XElement("name", forward.FirstName + " " + forward.LastName),
         new XElement("Id", forward.Id)));
-      doc.Save(WerewolfFile);
+      doc.Save(xmlLocation + WerewolfFile);
       return "User " + forward.Username + " has been registered!";
     }
 
@@ -547,13 +555,12 @@ namespace QuizBot
       if(count == 0)
       {
         CommandVars.GettingNicknames = false;
-        GameStart.Start();
       }
       else Program.BotMessage("NicknamesLeft", count);
     }
 
-    private static Thread GameStart;
+    public static Dictionary<long, Game> GameInstances { get; set; }
 
-    public static Dictionary<long, Game> GameInstances { get; set; } = new Dictionary<long, Game>();
+    public static List<string> BlockedPeople { get; set; }
 	}
 }

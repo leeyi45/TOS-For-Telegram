@@ -585,6 +585,43 @@ namespace QuizBot
       throw new InitException("Roles.xml", message, x);
     }
 
+    //Null values are not allowed
+    /// <summary>
+    /// Returns the value of the element, converted to the specified type
+    /// </summary>
+    /// <typeparam name="T">The type to return</typeparam>
+    /// <param name="x">The element to get the value from</param>
+    /// <param name="name">The name of the value to get</param>
+    /// <param name="handle">Boolean value indicating if exceptions should be handled</param>
+    /// <param name="file">File name</param>
+    /// <returns>The value of the element</returns>
+    public static T TryGetElementValue<T>(this XElement x, string file, string name, bool handle = true)
+    {
+      string message;
+      try { return (T)Convert.ChangeType(x.Element(name).Value, typeof(T)); }
+      catch (NullReferenceException) when (handle) { message = "Failed to get " + name; }
+      catch (FormatException) when (handle)
+      { message = "Invalid value for " + name + ", " + typeof(T).Name + " expected!"; }
+      catch (InvalidCastException) when (handle)
+      { message = "Invalid value for " + name + ", " + typeof(T).Name + " expected!"; }
+      throw new InitException(file, message, x);
+    }
+
+    //Null values are allowed
+    /// <summary>
+    /// Returns the value of the element, converted to the specified type, allowing for a default
+    /// value to be returned if an exception occurs
+    /// </summary>
+    /// <typeparam name="T">The type to return</typeparam>
+    /// <param name="x">The element to get the value from</param>
+    /// <param name="name">The name of the value to get</param>
+    /// <param name="defaultVal">The default value to return</param>
+    /// <returns>The value of the element</returns>
+    public static T TryGetElementValueSpecial<T>(this XElement x, string name, T defaultVal)
+    {
+      return (T)Convert.ChangeType(x.Element(name).Value, typeof(T));
+    }
+
     //Null values are allowed
     /// <summary>
     /// Returns the value of the element, converted to the specified type, allowing for a default

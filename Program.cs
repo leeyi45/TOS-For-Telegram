@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using System.Reflection;
+using System.Xml.Linq;
 using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Args;
@@ -20,53 +21,64 @@ namespace QuizBot
 
     [STAThread]
 		static void Main(string[] notused)
-    { 
+    {
       startup = new Startup();
+      Application.ApplicationExit += OnClosing;
       GameData.StartTime = DateTime.Now.AddHours(-8);
       Application.EnableVisualStyles();
       Application.Run(startup);
+
 		}
 
     public static Dictionary<string, Action<Callback>> Parsers { get; set; }
 
 		static void OnMessage(object sender, MessageEventArgs messageEventArgs)
 		{
-			var message = messageEventArgs.Message;
-			var msgtext = message.Text;
-
-      //Spam filter
-      //Messages received while not receiving are ignored
-      if (message.Date.Ticks < GameData.StartTime.Ticks) return;
-
-			if (message == null || message.Type != MessageType.TextMessage) return;
-
-      if(message.ForwardFrom != null && CommandVars.GetUserId)
-      {
-        Bot.SendTextMessageAsync(message.From.Id, Commands.ProcessUserId(message));
-      }
-
-      if(message.Chat.Type == ChatType.Private && CommandVars.GettingNicknames)
-      {
-        Commands.ProcessNicknames(message);
-      }
-
       try
       {
-        if (CommandVars.ReceivingVals[message.From.Id].Item1)
+        var message = messageEventArgs.Message;
+        var msgtext = message.Text;
+
+        //Spam filter
+        //Messages received while not receiving are ignored
+        if (message.Date.Ticks < GameData.StartTime.Ticks) return;
+
+        if (message == null || message.Type != MessageType.TextMessage) return;
+
+        if (message.ForwardFrom != null && CommandVars.GetUserId)
         {
-          Config.ParseValue(message);
+          Bot.SendTextMessageAsync(message.From.Id, Commands.ProcessUserId(message));
+        }
+
+        if (message.Chat.Type == ChatType.Private && CommandVars.GettingNicknames)
+        {
+          Commands.ProcessNicknames(message);
+        }
+
+        if (Commands.BlockedPeople.Contains(message.From.Id.ToString())) return;
+
+        try
+        {
+          if (CommandVars.ReceivingVals[message.From.Id].Item1)
+          {
+            Config.ParseValue(message);
+          }
+        }
+        catch (KeyNotFoundException) { }
+
+        ConsoleLog("Message \"" + msgtext + "\" received from " + message.From.FirstName + " " + message.From.LastName);
+
+        //If it is a command
+        if (msgtext.StartsWith("/"))
+        {
+          //Send to the command processor
+          Commands.Parse(message);
         }
       }
-      catch(KeyNotFoundException) { }
-
-			ConsoleLog("Message \"" + msgtext + "\" received from " + message.From.FirstName + " " + message.From.LastName);
-
-			//If it is a command
-			if(msgtext.StartsWith("/")) 
-			{
-				//Send to the command processor
-				Commands.Parse(message);
-			}
+      finally
+      {
+        OnClosing(null, null);
+      }
 		}
 
 		static void OnCallbackQuery(object sender, CallbackQueryEventArgs e)
@@ -239,5 +251,37 @@ namespace QuizBot
         parseMode: ParseMode.Markdown, replyMarkup: markup);
     }
     #endregion
+
+    public static void OnClosing(object sender, EventArgs e)
+    { //Closing logic
+      var dataFile = XDocument.Load(GameData.xmlLocation + @"UserData.xml");
+      try
+      {
+        var element = dataFile.Element("BlockedUsers");
+        foreach (var each in Commands.BlockedPeople)
+        {
+          element.Add(new XElement("Id", each));
+        }
+      }
+      catch { }
+
+      var instances = new XDocument(new XElement("Instances"));
+
+      try
+      {
+        foreach(var each in Commands.GameInstances.Values)
+        {
+          var element = new XElement("Instance");
+          element.Add(new XElement("CurrentGroup", each.CurrentGroup));
+          element.Add(new XElement("Name", each.GroupName));
+          element.Add(each.settings.ToXElement());
+          instances.Root.Add(element);
+        }
+      }
+      catch { }
+
+      dataFile.Save(GameData.xmlLocation + @"UserData.xml");
+      instances.Save(GameData.xmlLocation + "InstanceData.xml");
+    }
   }
 }

@@ -14,12 +14,32 @@
     <value>You have already joined!</value>
   </message>
   
+  <message key="JoinGameSuccess">
+    <value>You have successfully joined the game in {0}!</value>
+  </message>
+    
   <message key="GameRunningJoin">
     <value>You cannot join now, a game is already in progress!</value>
+  </message>
+
+  <message key="GameRunningRefresh">
+    <value>You cannot refresh the game now, it is currently in progress!</value>
   </message>
     
   <message key="NoGameJoin">
     <value>There is no game in progress, use /createlobby to create a lobby and start one!</value>
+  </message>
+
+  <message key="NoInstanceData">
+    <value>There is no instance data for this group. Use /createinstance first!</value>
+  </message>
+
+  <message key="InstanceCreated">
+    <value>Instance data created for this group!</value>
+  </message>
+
+  <message key="HasInstance">
+    <value>Instance data has already been created for this group!</value>
   </message>
   
   <message key="LobbyCreated">
@@ -128,6 +148,14 @@
   
   <message key="InvalidValue">
     <value>{0} is an invalid value for {1}!</value>
+  </message>
+  
+  <message key="BlockError">
+    <value>Please provide an ID!</value>
+  </message>
+  
+  <message key="GetChatID">
+    <value>The ID for this chat is {0}</value>
   </message>
   
   <!-- Actual messages during the game -->

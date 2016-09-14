@@ -151,12 +151,14 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Commands\CommandsList.txt" />
+    <Content Include="Xml\InstanceData.xml" />
     <Content Include="Xml\Messages - legacy.xml" />
     <Content Include="Xml\Messages.xml" />
     <Content Include="Xml\Protocols.xml" />
     <Content Include="Xml\Roles - legacy.xml" />
     <Content Include="Xml\Roles.xml" />
     <Content Include="WFPMembers.xml" />
+    <Content Include="Xml\UserData.xml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Console\LogForm.resx">

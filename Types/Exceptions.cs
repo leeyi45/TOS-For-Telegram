@@ -41,4 +41,10 @@ namespace QuizBot
     public AssignException(string message) : 
       base ("Error occurred while assigning roles:" + message) { }
   }
+
+  class InvalidCommandException : GameException
+  {
+    public InvalidCommandException(string arg) : 
+      base("Invalid command " + arg) { }
+  }
 }

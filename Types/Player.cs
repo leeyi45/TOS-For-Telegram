@@ -48,7 +48,7 @@ namespace QuizBot
     {
       get
       {
-        if (string.IsNullOrWhiteSpace(Username)) return Name;
+        if (string.IsNullOrWhiteSpace(username)) return Name;
         else return username;
       }
       set { username = value; }  
@@ -88,6 +88,16 @@ namespace QuizBot
     /// The player on which the player intends to perform his action
     /// </summary>
     public Player ActionTarget { get; set; }
+
+    /// <summary>
+    /// Boolean value indicating if the player has won the game
+    /// </summary>
+    public bool Won { get; set; }
+
+    /// <summary>
+    /// Player the team is on
+    /// </summary>
+    public Team team { get { return role.team; } }
 
     private Player killedby;
 

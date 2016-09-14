@@ -1,8 +1,11 @@
 ﻿createlobby - Create a lobby
+createinstance - Creates instance data for the group
 closelobby - Close the lobby
 join - Join a lobby
 leave - Leave a game
 forcestart - Admin command, force start the game
+getchatid - Returns the ID of the current chat
+getcommands - Returns a list of commands
 config - Admin command, open up configuration options
 ping - Send the ping message
 roles - Shows the roles available in the currently selected role list
@@ -11,3 +14,5 @@ players - List all players
 version - Shows information about the current version
 say - Sends a message to the group
 startgame - Begins the game once the minimum number of players has been reached
+block - Blocks a user with the given ID
+unblock - Unblocks the user with the given ID
