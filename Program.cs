@@ -26,7 +26,8 @@ namespace QuizBot
       Application.ApplicationExit += OnClosing;
       GameData.StartTime = DateTime.Now.AddHours(-8);
       Application.EnableVisualStyles();
-      Application.Run(startup);
+      try { Application.Run(startup); }
+      finally { OnClosing(null, null); }
 
 		}
 

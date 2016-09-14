@@ -250,5 +250,9 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
-*.xml
+Xml/WFPMembers.xml
+Xml/UserData.xml
+Xml/InstanceData.xml
+Xml/Messages - legacy.xml
+Xml/Roles - legacy.xml
 /Chats.cs

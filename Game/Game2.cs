@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace QuizBot
 {
-  //This file contains all the details with regards to starting a game
+  //This file contains all the details with regards to starting a game and commands
   public partial class Game
   {
     public Game(Message msg)
@@ -180,27 +180,22 @@ namespace QuizBot
       public GameCommands(Game parent)
       {
         AllCommands = new Dictionary<string, Command>();
-        GetCommands();
-        this.parent = parent;
-      }
-
-      public readonly Dictionary<string, Command> AllCommands;
-
-      private readonly Game parent;
-
-      private void GetCommands()
-      {
-        foreach(var each in typeof(GameCommands).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic))
+        foreach (var each in typeof(GameCommands).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic))
         {
           var attri = each.GetCustomAttribute<Command>();
-          if(attri != null)
+          if (attri != null)
           {
             attri.Info = (CommandDelegate)Delegate.CreateDelegate(typeof(CommandDelegate), this, each);
             attri.IsNotInstance = false;
             AllCommands.Add(attri.Trigger, attri);
           }
         }
+        this.parent = parent;
       }
+
+      public readonly Dictionary<string, Command> AllCommands;
+
+      private readonly Game parent;
 
       [Command(Trigger = "join", InGroupOnly = true, GameStartOnly = true)]
       private void Join(Message msg, string[] args)
@@ -327,6 +322,66 @@ namespace QuizBot
           output.AppendLine();
         }
         parent.BotNormalMessage(parent.CurrentGroup, output.ToString());
+      }
+
+      [Command(Trigger = "config", GroupAdminOnly = true)]
+      private void Config(Message msg, string[] args)
+      {
+        //Temporary replacement for inline system
+        StringBuilder output;
+        switch(args.Length)
+        {
+          case 1:
+            {
+              output = new StringBuilder("*Config Options:*\n");
+              foreach(var each in parent.settings.AllSettings)
+              {
+                output.AppendLine(each.DisplayName + ": " + each.GetValue(parent.settings));
+              }
+              break;
+            }
+          case 2:
+            {
+              SettingDetail prop;
+              try { prop = parent.settings.SetPropertyValue[args[1]]; }
+              catch(KeyNotFoundException)
+              {
+                output = new StringBuilder("UnrecognizedConfig" + args[1]);
+                break;
+              }
+              output = new StringBuilder("Config Option: " + prop.GetValue(null).ToString());
+              break;
+            }
+          case 3:
+            {
+              SettingDetail prop;
+              try { prop = parent.settings.SetPropertyValue[args[1]]; }
+              catch (KeyNotFoundException)
+              {
+                output = new StringBuilder("UnrecognizedConfig" + args[1]);
+                break;
+              }
+              try { prop.SetValue(parent.settings, Convert.ChangeType(args[2], prop.Info.PropertyType)); }
+              catch (FormatException)
+              {
+                output = new StringBuilder(args[2] + " is an invalid value for " + prop.DisplayName);
+                break;
+              }
+              catch (InitException) when (prop.Name == "CurrentRoleList")
+              { //Will only ever happen when attempting to set rolelist
+                output = new StringBuilder(args[2] + " is not a valid role list!");
+                break;
+              }
+              output = new StringBuilder("Set the value of " + prop.DisplayName + " to " + args[2]);
+              break;
+            }
+          default:
+            {
+              output = new StringBuilder("Only 1-2 arguments are expected!");
+              break;
+            }
+        }
+        parent.BotNormalMessage(output.ToString());
       }
     }
   }

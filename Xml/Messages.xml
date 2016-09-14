@@ -126,6 +126,10 @@
     <value>There needs to be at least {0} arguments for the command {1}</value>
   </message>
 
+  <message key="UnrecognizedConfig">
+    <value>{0} is not a valid config option!</value>
+  </message>
+
   <message key="GetNickname">
     <value>Please send your desired nickname</value>
   </message>
