@@ -206,6 +206,11 @@ namespace QuizBot
     /// </summary>
     public static int SettingCount { get; private set; }
 
+    public static int MaxMessage
+    {
+      get { return Properties.Settings.Default.MaxMessage; }
+    }
+
     /// <summary>
     /// Loads all the properties into a dictionary
     /// </summary>

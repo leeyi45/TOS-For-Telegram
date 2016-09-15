@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Windows.Forms;
 using System.Reflection;
+using System.Threading;
 using System.Xml.Linq;
 using Newtonsoft.Json;
 using Telegram.Bot;
@@ -22,13 +24,13 @@ namespace QuizBot
     [STAThread]
 		static void Main(string[] notused)
     {
+      //MessageCount = new ConcurrentDictionary<int, int>();
       startup = new Startup();
       Application.ApplicationExit += OnClosing;
       GameData.StartTime = DateTime.Now.AddHours(-8);
       Application.EnableVisualStyles();
       try { Application.Run(startup); }
       finally { OnClosing(null, null); }
-
 		}
 
     public static Dictionary<string, Action<Callback>> Parsers { get; set; }
@@ -40,11 +42,24 @@ namespace QuizBot
         var message = messageEventArgs.Message;
         var msgtext = message.Text;
 
-        //Spam filter
+        #region Spam Filters
         //Messages received while not receiving are ignored
         if (message.Date.Ticks < GameData.StartTime.Ticks) return;
 
+        //Messages that aren't text are ignored
         if (message == null || message.Type != MessageType.TextMessage) return;
+
+        //Users that exceed the limit are ignored
+        if(MessageCount.Keys.Contains(message.From.Id))
+        {
+          if (MessageCount[message.From.Id] > Settings.MaxMessage) return;
+          else MessageCount[message.From.Id]++;
+        }
+        else
+        {
+          MessageCount.Add(message.From.Id, 1);
+        }
+        #endregion
 
         if (message.ForwardFrom != null && CommandVars.GetUserId)
         {
@@ -103,6 +118,7 @@ namespace QuizBot
 
     public static void TryToBot(bool logtoconsole)
     {
+      SpamManager = new Thread(SpamThread);
       bool lol = true;
       while (lol)
       {
@@ -286,5 +302,39 @@ namespace QuizBot
       }
       dataFile.Save(GameData.xmlLocation + @"UserData.xml");
     }
+
+    #region Spam Management
+    //static ConcurrentDictionary<int, int> MessageCount;
+
+    static Dictionary<int, int> MessageCount;
+
+    static System.Diagnostics.Stopwatch Watch = new System.Diagnostics.Stopwatch();
+
+    public static Thread SpamManager;
+
+    static void SpamThread()
+    {
+      MessageCount = new Dictionary<int, int>();
+      while(Bot.IsReceiving)
+      {
+        if (MessageCount.Keys.Count > 1) Watch.Start();
+        else Watch.Stop();
+
+        if(Watch.ElapsedMilliseconds == 5000)
+        {
+          foreach(var each in MessageCount.Keys)
+          {
+            MessageCount[each]--;
+          }
+          Watch.Restart();
+        }
+
+        foreach(var each in MessageCount)
+        {
+          if (each.Value == 0) MessageCount.Remove(each.Key);
+        }
+      }
+    }
+    #endregion
   }
 }

@@ -183,6 +183,7 @@ namespace QuizBot
       if (yes) LogLine("Bot started receving messages", false);
       SwitchLabelState("running", true);
       GameData.StartTime = DateTime.Now.AddHours(-8);
+      Program.SpamManager.Start();
     }
 
     public void StopBot(bool yes = true)

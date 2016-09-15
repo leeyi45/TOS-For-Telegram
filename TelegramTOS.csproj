@@ -152,10 +152,10 @@
   <ItemGroup>
     <Content Include="Commands\CommandsList.txt" />
     <Content Include="Xml\InstanceData.xml" />
-    <Content Include="Xml\Messages - legacy.xml" />
+    <Content Include="Xml\Legacy\Messages - legacy.xml" />
     <Content Include="Xml\Messages.xml" />
     <Content Include="Xml\Protocols.xml" />
-    <Content Include="Xml\Roles - legacy.xml" />
+    <Content Include="Xml\Legacy\Roles - legacy.xml" />
     <Content Include="Xml\Roles.xml" />
     <Content Include="Xml\UserData.xml" />
     <Content Include="Xml\WFPMembers.xml" />
