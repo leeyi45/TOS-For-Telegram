@@ -63,12 +63,13 @@ namespace QuizBot
         { //Game Instance exists
           if(!GameInstances[msg.Chat.Id].AllCommands.TryGetValue(args[0], out attribute))
           { //No such command in game instance
-            throw new InvalidCommandException(args[0]);
+            return;
+            //throw new InvalidCommandException(args[0]);
           }
         }
         else
         { //Game Instance does not exist
-          Program.BotMessage(msg.Chat.Id, "NoInstance");
+          Program.BotMessage(msg.Chat.Id, "NoInstanceData");
           return;
         }
       }
@@ -81,13 +82,14 @@ namespace QuizBot
     #endregion
 
     #region Commands
+    /*
     [Command(Trigger = "config", GroupAdminOnly = true)]
     private static void Config(Message msg, string[] args)
     {
       //Send the config menu to the player
       Program.BotMessage(msg.Chat.Id, "SentConfig", msg.From.GetName());
       QuizBot.Config.SendInline(msg.From, msg.Chat.Title);
-    }
+    }*/
 
     [Command(Trigger = "createinstance", InGroupOnly = true)]
     private static void CreateInstance(Message msg, string[] args)
@@ -113,48 +115,6 @@ namespace QuizBot
       ts = DateTime.UtcNow - send;
       Program.Bot.EditMessageTextAsync(msg.Chat.Id, result.MessageId, message + "\nTime to send ping message: " +
         ts.ToString("fff'.'ff") + "ms", parseMode: ParseMode.Markdown);
-    }
-
-    [Command(Trigger = "roles")]
-    private static void Roles(Message msg, string[] args)
-    {
-      StringBuilder output;
-      switch(args.Length)
-      {
-        case 1:
-          {
-            output = new StringBuilder("*" + Settings.CurrentRoleList + "*" + "\n\n");
-            foreach (var each in Settings.CurrentRoles)
-            {
-              output.AppendLine(each.Key.Name + ", Count: " + each.Value.ToString());
-            }
-            break;
-          }
-        case 2:
-          {
-            try
-            {
-              var role = GameData.Roles[args[1].ToLower()];
-              output = new StringBuilder("*Role Data:*\n\n");
-              foreach(var field in typeof(Role).GetProperties(BindingFlags.Instance | BindingFlags.Public))
-              {
-                output.AppendLine(field.Name + ": " + field.GetValue(role).ToString());
-              }
-            }
-            catch(KeyNotFoundException)
-            {
-              output = new StringBuilder("No such role \"" + args[1] + "\" found!");
-            }
-            break;
-          }
-        default:
-          {
-            output = new StringBuilder("Only one or two arguments are accepted");
-            break;
-          }
-      } 
-
-      Program.Bot.SendTextMessageAsync(msg.Chat.Id, output.ToString(), parseMode: ParseMode.Markdown);
     }
 
     [Command(Trigger = "listroles")]

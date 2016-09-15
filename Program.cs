@@ -115,7 +115,7 @@ namespace QuizBot
           CommandVars.Connected = true;
           break;
         }
-        catch when (!logtoconsole)
+        catch (Exception e) when (!logtoconsole)
         {
           switch (MessageBox.Show("Failed to connect to the telegram servers", "Connection Error",
             MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error, MessageBoxDefaultButton.Button3))
@@ -218,6 +218,10 @@ namespace QuizBot
     public async static void BotMessage(long id, string key, params object[] args)
     {
       try { await Bot.SendTextMessageAsync(id, string.Format(GameData.Messages[key], args), parseMode: ParseMode.Markdown); }
+      catch(KeyNotFoundException)
+      {
+        ConsoleLog("Unknown message key : " + key);
+      }
       catch (Exception) { }
     }
 
@@ -266,23 +270,24 @@ namespace QuizBot
       }
       catch { }
 
-      var instances = new XDocument(new XElement("Instances"));
-
-      try
+      if (Commands.GameInstances.Count > 0)
       {
-        foreach(var each in Commands.GameInstances.Values)
+        try
         {
-          var element = new XElement("Instance");
-          element.Add(new XElement("CurrentGroup", each.CurrentGroup));
-          element.Add(new XElement("Name", each.GroupName));
-          element.Add(each.settings.ToXElement());
-          instances.Root.Add(element);
+          var instances = new XDocument(new XElement("Instances"));
+          foreach (var each in Commands.GameInstances.Values)
+          {
+            var element = new XElement("Instance");
+            element.Add(new XElement("CurrentGroup", each.CurrentGroup));
+            element.Add(new XElement("Name", each.GroupName));
+            element.Add(each.settings.ToXElement());
+            instances.Root.Add(element);
+          }
+          instances.Save(GameData.xmlLocation + "InstanceData.xml");
         }
+        catch { }
       }
-      catch { }
-
       dataFile.Save(GameData.xmlLocation + @"UserData.xml");
-      instances.Save(GameData.xmlLocation + "InstanceData.xml");
     }
   }
 }

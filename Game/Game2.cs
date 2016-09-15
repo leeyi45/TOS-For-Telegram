@@ -16,6 +16,7 @@ namespace QuizBot
       Rolelist = GameData.RoleLists[QuizBot.Settings.CurrentRoleList];
       Roles = GameData.Roles;
       CurrentGroup = msg.Chat.Id;
+      GroupName = msg.Chat.Title;
       GameMessages = GameData.Messages;
       Protocols = GameData.Protocols;
       Alignments = GameData.Alignments;
@@ -26,6 +27,9 @@ namespace QuizBot
       settings = new Settings(QuizBot.Settings.AllSettings);
       Parsers = new Dictionary<string, Action<Callback>>();
       CommandContainer = new GameCommands(this);
+
+      GameStart = new DoTheGame(StartRolesAssign);
+      GameStart.OnFinish += OnGameFinish;
 
       Parsers.Add(Protocols["NightActions"], new Action<Callback>(ParseNightAction));
       Parsers.Add(Protocols["Vote"], new Action<Callback>(ParseVoteChoice));
@@ -46,6 +50,9 @@ namespace QuizBot
       CommandContainer = new GameCommands(this);
       Parsers = new Dictionary<string, Action<Callback>>();
       Protocols = GameData.Protocols;
+      GameMessages = GameData.Messages;
+      GameStart = new DoTheGame(StartRolesAssign);
+      GameStart.OnFinish += OnGameFinish;
 
       Parsers.Add(Protocols["NightActions"], new Action<Callback>(ParseNightAction));
       Parsers.Add(Protocols["Vote"], new Action<Callback>(ParseVoteChoice));
@@ -61,6 +68,9 @@ namespace QuizBot
       CommandContainer = new GameCommands(this);
       Parsers = new Dictionary<string, Action<Callback>>();
       Protocols = GameData.Protocols;
+      GameMessages = GameData.Messages;
+      GameStart = new DoTheGame(StartRolesAssign);
+      GameStart.OnFinish += OnGameFinish;
 
       Parsers.Add(Protocols["NightActions"], new Action<Callback>(ParseNightAction));
       Parsers.Add(Protocols["Vote"], new Action<Callback>(ParseVoteChoice));
@@ -173,6 +183,20 @@ namespace QuizBot
     public Dictionary<string, Command> AllCommands
     {
       get { return CommandContainer.AllCommands; }
+    }
+
+    private void OnGameFinish(object sender, EventArgs e)
+    {
+      if(RefreshQueued)
+      {
+        RefreshGame();
+        RefreshQueued = false;
+      }
+    }
+
+    private void RefreshGame()
+    {
+      BotMessage("Refreshed");
     }
 
     private class GameCommands
@@ -297,7 +321,6 @@ namespace QuizBot
         }
         parent.GamePhase = GamePhase.Assigning;
         parent.BotMessage("BeginGame");
-        parent.GameStart = new Thread(new ThreadStart(parent.StartRolesAssign));
 
         if (parent.settings.UseNicknames) parent.ObtainNicknames();
         else parent.GameStart.Start();
@@ -346,7 +369,7 @@ namespace QuizBot
               try { prop = parent.settings.SetPropertyValue[args[1]]; }
               catch(KeyNotFoundException)
               {
-                output = new StringBuilder("UnrecognizedConfig" + args[1]);
+                output = new StringBuilder("Unrecognized Config Option: " + args[1]);
                 break;
               }
               output = new StringBuilder("Config Option: " + prop.GetValue(null).ToString());
@@ -358,7 +381,7 @@ namespace QuizBot
               try { prop = parent.settings.SetPropertyValue[args[1]]; }
               catch (KeyNotFoundException)
               {
-                output = new StringBuilder("UnrecognizedConfig" + args[1]);
+                output = new StringBuilder("Unrecognized Config Option: " + args[1]);
                 break;
               }
               try { prop.SetValue(parent.settings, Convert.ChangeType(args[2], prop.Info.PropertyType)); }
@@ -382,6 +405,66 @@ namespace QuizBot
             }
         }
         parent.BotNormalMessage(output.ToString());
+      }
+
+      [Command(Trigger = "roles")]
+      private void Roles(Message msg, string[] args)
+      {
+        StringBuilder output;
+        switch (args.Length)
+        {
+          case 1:
+            {
+              output = new StringBuilder("*" + parent.settings.CurrentRoleList + "*" + "\n\n");
+              foreach (var each in parent.Roles)
+              {
+                output.AppendLine(each.Key + ", Count: " + each.Value.ToString());
+              }
+              break;
+            }
+          case 2:
+            {
+              try
+              {
+                var role = parent.Roles[args[1].ToLower()];
+                output = new StringBuilder("*Role Data:*\n\n");
+                foreach (var field in typeof(Role).GetProperties(BindingFlags.Instance | BindingFlags.Public))
+                {
+                  output.AppendLine(field.Name + ": " + field.GetValue(role).ToString());
+                }
+              }
+              catch (KeyNotFoundException)
+              {
+                output = new StringBuilder("No such role \"" + args[1] + "\" found!");
+              }
+              break;
+            }
+          default:
+            {
+              output = new StringBuilder("Only one or two arguments are accepted");
+              break;
+            }
+        }
+
+        parent.BotNormalMessage(output.ToString());
+      }
+
+      [Command(Trigger = "refresh")]
+      private void Refresh(Message msg, string[] args)
+      {
+        if (parent.GameStarted)
+        {
+          if (parent.RefreshQueued)
+          {
+            parent.BotMessage("RefreshAlreadyQueued");
+          }
+          else
+          {
+            parent.RefreshQueued = true;
+            parent.BotMessage("RefreshQueued");
+          }
+        }
+        else parent.RefreshGame();
       }
     }
   }

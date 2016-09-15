@@ -47,4 +47,9 @@ namespace QuizBot
     public InvalidCommandException(string arg) : 
       base("Invalid command " + arg) { }
   }
+
+  class ContinueOption : GameException
+  {
+    public ContinueOption() : base("") { }
+  }
 }

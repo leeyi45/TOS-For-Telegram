@@ -212,7 +212,7 @@ namespace QuizBot
     public static void LoadProperties()
     {
       SettingCount = AllSettings.Count();
-      SetPropertyValue = AllSettings.ToDictionary(x => x.Name, x => x);
+      SetPropertyValue = AllSettings.ToDictionary(x => x.Name.ToLower(), x => x);
     }
 
     /// <summary>

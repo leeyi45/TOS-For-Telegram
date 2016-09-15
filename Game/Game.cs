@@ -268,5 +268,31 @@ namespace QuizBot
     }
 
     public Dictionary<string, Action<Callback>> Parsers { get; private set; }
+
+    public class DoTheGame
+    {
+      public DoTheGame(ThreadStart stuff)
+      {
+        DoStuff = stuff;
+        thread = new Thread(DoWork);
+      }
+
+      public ThreadStart DoStuff;
+
+      private Thread thread;
+
+      private void DoWork()
+      {
+        DoStuff();
+        OnFinish(this, EventArgs.Empty);
+      }
+
+      public void Start()
+      {
+        thread.Start();
+      }
+
+      public event EventHandler OnFinish;
+    }
   }
 }

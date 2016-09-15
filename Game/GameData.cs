@@ -12,11 +12,12 @@ namespace QuizBot
   static class GameData
   {
     #region Intialization
-    public static string roleFile { get { return @"Roles.xml"; } }
+    /*
+    public static string Files.Roles { get { return @"Roles.xml"; } }
 
-    public static string MessagesFile { get { return @"Messages.xml"; } }
+    public static string Files.Messages { get { return @"Messages.xml"; } }
 
-    public static string ProtocolsFile { get { return @"Protocols.xml"; } }
+    public static string Files.Protocols { get { return @"Protocols.xml"; } }*/
 
     public const string xmlLocation = @"C:\Users\Lee Yi\Desktop\Everything, for the moment\Coding\C# Bot\TOS-For-Telegram\Xml\";
 
@@ -78,68 +79,94 @@ namespace QuizBot
     #region Roles.xml
     private static void LoadAlignments(XDocument doc, bool logtoconsole)
     {
+      
       Log("Reading alignments", logtoconsole);
       if (!doc.Root.HasElement("Alignments")) throw new InitException("Alignments have not been properly defined");
       foreach (var each in doc.Root.Element("Alignments").Elements("Alignment"))
       {
-        Team temp = GetTeam(each);
-        var name = each.TryGetElementValue("Roles.xml", "Name");
-        var align = new Alignment(name, temp);
-        Alignments.Add(align);
-        Log("Alignment \"" + align.Name + "\" registered", logtoconsole);
-      }
+        retry:
+        try
+        {
+          Team temp = GetTeam(each);
+          var name = each.TryGetElementValue("Roles.xml", "Name");
+          var align = new Alignment(name, temp);
+          Alignments.Add(align);
+          Log("Alignment \"" + align.Name + "\" registered", logtoconsole);
+        }
+        catch(InitException e) when (!logtoconsole)
+        {
+          switch (ErrorShow(e.Message))
+          {
+            case DialogResult.Ignore: { continue; }
+            case DialogResult.Retry: { goto retry; }
+          }
+        }
       Log("Alignments loaded", logtoconsole);
+      }
     }
 
     private static void LoadRoles(XDocument doc, bool logtoconsole)
     {
       Log("Reading roles", logtoconsole);
       if (!doc.Root.HasElement("Roles")) throw new InitException("Roles have not been properly defined");
+      string name;
       foreach (var each in doc.Root.Element("Roles").Elements("Role"))
       {
-        var team = GetTeam(each);
-        var align = new Alignment(each.TryGetElementValue("Roles.xml", "Alignment"), team);
-        var name = each.TryGetElementValue("Roles.xml", "Name");
-        var truevals = GetBooleanValues(each, true, "HasDayAction", "HasNightAction", "AllowOthers",
-          "AllowSelf");
-        var falsevals = GetBooleanValues(each, false, "Unique", "NightImmune");
-
-        #region Get Suspicious
-        bool suspicious;
-        switch (team)
+        retry:
+        try
         {
-          //Town are all non suspicious
-          case Team.Town: { suspicious = false; break; }
-          //Maf are all suspicious
-          case Team.Mafia: { suspicious = true; break; }
-          //The rest check
-          default:
-            {
-              if (align.Name == "Killing") suspicious = true;
-              else suspicious = false;
-              break;
-            }
+          var team = GetTeam(each);
+          var align = new Alignment(each.TryGetElementValue("Roles.xml", "Alignment"), team);
+          name = each.TryGetElementValue("Roles.xml", "Name");
+          var truevals = GetBooleanValues(each, true, "HasDayAction", "HasNightAction", "AllowOthers",
+            "AllowSelf");
+          var falsevals = GetBooleanValues(each, false, "Unique", "NightImmune");
+
+          #region Get Suspicious
+          bool suspicious;
+          switch (team)
+          {
+            //Town are all non suspicious
+            case Team.Town: { suspicious = false; break; }
+            //Maf are all suspicious
+            case Team.Mafia: { suspicious = true; break; }
+            //The rest check
+            default:
+              {
+                if (align.Name == "Killing") suspicious = true;
+                else suspicious = false;
+                break;
+              }
+          }
+          #endregion
+
+          //Messages.Add(name + "Assign", each.GetElementValue("OnAssign"));
+          Roles.Add(name.ToLower(), new Role
+          {
+            Name = name,
+            team = team,
+            Alignment = align,
+            HasDayAction = truevals[0],
+            HasNightAction = truevals[1],
+            Description = each.TryGetElementValue("Roles.xml", "Description"),
+            NightImmune = falsevals[1],
+            Suspicious = suspicious,
+            InvestResult = GetInvestResult(each),
+            Instruction = each.TryGetElementValue<string>("Instruct", ""),
+            AllowOthers = truevals[2],
+            AllowSelf = truevals[3],
+            Unique = falsevals[0]
+          }, each, "role: " + name);
+          Log("\"" + name + "\" registered", logtoconsole);
         }
-        #endregion
-
-        //Messages.Add(name + "Assign", each.GetElementValue("OnAssign"));
-        Roles.Add(name.ToLower(), new Role
+        catch (InitException e) when (!logtoconsole)
         {
-          Name = name,
-          team = team,
-          Alignment = align,
-          HasDayAction = truevals[0],
-          HasNightAction = truevals[1],
-          Description = each.TryGetElementValue("Roles.xml", "Description"),
-          NightImmune = falsevals[1],
-          Suspicious = suspicious,
-          InvestResult = GetInvestResult(each),
-          Instruction = each.TryGetElementValue<string>("Instruct", ""),
-          AllowOthers = truevals[2],
-          AllowSelf = truevals[3],
-          Unique = falsevals[0]
-        }, each, "role: " + name);
-        Log("\"" + name + "\" registered", logtoconsole);
+          switch (ErrorShow(e.Message))
+          {
+            case DialogResult.Ignore: { continue; }
+            case DialogResult.Retry: { goto retry; }
+          }
+        }
       }
       if (Roles.Count == 0) throw new InitException("There are no roles defined!");
 
@@ -152,69 +179,94 @@ namespace QuizBot
       if (!doc.Root.HasElement("Rolelists")) throw new InitException("Rolelists are not defined properly!");
       foreach (var rolelist in doc.Root.Element("Rolelists").Elements("Rolelist"))
       {
-        var listname = rolelist.TryGetAttributeValue("Roles.xml", "Name");
-        RoleLists.Add(listname, new Dictionary<Wrapper, int>());
-        foreach (var each in rolelist.Elements("Role"))
+        retry:
+        try
         {
-          #region Deal with the count
-          var count = each.TryGetAttributeValue("Count", 1);
-          //If a count is not defined assume it is one
-          if (count < 1) throw new InitException("Roles.xml", "The count must be greater than one!", each);
-          #endregion
-
-          var To_Add = new Wrapper();
-          string value = "";
-
-          #region Normal Role Definition
-          if (each.TryGetAttribute("Name", out value))
-          { //Normal role definition
-            value = value.ToLower();
+          var listname = rolelist.TryGetAttributeValue("Roles.xml", "Name");
+          RoleLists.Add(listname, new Dictionary<Wrapper, int>());
+          foreach (var each in rolelist.Elements("Role"))
+          {
+            retry2:
             try
             {
-              To_Add = Roles[value];
-              if ((To_Add as Role).Unique && count != 1)
-                throw new InitException("Roles.xml",
-                  "The role " + To_Add.Name + " is unique! (There cannot be more than one)", each);
-            }
-            catch (KeyNotFoundException)
-            {
-              throw new InitException("Roles.xml", "Role \"" + value + "\" does not exist!", each);
-            }
-          }
-          #endregion
-          else
-          {
-            #region Alignment Defined
-            if (each.TryGetAttribute("Alignment", out value))
-            { //Alignment defined
-              if (value == "Any") To_Add = new Alignment();
-              else
-              {
-                try { To_Add = Alignment.Parse(value); }
-                catch (ArgumentException)
+              #region Deal with the count
+              var count = each.TryGetAttributeValue("Count", 1);
+              //If a count is not defined assume it is one
+              if (count < 1) throw new InitException("Roles.xml", "The count must be greater than one!", each);
+              #endregion
+
+              var To_Add = new Wrapper();
+              string value = "";
+
+              #region Normal Role Definition
+              if (each.TryGetAttribute("Name", out value))
+              { //Normal role definition
+                value = value.ToLower();
+                try
                 {
-                  throw new InitException("Roles.xml", "Alignment \"" + value + "\" does not exist!", each);
+                  To_Add = Roles[value];
+                  if ((To_Add as Role).Unique && count != 1)
+                    throw new InitException("Roles.xml",
+                      "The role " + To_Add.Name + " is unique! (There cannot be more than one)", each);
+                }
+                catch (KeyNotFoundException)
+                {
+                  throw new InitException("Roles.xml", "Role \"" + value + "\" does not exist!", each);
                 }
               }
-            }
-            #endregion
-            #region Team Defined
-            else if (each.TryGetAttribute("Team", out value))
-            { //Team defined
-              try { To_Add = new TeamWrapper((Team)Enum.Parse(typeof(Team), value)); }
-              catch (ArgumentException)
+              #endregion
+              else
               {
-                throw new InitException("Roles.xml",
-                  "Only \"Town\", \"Mafia\" and \"Neutral\" are acceptable values for \"Team\"", each);
+                #region Alignment Defined
+                if (each.TryGetAttribute("Alignment", out value))
+                { //Alignment defined
+                  if (value == "Any") To_Add = new Alignment();
+                  else
+                  {
+                    try { To_Add = Alignment.Parse(value); }
+                    catch (ArgumentException)
+                    {
+                      throw new InitException("Roles.xml", "Alignment \"" + value + "\" does not exist!", each);
+                    }
+                  }
+                }
+                #endregion
+                #region Team Defined
+                else if (each.TryGetAttribute("Team", out value))
+                { //Team defined
+                  try { To_Add = new TeamWrapper((Team)Enum.Parse(typeof(Team), value)); }
+                  catch (ArgumentException)
+                  {
+                    throw new InitException("Roles.xml",
+                      "Only \"Town\", \"Mafia\" and \"Neutral\" are acceptable values for \"Team\"", each);
+                  }
+                }
+                #endregion
+                else throw new InitException("Roles.xml", "Unrecognised role definition", each);
+              }
+              RoleLists[listname].Add(To_Add, count, each, "definition in " + listname + ": " + To_Add.Name);
+            }
+            catch(InitException e) when (!logtoconsole)
+            {
+              switch (ErrorShow(e.Message))
+              { //Try loading the role definition again or ignore it
+                case DialogResult.Ignore: { continue; }
+                case DialogResult.Retry: { goto retry2; }
               }
             }
-            #endregion
-            else throw new InitException("Roles.xml", "Unrecognised role definition", each);
           }
-          RoleLists[listname].Add(To_Add, count, each, "definition in " + listname + ": " + To_Add.Name);
+          Log("Registered new rolelist: " + listname, logtoconsole);
         }
-        Log("Registered new rolelist: " + listname, logtoconsole);
+        catch(InitException e) when (!logtoconsole)
+        {
+          switch (ErrorShow(e.Message))
+          { //Try loading the rolelist definition again or ignore it
+            case DialogResult.Ignore: { continue; }
+            case DialogResult.Retry: { goto retry; }
+          }
+        }
       }
+
       if (RoleLists.Count == 0) throw new InitException("There are no rolelists defined!");
       Log("Finished loading rolelists", logtoconsole);
     }
@@ -241,8 +293,8 @@ namespace QuizBot
       RoleLists = new Dictionary<string, Dictionary<Wrapper, int>>();
       InvestResults = new Dictionary<int, string>();
 
-      if (!File.Exists(xmlLocation + roleFile)) throw new InitException("Missing Roles.xml!");
-      var doc = GDExtensions.SafeLoad(roleFile);
+      if (!GDExtensions.Exists(Files.Roles)) throw new InitException("Missing Roles.xml!");
+      var doc = GDExtensions.SafeLoad(Files.Roles);
 
       loading.Add("Alignments", LoadAlignments);
       loading.Add("Roles", LoadRoles);
@@ -251,12 +303,6 @@ namespace QuizBot
 
       foreach (var each in loading)
       {
-        goto bypass;
-        retry:
-        {
-          doc = GDExtensions.SafeLoad(roleFile);
-        }
-        bypass:
         try
         {
           Log("Loading " + each.Key, logtoconsole);
@@ -264,16 +310,7 @@ namespace QuizBot
         }
         catch (InitException e) when (!logtoconsole)
         {
-          switch (ErrorShow(e.Message))
-          {
-            case DialogResult.Ignore: { continue; }
-            case DialogResult.Retry:
-              {
-                doc = XDocument.Load(roleFile, LoadOptions.SetLineInfo);
-                goto retry;
-              }
-            case DialogResult.Abort: { Application.Exit(); break; }
-          }
+
         }
         catch (InitException e) when (logtoconsole)
         {
@@ -291,8 +328,8 @@ namespace QuizBot
         CommandVars.messagesLoaded = false;
         Messages = new Dictionary<string, string>();
         retry:
-        if (!File.Exists(xmlLocation + MessagesFile)) throw new InitException("Missing Messages.xml");
-        var doc = GDExtensions.SafeLoad(MessagesFile);
+        if (!GDExtensions.Exists(Files.Messages)) throw new InitException("Missing Messages.xml");
+        var doc = GDExtensions.SafeLoad(Files.Messages);
 
         foreach (var each in doc.Root.Elements("string"))
         {
@@ -310,7 +347,7 @@ namespace QuizBot
               case DialogResult.Ignore: { continue; }
               case DialogResult.Retry:
                 {
-                  doc = XDocument.Load(MessagesFile, LoadOptions.SetLineInfo);
+                 // doc = XDocument.Load(Files.Messages, LoadOptions.SetLineInfo);
                   goto retry;
                 }
               case DialogResult.Abort: { Application.Exit(); break; }
@@ -336,8 +373,8 @@ namespace QuizBot
         CommandVars.protocolsLoaded = false;
         Protocols = new Dictionary<string, string>();
         retry:
-        if (!File.Exists(xmlLocation + ProtocolsFile)) throw new InitException("Missing Protocols.xml");
-        var doc = GDExtensions.SafeLoad(ProtocolsFile);
+        if (!GDExtensions.Exists(Files.Protocols)) throw new InitException("Missing Protocols.xml");
+        var doc = GDExtensions.SafeLoad(Files.Protocols);
 
         foreach (var each in doc.Root.Elements("protocol"))
         {
@@ -355,7 +392,7 @@ namespace QuizBot
               case DialogResult.Ignore: { continue; }
               case DialogResult.Retry:
                 {
-                  doc = XDocument.Load(ProtocolsFile, LoadOptions.SetLineInfo);
+                  //doc = XDocument.Load(Files.Protocols, LoadOptions.SetLineInfo);
                   goto retry;
                 }
               case DialogResult.Abort: { Application.Exit(); break; }
@@ -370,6 +407,7 @@ namespace QuizBot
       }
     }
 
+    //I combined those two methods :)
     public static void InitializeOthers(bool logtoconsole)
     {
       Messages = new Dictionary<string, string>();
@@ -380,11 +418,11 @@ namespace QuizBot
         ToDictionary(x => x.Name, x => x.GetValue(null) as Dictionary<string, string>);
       foreach (var each in dictionaries)
       {
-        var filename = typeof(GameData).GetProperty(each.Key + "File", BindingFlags.Static | BindingFlags.Public).
-          GetValue(null).ToString();
-        if (!File.Exists(xmlLocation + filename)) throw new InitException("Missing " + filename + "!");
+        var propname = (Files)Enum.Parse(typeof(Files), each.Key);
+        var filename = Enum.GetName(typeof(Files), propname);
+        if (!GDExtensions.Exists(propname)) throw new InitException("Missing " + filename + "!");
         Log("Loading " + filename, logtoconsole);
-        var doc = GDExtensions.SafeLoad(filename);
+        var doc = GDExtensions.SafeLoad(propname);
         var keyword = each.Key.TrimEnd('s').ToLower();
         foreach (var element in doc.Root.Elements(keyword))
         {
@@ -500,9 +538,10 @@ namespace QuizBot
     }
     #endregion
 
+    /*
     private static void ArrangeXML()
     {
-      var doc = XDocument.Load(MessagesFile);
+      var doc = XDocument.Load(Files.Messages);
       var elements = new XElement[Messages.Count];
       int i = 0;
       var query = from message in Messages
@@ -515,13 +554,16 @@ namespace QuizBot
         elements[i].Add(new XAttribute("key", message.Key));
         i++;
       }
-      doc.Save(MessagesFile);
-    }
+      doc.Save(Files.Messages);
+    }*/
 
     public static DialogResult ErrorShow(string text)
     {
-      return MessageBox.Show(text, "Error", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error,
+      var result = MessageBox.Show(text, "Error", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error,
         MessageBoxDefaultButton.Button3);
+
+      if (result == DialogResult.Abort) Application.Exit();
+      return result;
     }
 	}
 
@@ -743,6 +785,20 @@ namespace QuizBot
       }
     }
 
+    public static XDocument SafeLoad(Files file)
+    {
+      try { return XDocument.Load(GameData.xmlLocation + xmlFiles[(int)file] + ".xml", LoadOptions.SetLineInfo); }
+      catch (System.Xml.XmlException)
+      {
+        throw new InitException("Xml Error with " + xmlFiles[(int)file]);
+      }
+    }
+
+    public static bool Exists(Files file)
+    {
+      return File.Exists(GameData.xmlLocation + xmlFiles[(int)file] + ".xml");
+    }
+
     public static Dictionary<T, object> ValuesToObject<T, U>(this Dictionary<T, U> it)
     {
       return it.ToDictionary(x => x.Key, x => (object)x.Value);
@@ -758,6 +814,13 @@ namespace QuizBot
       if (string.IsNullOrWhiteSpace(it)) return String.Empty;
       if (it.Length == 1) return it[0].ToString().ToUpper();
       return it[0].ToString().ToUpper() + it.Substring(1, it.Length-1);
+    }
+
+    private static string[] xmlFiles;
+
+    public static void LoadXmlFiles()
+    {
+      xmlFiles = Enum.GetNames(typeof(Files));
     }
   }
 }

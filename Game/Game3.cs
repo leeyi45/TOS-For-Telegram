@@ -40,7 +40,7 @@ namespace QuizBot
         var quizbotsettings = QuizBot.Settings.SetPropertyValue;
         foreach (var each in element.Elements())
         {
-          var prop = SetPropertyValue[each.Name.ToString()];
+          var prop = SetPropertyValue[each.Name.ToString().ToLower()];
           string val;
           element.TryGetElement(each.Name, out val);
           if(string.IsNullOrWhiteSpace(val)) val = quizbotsettings[
@@ -52,7 +52,7 @@ namespace QuizBot
       private void CreateProperties()
       {
         SettingCount = AllSettings.Count();
-        SetPropertyValue = AllSettings.ToDictionary(x => x.Name, x => x);
+        SetPropertyValue = AllSettings.ToDictionary(x => x.Name.ToLower(), x => x);
       }
 
       public int SettingCount { get; private set; }
@@ -120,7 +120,7 @@ namespace QuizBot
       }
     }
 
-    private Thread GameStart;
+    private DoTheGame GameStart;
 
     /// <summary>
     /// The current roles registered
@@ -141,6 +141,8 @@ namespace QuizBot
     public Settings settings { get; private set; }
 
     public string GroupName { get; private set; }
+
+    public bool RefreshQueued { get; set; }
 
     /// <summary>
     /// List of the all the players that joined this game instance

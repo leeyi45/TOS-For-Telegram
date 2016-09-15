@@ -42,6 +42,18 @@
     <value>Instance data has already been created for this group!</value>
   </message>
   
+  <message key="RefreshQueued">
+    <value>This instance will refresh itself when the game ends</value>
+  </message>
+
+  <message key="RefreshAlreadyQueued">
+    <value>This instance already has a refresh request queued!</value>
+  </message>
+
+  <message key="Refreshed">
+    <value>This instance has been refreshed!</value>
+  </message>
+  
   <message key="LobbyCreated">
     <value>{0} has started created a lobby, /join to join!</value>
   </message>

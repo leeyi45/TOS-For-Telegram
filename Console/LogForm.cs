@@ -171,6 +171,7 @@ namespace QuizBot
     public void StartBot(bool yes = true)
     {
       if (Program.Bot.IsReceiving) return;
+      
       if (!CommandVars.Connected)
       {
         Program.ConsoleLog("Bot is currently not connected! Use reload bot!");
@@ -648,7 +649,14 @@ namespace QuizBot
 
       public void SetLabelInfo(bool state)
       {
-        Invoke(new Action<bool>(setlabelinfo));
+        if (InvokeRequired)
+        {
+          Invoke(new Action<bool>(setlabelinfo), state);
+        }
+        else
+        {
+          setlabelinfo(state);
+        }
       }
 
       private void setlabelinfo(bool state)

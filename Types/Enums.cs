@@ -32,4 +32,13 @@ namespace QuizBot
 		Assigning,
 		Running
 	}
+
+  public enum Files
+  {
+    Roles,
+    Messages,
+    Protocols,
+    InstanceData,
+    UserData
+  }
 }

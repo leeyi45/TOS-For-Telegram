@@ -106,6 +106,8 @@ namespace QuizBot
   {
     private static void Bot() { Program.TryToBot(false); }
 
+    private static void Files() { GDExtensions.LoadXmlFiles(); }
+
     //private static void Protocols() { GameData.InitializeProtocols(false); }
 
     private static void Others() { GameData.InitializeOthers(false); }

@@ -4,7 +4,7 @@
     <CurrentGroup>-160927133</CurrentGroup>
     <Name>Where-wolf Patrol?</Name>
     <Settings>
-      <MaxPlayers>30</MaxPlayers>
+      <MaxPlayers>20</MaxPlayers>
       <MinPlayers>5</MinPlayers>
       <UseNicknames>False</UseNicknames>
       <LynchTime>0</LynchTime>
