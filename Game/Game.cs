@@ -283,16 +283,18 @@ namespace QuizBot
 
       private void DoWork()
       {
+        OnStart(this, EventArgs.Empty);
         DoStuff();
         OnFinish(this, EventArgs.Empty);
       }
 
-      public void Start()
-      {
-        thread.Start();
-      }
+      public void Start() { thread.Start(); }
+
+      public void Abort() { thread.Abort(); }
 
       public event EventHandler OnFinish;
+
+      public event EventHandler OnStart;
     }
   }
 }

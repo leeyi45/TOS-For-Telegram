@@ -251,8 +251,6 @@ paket-files/
 .idea/
 *.sln.iml
 Xml/WFPMembers.xml
-Xml/UserData.xml
-Xml/InstanceData.xml
-Xml/Messages - legacy.xml
-Xml/Roles - legacy.xml
 /Chats.cs
+Xml/Legacy/Roles - legacy.xml
+Xml/Legacy/Messages - legacy.xml

@@ -79,12 +79,14 @@ namespace QuizBot
     #region Roles.xml
     private static void LoadAlignments(XDocument doc, bool logtoconsole)
     {
-      
+      goto bypass;
+      retry:
+      doc = GDExtensions.SafeLoad(Files.Roles);
+      bypass:
       Log("Reading alignments", logtoconsole);
       if (!doc.Root.HasElement("Alignments")) throw new InitException("Alignments have not been properly defined");
       foreach (var each in doc.Root.Element("Alignments").Elements("Alignment"))
       {
-        retry:
         try
         {
           Team temp = GetTeam(each);
@@ -107,12 +109,15 @@ namespace QuizBot
 
     private static void LoadRoles(XDocument doc, bool logtoconsole)
     {
+      goto bypass;
+      retry:
+      doc = GDExtensions.SafeLoad(Files.Roles);
+      bypass:
       Log("Reading roles", logtoconsole);
       if (!doc.Root.HasElement("Roles")) throw new InitException("Roles have not been properly defined");
       string name;
       foreach (var each in doc.Root.Element("Roles").Elements("Role"))
       {
-        retry:
         try
         {
           var team = GetTeam(each);
@@ -175,18 +180,20 @@ namespace QuizBot
 
     private static void LoadRolelists(XDocument doc, bool logtoconsole)
     {
+      goto bypass;
+      retry:
+      doc = GDExtensions.SafeLoad(Files.Roles);
+      bypass:
       Log("Loading rolelists", logtoconsole);
       if (!doc.Root.HasElement("Rolelists")) throw new InitException("Rolelists are not defined properly!");
       foreach (var rolelist in doc.Root.Element("Rolelists").Elements("Rolelist"))
       {
-        retry:
         try
         {
           var listname = rolelist.TryGetAttributeValue("Roles.xml", "Name");
           RoleLists.Add(listname, new Dictionary<Wrapper, int>());
           foreach (var each in rolelist.Elements("Role"))
           {
-            retry2:
             try
             {
               #region Deal with the count
@@ -251,7 +258,7 @@ namespace QuizBot
               switch (ErrorShow(e.Message))
               { //Try loading the role definition again or ignore it
                 case DialogResult.Ignore: { continue; }
-                case DialogResult.Retry: { goto retry2; }
+                case DialogResult.Retry: { goto retry; }
               }
             }
           }
@@ -273,12 +280,27 @@ namespace QuizBot
 
     private static void LoadInvestResults(XDocument doc, bool logtoconsole)
     {
+      goto bypass;
+      retry:
+      doc = GDExtensions.SafeLoad(Files.Roles);
+      bypass:
       Log("Loading investigation results", logtoconsole);
       if (!doc.Root.HasElement("InvestResults")) throw new InitException("Invest results have not properly been defined");
       foreach (var each in doc.Root.Element("InvestResults").Elements("InvestResult"))
       {
-        InvestResults.Add(each.TryGetAttributeValue<int>("Key"), each.TryGetElementValue("Roles.xml", "Value"), each,
-    "Invest Result");
+        try
+        {
+          InvestResults.Add(each.TryGetAttributeValue<int>("Key"), each.TryGetElementValue("Roles.xml", "Value"), each,
+ "Invest Result");
+        }
+        catch(InitException e) when (!logtoconsole)
+        {
+          switch (ErrorShow(e.Message))
+          { //Try loading the rolelist definition again or ignore it
+            case DialogResult.Ignore: { continue; }
+            case DialogResult.Retry: { goto retry; }
+          }
+        }
       }
       Log("Invest results loaded", logtoconsole);
     }
@@ -293,7 +315,19 @@ namespace QuizBot
       RoleLists = new Dictionary<string, Dictionary<Wrapper, int>>();
       InvestResults = new Dictionary<int, string>();
 
-      if (!GDExtensions.Exists(Files.Roles)) throw new InitException("Missing Roles.xml!");
+      if (!GDExtensions.Exists(Files.Roles) && logtoconsole)
+      {
+        if (logtoconsole)
+        {
+          InitialErr("Missing roles.xml", new InitException("Missing Roles.xml!"));
+        }
+        else
+        {
+          throw new InitException("Missing Roles.xml!");
+        }
+        return;
+      }
+
       var doc = GDExtensions.SafeLoad(Files.Roles);
 
       loading.Add("Alignments", LoadAlignments);
@@ -307,10 +341,6 @@ namespace QuizBot
         {
           Log("Loading " + each.Key, logtoconsole);
           each.Value(doc, logtoconsole);
-        }
-        catch (InitException e) when (!logtoconsole)
-        {
-
         }
         catch (InitException e) when (logtoconsole)
         {
@@ -792,6 +822,11 @@ namespace QuizBot
       {
         throw new InitException("Xml Error with " + xmlFiles[(int)file]);
       }
+    }
+
+    public static void SafeSave(this XDocument doc, Files file)
+    {
+      doc.Save(GameData.xmlLocation + xmlFiles[(int)file] + ".xml");
     }
 
     public static bool Exists(Files file)

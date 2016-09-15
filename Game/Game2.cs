@@ -196,6 +196,9 @@ namespace QuizBot
 
     private void RefreshGame()
     {
+      GameMessages = GameData.Messages;
+      Protocols = GameData.Protocols;
+      Roles = GameData.Roles;
       BotMessage("Refreshed");
     }
 
@@ -211,6 +214,7 @@ namespace QuizBot
           {
             attri.Info = (CommandDelegate)Delegate.CreateDelegate(typeof(CommandDelegate), this, each);
             attri.IsNotInstance = false;
+            attri.InGroupOnly = true;
             AllCommands.Add(attri.Trigger, attri);
           }
         }

@@ -115,7 +115,7 @@ namespace QuizBot
           CommandVars.Connected = true;
           break;
         }
-        catch (Exception e) when (!logtoconsole)
+        catch (Exception) when (!logtoconsole)
         {
           switch (MessageBox.Show("Failed to connect to the telegram servers", "Connection Error",
             MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error, MessageBoxDefaultButton.Button3))
@@ -130,10 +130,7 @@ namespace QuizBot
                 lol = false;
                 break;
               }
-            case DialogResult.Retry:
-              {
-                break;
-              }
+            case DialogResult.Retry: { break; }
           }
         }
         catch
