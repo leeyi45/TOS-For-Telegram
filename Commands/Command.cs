@@ -459,18 +459,12 @@ namespace QuizBot
       return true;
     }
 
-    public static void EndGame()
-		{
-			GameData.GamePhase = GamePhase.Inactive;
-			Joined = new List<Player>();
-		}
-
     private const string WerewolfFile = @"WFPMembers.xml";
 
     //Use this to add new users
     public static string ProcessUserId(Message msg)
     {
-      XDocument doc = GDExtensions.SafeLoad(WerewolfFile);
+      var doc = GDExtensions.SafeLoad(WerewolfFile);
       User forward = msg.ForwardFrom;
       foreach(var element in doc.Root.Elements("member"))
       {

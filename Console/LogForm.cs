@@ -24,11 +24,14 @@ namespace QuizBot
       test.Interval = 6000;
       test.Tick += new EventHandler(Tick);
       Parent = parent;
+      SpamManager = new Thread(Program.SpamThread);
     }
 
     public new Startup Parent;
 
     private AllCommands CommandContainer;
+
+    private Thread SpamManager;
 
     #region Textbox Management
     private void CancelKey2(object sender, KeyPressEventArgs e)
@@ -183,7 +186,7 @@ namespace QuizBot
       if (yes) LogLine("Bot started receving messages", false);
       SwitchLabelState("running", true);
       GameData.StartTime = DateTime.Now.AddHours(-8);
-      Program.SpamManager.Start();
+      SpamManager.Start();
     }
 
     public void StopBot(bool yes = true)

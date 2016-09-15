@@ -117,14 +117,14 @@ namespace QuizBot
       // protocolStatus
       // 
       this.protocolStatus.AutoSize = true;
-      this.protocolStatus.FalseStateText = null;
+      this.protocolStatus.FalseStateText = "Not Loaded";
       this.protocolStatus.ForeColor = System.Drawing.Color.Red;
       this.protocolStatus.Location = new System.Drawing.Point(77, 85);
       this.protocolStatus.Name = "protocolStatus";
       this.protocolStatus.Size = new System.Drawing.Size(63, 13);
       this.protocolStatus.TabIndex = 10;
       this.protocolStatus.Text = "Not Loaded";
-      this.protocolStatus.TrueStateText = null;
+      this.protocolStatus.TrueStateText = "Loaded";
       // 
       // label7
       // 
@@ -138,14 +138,12 @@ namespace QuizBot
       // messageStatus
       // 
       this.messageStatus.AutoSize = true;
-      this.messageStatus.FalseStateText = null;
       this.messageStatus.ForeColor = System.Drawing.Color.Red;
       this.messageStatus.Location = new System.Drawing.Point(77, 72);
       this.messageStatus.Name = "messageStatus";
       this.messageStatus.Size = new System.Drawing.Size(63, 13);
       this.messageStatus.TabIndex = 8;
       this.messageStatus.Text = "Not Loaded";
-      this.messageStatus.TrueStateText = null;
       // 
       // label6
       // 
@@ -159,14 +157,12 @@ namespace QuizBot
       // roleStatus
       // 
       this.roleStatus.AutoSize = true;
-      this.roleStatus.FalseStateText = "";
       this.roleStatus.ForeColor = System.Drawing.Color.Red;
       this.roleStatus.Location = new System.Drawing.Point(77, 55);
       this.roleStatus.Name = "roleStatus";
       this.roleStatus.Size = new System.Drawing.Size(63, 13);
       this.roleStatus.TabIndex = 6;
       this.roleStatus.Text = "Not Loaded";
-      this.roleStatus.TrueStateText = null;
       // 
       // label5
       // 
@@ -277,8 +273,6 @@ namespace QuizBot
       this.Controls.Add(this.commandBox);
       this.Controls.Add(this.logBox);
       this.Name = "LogForm";
-      this.FormClosing += this.OnFormClose;
-      this.Shown += this.OnFormShow;
       this.statBox.ResumeLayout(false);
       this.statBox.PerformLayout();
       this.ResumeLayout(false);

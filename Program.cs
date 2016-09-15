@@ -118,7 +118,6 @@ namespace QuizBot
 
     public static void TryToBot(bool logtoconsole)
     {
-      SpamManager = new Thread(SpamThread);
       bool lol = true;
       while (lol)
       {
@@ -310,15 +309,13 @@ namespace QuizBot
 
     static System.Diagnostics.Stopwatch Watch = new System.Diagnostics.Stopwatch();
 
-    public static Thread SpamManager;
-
-    static void SpamThread()
+    public static void SpamThread()
     {
       MessageCount = new Dictionary<int, int>();
       while(Bot.IsReceiving)
       {
         if (MessageCount.Keys.Count > 1) Watch.Start();
-        else Watch.Stop();
+        else Watch.Reset();
 
         if(Watch.ElapsedMilliseconds == 5000)
         {
