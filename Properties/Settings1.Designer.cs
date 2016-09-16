@@ -97,7 +97,7 @@ namespace QuizBot.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        [global::System.Configuration.DefaultSettingValueAttribute("400")]
         public int MaxMessage {
             get {
                 return ((int)(this["MaxMessage"]));

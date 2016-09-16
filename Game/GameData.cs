@@ -568,24 +568,23 @@ namespace QuizBot
     }
     #endregion
 
-    /*
-    private static void ArrangeXML()
+    
+    public static void ArrangeXML()
     {
-      var doc = XDocument.Load(Files.Messages);
-      var elements = new XElement[Messages.Count];
-      int i = 0;
-      var query = from message in Messages
-                  orderby message.Key[0] ascending, message.Key[1] ascending 
-                  select message;
+      var doc = GDExtensions.SafeLoad(Files.Messages);
 
-      foreach(var message in query)
+      var newdoc = new XDocument(new XElement("messages", new XAttribute("version", "1.0")));
+
+      var query = from element in doc.Root.Elements()
+                  orderby element.TryGetAttributeValue("Messages.xml", "key")[0] ascending, 
+                  element.TryGetAttributeValue("Messages.xml", "key")[1] ascending
+                  select element;
+      foreach(var each in query)
       {
-        elements[i] = new XElement("string", new XElement("value", message.Value));
-        elements[i].Add(new XAttribute("key", message.Key));
-        i++;
+        newdoc.Root.Add(each);
       }
-      doc.Save(Files.Messages);
-    }*/
+      newdoc.SafeSave(Files.Messages);
+    }
 
     public static DialogResult ErrorShow(string text)
     {

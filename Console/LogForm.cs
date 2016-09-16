@@ -24,14 +24,11 @@ namespace QuizBot
       test.Interval = 6000;
       test.Tick += new EventHandler(Tick);
       Parent = parent;
-      SpamManager = new Thread(Program.SpamThread);
     }
 
     public new Startup Parent;
 
     private AllCommands CommandContainer;
-
-    private Thread SpamManager;
 
     #region Textbox Management
     private void CancelKey2(object sender, KeyPressEventArgs e)
@@ -186,7 +183,6 @@ namespace QuizBot
       if (yes) LogLine("Bot started receving messages", false);
       SwitchLabelState("running", true);
       GameData.StartTime = DateTime.Now.AddHours(-8);
-      SpamManager.Start();
     }
 
     public void StopBot(bool yes = true)
@@ -570,11 +566,8 @@ namespace QuizBot
       [ConsoleCommand("test")]
       private string Test(string[] args)
       {
-        var doc = GDExtensions.SafeLoad("InstanceData.xml");
-        var element1 = doc.Root.Element("Instance");
-        var element2 = element1.Element("Settings");
-        Program.ConsoleLog(element2.TryGetElementValue("InstanceData.xml", "MaxPlayers"));
-        return element2.Name.ToString();
+        GameData.ArrangeXML();
+        return "";
       }
       #endregion
 
@@ -680,6 +673,11 @@ namespace QuizBot
       public string TrueStateText { get; set; } = "Loaded";
 
       public string FalseStateText { get; set; } = "Not Loaded";
+    }
+
+    private void ReloadBotButton_Click(object sender, EventArgs e)
+    {
+      Program.TryToBot(true);
     }
   }
 }

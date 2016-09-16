@@ -50,6 +50,7 @@ namespace QuizBot
       this.StopButton = new System.Windows.Forms.Button();
       this.CloseButton = new System.Windows.Forms.Button();
       this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+      this.ReloadBotButton = new System.Windows.Forms.Button();
       this.statBox.SuspendLayout();
       this.SuspendLayout();
       // 
@@ -138,12 +139,14 @@ namespace QuizBot
       // messageStatus
       // 
       this.messageStatus.AutoSize = true;
+      this.messageStatus.FalseStateText = "Not Loaded";
       this.messageStatus.ForeColor = System.Drawing.Color.Red;
       this.messageStatus.Location = new System.Drawing.Point(77, 72);
       this.messageStatus.Name = "messageStatus";
       this.messageStatus.Size = new System.Drawing.Size(63, 13);
       this.messageStatus.TabIndex = 8;
       this.messageStatus.Text = "Not Loaded";
+      this.messageStatus.TrueStateText = "Loaded";
       // 
       // label6
       // 
@@ -157,12 +160,14 @@ namespace QuizBot
       // roleStatus
       // 
       this.roleStatus.AutoSize = true;
+      this.roleStatus.FalseStateText = "Not Loaded";
       this.roleStatus.ForeColor = System.Drawing.Color.Red;
       this.roleStatus.Location = new System.Drawing.Point(77, 55);
       this.roleStatus.Name = "roleStatus";
       this.roleStatus.Size = new System.Drawing.Size(63, 13);
       this.roleStatus.TabIndex = 6;
       this.roleStatus.Text = "Not Loaded";
+      this.roleStatus.TrueStateText = "Loaded";
       // 
       // label5
       // 
@@ -259,10 +264,21 @@ namespace QuizBot
       this.richTextBox1.Text = "Quizbot - Town of Salem for Telegram";
       this.richTextBox1.Enter += new System.EventHandler(this.OnEnter);
       // 
+      // ReloadBotButton
+      // 
+      this.ReloadBotButton.Location = new System.Drawing.Point(93, 314);
+      this.ReloadBotButton.Name = "ReloadBotButton";
+      this.ReloadBotButton.Size = new System.Drawing.Size(75, 23);
+      this.ReloadBotButton.TabIndex = 9;
+      this.ReloadBotButton.Text = "Reload Bot";
+      this.ReloadBotButton.UseVisualStyleBackColor = true;
+      this.ReloadBotButton.Click += new System.EventHandler(this.ReloadBotButton_Click);
+      // 
       // LogForm
       // 
       this.BackColor = System.Drawing.Color.White;
       this.ClientSize = new System.Drawing.Size(533, 407);
+      this.Controls.Add(this.ReloadBotButton);
       this.Controls.Add(this.richTextBox1);
       this.Controls.Add(this.CloseButton);
       this.Controls.Add(this.StopButton);
@@ -303,5 +319,7 @@ namespace QuizBot
     private StatusLabel messageStatus;
     private Label label6;
     #endregion
+
+    private Button ReloadBotButton;
   }
 }

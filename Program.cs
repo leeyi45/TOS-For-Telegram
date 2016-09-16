@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Windows.Forms;
-using System.Reflection;
 using System.Threading;
 using System.Xml.Linq;
 using Newtonsoft.Json;
@@ -24,7 +23,7 @@ namespace QuizBot
     [STAThread]
 		static void Main(string[] notused)
     {
-      //MessageCount = new ConcurrentDictionary<int, int>();
+      MessageCount = new Dictionary<int, Telegram.Bot.Types.Message>();
       startup = new Startup();
       Application.ApplicationExit += OnClosing;
       GameData.StartTime = DateTime.Now.AddHours(-8);
@@ -35,7 +34,9 @@ namespace QuizBot
 
     public static Dictionary<string, Action<Callback>> Parsers { get; set; }
 
-		static void OnMessage(object sender, MessageEventArgs messageEventArgs)
+    static Dictionary<int, Telegram.Bot.Types.Message> MessageCount;
+
+    static void OnMessage(object sender, MessageEventArgs messageEventArgs)
 		{
       try
       {
@@ -50,14 +51,21 @@ namespace QuizBot
         if (message == null || message.Type != MessageType.TextMessage) return;
 
         //Users that exceed the limit are ignored
-        if(MessageCount.Keys.Contains(message.From.Id))
+        if (MessageCount.Keys.Contains(message.From.Id))
         {
-          if (MessageCount[message.From.Id] > Settings.MaxMessage) return;
-          else MessageCount[message.From.Id]++;
+          if ((message.Date - MessageCount[message.From.Id].Date).TotalMilliseconds < 
+            Settings.MaxMessage)
+          {
+            return;
+          }
+          else
+          {
+            MessageCount[message.From.Id] = message;
+          }
         }
         else
         {
-          MessageCount.Add(message.From.Id, 1);
+          MessageCount.Add(message.From.Id, message);
         }
         #endregion
 
@@ -117,7 +125,7 @@ namespace QuizBot
 		}
 
     public static void TryToBot(bool logtoconsole)
-    {
+    { 
       bool lol = true;
       while (lol)
       {
@@ -301,37 +309,5 @@ namespace QuizBot
       }
       dataFile.Save(GameData.xmlLocation + @"UserData.xml");
     }
-
-    #region Spam Management
-    //static ConcurrentDictionary<int, int> MessageCount;
-
-    static Dictionary<int, int> MessageCount;
-
-    static System.Diagnostics.Stopwatch Watch = new System.Diagnostics.Stopwatch();
-
-    public static void SpamThread()
-    {
-      MessageCount = new Dictionary<int, int>();
-      while(Bot.IsReceiving)
-      {
-        if (MessageCount.Keys.Count > 1) Watch.Start();
-        else Watch.Reset();
-
-        if(Watch.ElapsedMilliseconds == 5000)
-        {
-          foreach(var each in MessageCount.Keys)
-          {
-            MessageCount[each]--;
-          }
-          Watch.Restart();
-        }
-
-        foreach(var each in MessageCount)
-        {
-          if (each.Value == 0) MessageCount.Remove(each.Key);
-        }
-      }
-    }
-    #endregion
   }
 }

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using Telegram.Bot.Types;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace QuizBot
 {
@@ -202,28 +203,25 @@ namespace QuizBot
     public bool HasRevealed { get; set; }
     #endregion
 
-    private async void BotNormalMessage(string text)
+    private void BotNormalMessage(string text)
     {
-      await Program.Bot.SendTextMessageAsync(CurrentGroup, text,
-        parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
+      BotNormalMessage(CurrentGroup, text);
     }
 
     private async void BotNormalMessage(long id, string text)
     {
-      await Program.Bot.SendTextMessageAsync(id, text, 
+     await Program.Bot.SendTextMessageAsync(id, text, 
         parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
     }
 
-    private async void BotMessage(string key, params object[] args)
+    private void BotMessage(string key, params object[] args)
     {
-      await Program.Bot.SendTextMessageAsync(CurrentGroup, string.Format(GameMessages[key], args),
-        parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
+      BotMessage(CurrentGroup, key, args);
     }
 
-    private async void BotMessage(long id, string key, params object[] args)
+    private void BotMessage(long id, string key, params object[] args)
     {
-      await Program.Bot.SendTextMessageAsync(id, string.Format(GameMessages[key], args),
-        parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
+      BotNormalMessage(id, string.Format(GameMessages[key], args));
     }
 
     public static void LoadInstances()

@@ -1,217 +1,162 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<!--This system is based off the werewolf language system-->
 <messages version="1.0">
-  <!--Administration events-->
-  <message key="PlayerJoin">
-    <value>{0} has joined the game! {1} players, {2} minimum, {3} maximum</value>
-  </message>
-  
-  <message key="Leave">
-    <value>{0} has left the game!</value>
-  </message>
-    
   <message key="AlreadyJoin">
     <value>You have already joined!</value>
   </message>
-  
-  <message key="JoinGameSuccess">
-    <value>You have successfully joined the game in {0}!</value>
-  </message>
-    
-  <message key="GameRunningJoin">
-    <value>You cannot join now, a game is already in progress!</value>
-  </message>
-
-  <message key="GameRunningRefresh">
-    <value>You cannot refresh the game now, it is currently in progress!</value>
-  </message>
-    
-  <message key="NoGameJoin">
-    <value>There is no game in progress, use /createlobby to create a lobby and start one!</value>
-  </message>
-
-  <message key="NoInstanceData">
-    <value>There is no instance data for this group. Use /createinstance first!</value>
-  </message>
-
-  <message key="InstanceCreated">
-    <value>Instance data created for this group!</value>
-  </message>
-
-  <message key="HasInstance">
-    <value>Instance data has already been created for this group!</value>
-  </message>
-  
-  <message key="RefreshQueued">
-    <value>This instance will refresh itself when the game ends</value>
-  </message>
-
-  <message key="RefreshAlreadyQueued">
-    <value>This instance already has a refresh request queued!</value>
-  </message>
-
-  <message key="Refreshed">
-    <value>This instance has been refreshed!</value>
-  </message>
-  
-  <message key="LobbyCreated">
-    <value>{0} has started created a lobby, /join to join!</value>
-  </message>
-  
-  <message key="RunningGameStart">
-    <value>A game has already been started! /join to join!</value>
-  </message>
-  
   <message key="BeginGame">
     <value>Game started. Please switch over to message the bot to begin</value>
   </message>
-  
-  <message key="LobbyClosed">
-    <value>The lobby has been closed by {0}</value>
-  </message>
-
-  <message key="GameBegun">
-    <value>The game has already begun!</value>
-  </message>
-  
-  <message key="NotAdminError">
-    <value>{0}, you are not an admin!</value>
-  </message>
-    
-  <message key="NotDevError">
-    <value>{0}, you are not a developer!</value>
-  </message>
-  
-  <message key="JoinSeconds">
-    <value>{0} seconds left to /join</value>
-  </message>
-  
-  <message key="SentConfig">
-    <value>{0}, I have sent you the config via PM</value>
-  </message>
-  
-  <message key="RoleNotFound">
-    <value>Role "{0}" not found!</value>
-  </message>
-  
-  <message key="PleaseStartBot">
-    <value>{0}, click @quiztestbot and start the bot so as to enable PM!</value>
-  </message>
-  
-  <message key="ForceGameEnd">
-    <value>Game has been forcefully ended by {0}!</value>
-  </message>
-  
-  <message key="PrivateOnly">
-    <value>This command can only be used in a private chat!</value>
-  </message>
-  
-  <message key="MaxPlayersReached">
-    <value>You cannot join! The maxmimum number of players has been reached!</value>
-  </message>
-  
-  <message key="MinPlayersReached">
-    <value>{0} players have joined! /begin to begin the game!</value>
-  </message>
-  
-  <message key="TimeLeft">
-    <value>{0} seconds left to /join!</value>
-  </message>
-  
-  <message key="NotEnoughPlayers">
-    <value>There needs to be at least {0} players to begin! There are currently only {1}</value>
-  </message>
-    
-  <message key="RolesAssigned">
-    <value>The roles have been assigned, and the game begins!</value>
-  </message>
-  
-  <message key="LeftGame">
-    <value>{0} has left the game!</value>
-  </message>
-  
-  <message key="NotInGame">
-    <value>You're not in the game!</value>
-  </message>
-  
-  <message key="NotEnoughArgs">
-    <value>There needs to be at least {0} arguments for the command {1}</value>
-  </message>
-
-  <message key="UnrecognizedConfig">
-    <value>{0} is not a valid config option!</value>
-  </message>
-
-  <message key="GetNickname">
-    <value>Please send your desired nickname</value>
-  </message>
-
-  <message key="GotNickname">
-    <value>The nickname you have chosen is {0}!</value>
-  </message>
-
-  <message key="ChangedNickname">
-    <value>You have changed your nickname to {0}!</value>
-  </message>
-
-  <message key="NicknamesLeft">
-    <value>Waiting for {0} player(s) to choose their nickname!</value>
-  </message>
-  
-  <message key="ValueChanged">
-    <value>Value of {0} has been changed to {1}!</value>
-  </message>
-  
-  <message key="InvalidValue">
-    <value>{0} is an invalid value for {1}!</value>
-  </message>
-  
   <message key="BlockError">
     <value>Please provide an ID!</value>
   </message>
-  
-  <message key="GetChatID">
-    <value>The ID for this chat is {0}</value>
+  <message key="ChangedNickname">
+    <value>You have changed your nickname to {0}!</value>
   </message>
-  
-  <!-- Actual messages during the game -->
-  <message key="Instruct">
-    <value>Choose one person to {0}</value>
-  </message>
-
   <message key="ChosenTarget">
     <value>You have chosen {0}</value>
   </message>
-
+  <message key="ForceGameEnd">
+    <value>Game has been forcefully ended by {0}!</value>
+  </message>
+  <message key="GameRunningJoin">
+    <value>You cannot join now, a game is already in progress!</value>
+  </message>
+  <message key="GameRunningRefresh">
+    <value>You cannot refresh the game now, it is currently in progress!</value>
+  </message>
+  <message key="GameBegun">
+    <value>The game has already begun!</value>
+  </message>
+  <message key="GetNickname">
+    <value>Please send your desired nickname</value>
+  </message>
+  <message key="GetChatID">
+    <value>The ID for this chat is {0}</value>
+  </message>
+  <message key="GotNickname">
+    <value>The nickname you have chosen is {0}!</value>
+  </message>
+  <message key="HasInstance">
+    <value>Instance data has already been created for this group!</value>
+  </message>
+  <message key="InstanceCreated">
+    <value>Instance data created for this group!</value>
+  </message>
+  <message key="InvalidValue">
+    <value>{0} is an invalid value for {1}!</value>
+  </message>
+  <message key="Instruct">
+    <value>Choose one person to {0}</value>
+  </message>
   <message key="InvestResult">
     <value>Your target is {0}</value>
   </message>
-
-  <message key="VotingStart">
-    <value>You have {0} seconds to vote on who to lynch!</value>
+  <message key="JoinGameSuccess">
+    <value>You have successfully joined the game in {0}!</value>
   </message>
-
-  <message key="VoteReceived">
-    <value>{0} has voted to lynch {1}!</value>
+  <message key="JoinSeconds">
+    <value>{0} seconds left to /join</value>
   </message>
-  
-  <message key="Roleblocked">
-    <value>You have been roleblocked!</value>
+  <message key="Leave">
+    <value>{0} has left the game!</value>
   </message>
-  <!-- Death Messages -->
-  <message key="Serial Killer Death">
-    <value>You have been stabbed by the Serial Killer!</value>
+  <message key="LeftGame">
+    <value>{0} has left the game!</value>
   </message>
-
-  <message key="Serial Killer PublicDeath">
-    <value>{0} was brutally stabbed by the serial killer last night!</value>
+  <message key="LobbyCreated">
+    <value>{0} has started created a lobby, /join to join!</value>
   </message>
-
+  <message key="LobbyClosed">
+    <value>The lobby has been closed by {0}</value>
+  </message>
+  <message key="MaxPlayersReached">
+    <value>You cannot join! The maxmimum number of players has been reached!</value>
+  </message>
   <message key="Mafioso Death">
     <value>You have been assasinated by the Mafia in the dead of night!</value>
   </message>
-
   <message key="Mafioso PublicDeath">
     <value>The Mafia ordered the assasination of {0}, and was found dead in his house in the morning!</value>
+  </message>
+  <message key="MinPlayersReached">
+    <value>{0} players have joined! /begin to begin the game!</value>
+  </message>
+  <message key="NicknamesLeft">
+    <value>Waiting for {0} player(s) to choose their nickname!</value>
+  </message>
+  <message key="NoGameJoin">
+    <value>There is no game in progress, use /createlobby to create a lobby and start one!</value>
+  </message>
+  <message key="NoInstanceData">
+    <value>There is no instance data for this group. Use /createinstance first!</value>
+  </message>
+  <message key="NotAdminError">
+    <value>{0}, you are not an admin!</value>
+  </message>
+  <message key="NotDevError">
+    <value>{0}, you are not a developer!</value>
+  </message>
+  <message key="NotEnoughPlayers">
+    <value>There needs to be at least {0} players to begin! There are currently only {1}</value>
+  </message>
+  <message key="NotInGame">
+    <value>You're not in the game!</value>
+  </message>
+  <message key="NotEnoughArgs">
+    <value>There needs to be at least {0} arguments for the command {1}</value>
+  </message>
+  <message key="PlayerJoin">
+    <value>{0} has joined the game! {1} players, {2} minimum, {3} maximum</value>
+  </message>
+  <message key="PleaseStartBot">
+    <value>{0}, click @quiztestbot and start the bot so as to enable PM!</value>
+  </message>
+  <message key="PrivateOnly">
+    <value>This command can only be used in a private chat!</value>
+  </message>
+  <message key="RefreshQueued">
+    <value>This instance will refresh itself when the game ends</value>
+  </message>
+  <message key="RefreshAlreadyQueued">
+    <value>This instance already has a refresh request queued!</value>
+  </message>
+  <message key="Refreshed">
+    <value>This instance has been refreshed!</value>
+  </message>
+  <message key="RoleNotFound">
+    <value>Role "{0}" not found!</value>
+  </message>
+  <message key="RolesAssigned">
+    <value>The roles have been assigned, and the game begins!</value>
+  </message>
+  <message key="Roleblocked">
+    <value>You have been roleblocked!</value>
+  </message>
+  <message key="RunningGameStart">
+    <value>A game has already been started! /join to join!</value>
+  </message>
+  <message key="SentConfig">
+    <value>{0}, I have sent you the config via PM</value>
+  </message>
+  <message key="Serial Killer Death">
+    <value>You have been stabbed by the Serial Killer!</value>
+  </message>
+  <message key="Serial Killer PublicDeath">
+    <value>{0} was brutally stabbed by the serial killer last night!</value>
+  </message>
+  <message key="TimeLeft">
+    <value>{0} seconds left to /join!</value>
+  </message>
+  <message key="UnrecognizedConfig">
+    <value>{0} is not a valid config option!</value>
+  </message>
+  <message key="ValueChanged">
+    <value>Value of {0} has been changed to {1}!</value>
+  </message>
+  <message key="VotingStart">
+    <value>You have {0} seconds to vote on who to lynch!</value>
+  </message>
+  <message key="VoteReceived">
+    <value>{0} has voted to lynch {1}!</value>
   </message>
 </messages>
