@@ -89,7 +89,7 @@ namespace QuizBot
       // label2
       // 
       this.label2.AutoSize = true;
-      this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.label2.Location = new System.Drawing.Point(180, 58);
       this.label2.Name = "label2";
       this.label2.Size = new System.Drawing.Size(25, 13);
@@ -120,7 +120,7 @@ namespace QuizBot
       this.protocolStatus.AutoSize = true;
       this.protocolStatus.FalseStateText = "Not Loaded";
       this.protocolStatus.ForeColor = System.Drawing.Color.Red;
-      this.protocolStatus.Location = new System.Drawing.Point(77, 85);
+      this.protocolStatus.Location = new System.Drawing.Point(77, 89);
       this.protocolStatus.Name = "protocolStatus";
       this.protocolStatus.Size = new System.Drawing.Size(63, 13);
       this.protocolStatus.TabIndex = 10;
@@ -130,7 +130,7 @@ namespace QuizBot
       // label7
       // 
       this.label7.AutoSize = true;
-      this.label7.Location = new System.Drawing.Point(7, 85);
+      this.label7.Location = new System.Drawing.Point(7, 89);
       this.label7.Name = "label7";
       this.label7.Size = new System.Drawing.Size(54, 13);
       this.label7.TabIndex = 9;
@@ -204,7 +204,7 @@ namespace QuizBot
       this.stateLabel.AutoSize = true;
       this.stateLabel.FalseStateText = "Stopped";
       this.stateLabel.ForeColor = System.Drawing.Color.Red;
-      this.stateLabel.Location = new System.Drawing.Point(77, 20);
+      this.stateLabel.Location = new System.Drawing.Point(77, 21);
       this.stateLabel.Name = "stateLabel";
       this.stateLabel.Size = new System.Drawing.Size(47, 13);
       this.stateLabel.TabIndex = 2;
@@ -214,7 +214,7 @@ namespace QuizBot
       // label3
       // 
       this.label3.AutoSize = true;
-      this.label3.Location = new System.Drawing.Point(7, 20);
+      this.label3.Location = new System.Drawing.Point(7, 21);
       this.label3.Name = "label3";
       this.label3.Size = new System.Drawing.Size(40, 13);
       this.label3.TabIndex = 1;

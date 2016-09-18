@@ -61,7 +61,7 @@ namespace QuizBot.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("40")]
         public int Night_Cycle {
             get {
                 return ((int)(this["Night_Cycle"]));
@@ -70,7 +70,7 @@ namespace QuizBot.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("20")]
         public int Day_Cycle {
             get {
                 return ((int)(this["Day_Cycle"]));
@@ -79,7 +79,7 @@ namespace QuizBot.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("20")]
         public int Voting_Cycle {
             get {
                 return ((int)(this["Voting_Cycle"]));

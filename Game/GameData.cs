@@ -843,6 +843,15 @@ namespace QuizBot
       return it.ToDictionary(x => x.Key, x => x.Value.ToString());
     }
 
+    public static bool Contains(this List<Player> list, int Id)
+    {
+      foreach (var each in list)
+      {
+        if (each.Id == Id) return true;
+      }
+      return false;
+    }
+
     public static string ToUpperFirst(this string it)
     {
       if (string.IsNullOrWhiteSpace(it)) return String.Empty;

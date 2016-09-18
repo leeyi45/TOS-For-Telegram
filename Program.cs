@@ -50,18 +50,15 @@ namespace QuizBot
         //Messages that aren't text are ignored
         if (message == null || message.Type != MessageType.TextMessage) return;
 
+        //Messages that have nothing are ignored
+        if (string.IsNullOrWhiteSpace(message.Text)) return;
+
         //Users that exceed the limit are ignored
         if (MessageCount.Keys.Contains(message.From.Id))
         {
-          if ((message.Date - MessageCount[message.From.Id].Date).TotalMilliseconds < 
-            Settings.MaxMessage)
-          {
-            return;
-          }
-          else
-          {
-            MessageCount[message.From.Id] = message;
-          }
+          if ((message.Date - MessageCount[message.From.Id].Date).TotalMilliseconds <
+            Settings.MaxMessage) return;
+          else MessageCount[message.From.Id] = message;
         }
         else
         {
@@ -72,11 +69,6 @@ namespace QuizBot
         if (message.ForwardFrom != null && CommandVars.GetUserId)
         {
           Bot.SendTextMessageAsync(message.From.Id, Commands.ProcessUserId(message));
-        }
-
-        if (message.Chat.Type == ChatType.Private && CommandVars.GettingNicknames)
-        {
-          Commands.ProcessNicknames(message);
         }
 
         if (Commands.BlockedPeople.Contains(message.From.Id.ToString())) return;

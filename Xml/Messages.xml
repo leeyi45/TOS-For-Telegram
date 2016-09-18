@@ -3,6 +3,9 @@
   <message key="AlreadyJoin">
     <value>You have already joined!</value>
   </message>
+  <message key="AlreadyInGame">
+    <value>You have already a game in another group!</value>
+  </message>
   <message key="BeginGame">
     <value>Game started. Please switch over to message the bot to begin</value>
   </message>
@@ -131,6 +134,9 @@
   </message>
   <message key="Roleblocked">
     <value>You have been roleblocked!</value>
+  </message>
+  <message key="RunningGameConfig">
+    <value>You cannot change the value of {0} right now - A game is in progress!</value>
   </message>
   <message key="RunningGameStart">
     <value>A game has already been started! /join to join!</value>

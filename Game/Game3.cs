@@ -21,7 +21,7 @@ namespace QuizBot
       /// Constructor to create new settings class
       /// </summary>
       /// <param name="Info">Property values</param>
-      public Settings(IEnumerable<SettingDetail> Info)
+      public Settings(IEnumerable<SettingDetail> Info, Game parent)
       {
         CreateProperties();
         foreach (var info in Info)
@@ -29,13 +29,14 @@ namespace QuizBot
           var prop = SetPropertyValue[info.Name];
           prop.SetValue(this, info.GetValue(null));
         }
+        this.parent = parent;
       }
 
       /// <summary>
       /// Constructor to create settings class based on existing data
       /// </summary>
       /// <param name="element">Settings XElement</param>
-      public Settings(XElement element)
+      public Settings(XElement element, Game parent)
       {
         CreateProperties();
         var quizbotsettings = QuizBot.Settings.SetPropertyValue;
@@ -45,9 +46,10 @@ namespace QuizBot
           string val;
           element.TryGetElement(each.Name, out val);
           if(string.IsNullOrWhiteSpace(val)) val = quizbotsettings[
-            each.Name.ToString()].GetValue(null).ToString();
+            each.Name.ToString().ToLower()].GetValue(null).ToString();
           prop.SetValue(this, Convert.ChangeType(val, prop.Info.PropertyType));
         }
+        this.parent = parent;
       }
 
       private void CreateProperties()
@@ -56,13 +58,37 @@ namespace QuizBot
         SetPropertyValue = AllSettings.ToDictionary(x => x.Name.ToLower(), x => x);
       }
 
+      private Game parent;
+
       public int SettingCount { get; private set; }
 
       [SettingDetail("Max Player Count")]
-      public int MaxPlayers { get; private set; }
+      public int MaxPlayers
+      {
+        get { return maxplayers; }
+        set
+        {
+          if (maxplayers <= minplayers)
+          {
+            throw new ConfigException("Max player count cannot be less than or equal to min player count!");
+          }
+          else maxplayers = value;
+        }
+      }
 
       [SettingDetail("Min Player Count")]
-      public int MinPlayers { get; private set; }
+      public int MinPlayers
+      {
+        get { return minplayers; }
+        set
+        {
+          if (maxplayers <= minplayers)
+          {
+            throw new ConfigException("Min player count cannot be greater than or equal to max player count!");
+          }
+          else minplayers = value;
+        }
+      }
 
       [SettingDetail("Use Nicknames")]
       public bool UseNicknames { get; private set; }
@@ -76,7 +102,7 @@ namespace QuizBot
       [SettingDetail("Day Duration")]
       public int DayTime { get; private set; }
 
-      [SettingDetail("Join Duration", extramsg: "Currently not in use")]
+      [SettingDetail("Join Duration", ExtraMessage = "Currently not in use")]
       public int JoinTime { get; private set; }
 
       [SettingDetail("Rolelist")]
@@ -85,12 +111,16 @@ namespace QuizBot
         get { return rolelist; }
         private set
         {
-          if (!GameData.RoleLists.Keys.Contains(value)) throw new InitException("No such rolelist!");
+          if (!GameData.RoleLists.Keys.Contains(value)) throw new ConfigException("No such rolelist!");
           else rolelist = value;
         }
       }
 
       private string rolelist;
+
+      private int maxplayers = 30;
+
+      private int minplayers = 5;
 
       public IEnumerable<SettingDetail> AllSettings
       {
@@ -102,6 +132,9 @@ namespace QuizBot
             if (attri != null && each.CanRead && each.CanWrite)
             {
               attri.Info = each;
+              var defaultVal = QuizBot.Settings.SetPropertyValue[attri.Name.ToLower()];
+              attri.MaxValue = defaultVal.MaxValue;
+              attri.MinValue = defaultVal.MinValue;
               yield return attri;
             }
           }
@@ -237,8 +270,8 @@ namespace QuizBot
           group = each.TryGetElementValue<int>(instanceFile, "CurrentGroup");
           name = each.TryGetElementValue("InstanceData.xml", "Name");
         }
-        catch(InitException) { continue; }
-        Commands.GameInstances.Add(group, new Game(name, group, new Settings(each.Element("Settings"))));
+        catch(InitException) { continue; } 
+        Commands.GameInstances.Add(group, new Game(name, group, each.Element("Settings")));
       }
     }
   }

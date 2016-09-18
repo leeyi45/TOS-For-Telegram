@@ -20,11 +20,19 @@ namespace QuizBot
 
     private void SetLabelText(string text, bool loading = true)
     {
-      InfoLabel.Invoke(new Action(() =>
+      if (InfoLabel.InvokeRequired)
+      {
+        InfoLabel.Invoke(new Action(() =>
+        {
+          if (loading) InfoLabel.Text = "Loading " + text;
+          else InfoLabel.Text = text;
+        }));
+      }
+      else
       {
         if (loading) InfoLabel.Text = "Loading " + text;
         else InfoLabel.Text = text;
-      }));
+      }
     }
 
     public void SetExtraInfo(string text)
@@ -48,7 +56,7 @@ namespace QuizBot
     {
       var ToLoad = typeof(StartupLoaders).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).
   ToDictionary(x => x.Name, x => (Action)Delegate.CreateDelegate(typeof(Action), x));
-      this.Invoke(new Action(() => progressBar1.Step = 100 / ToLoad.Count));
+      Invoke(new Action(() => progressBar1.Step = 100 / ToLoad.Count));
 
       foreach (var each in ToLoad)
       {

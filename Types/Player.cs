@@ -40,7 +40,7 @@ namespace QuizBot
     public Role role { get; set; }
 
     #region User Fields
-    public string FirstName { get; private set; }
+    public string FirstName { get; set; }
 
     public string LastName { get; private set; }
 
@@ -117,20 +117,27 @@ namespace QuizBot
       }
     }
 
+    /// <summary>
+    /// Group ID for the game the player is currently in
+    /// </summary>
+    public long GroupCode { get; set; }
+
+    public bool GettingNickname { get; set; }
     #endregion
 
     #region Game Methods
     public void Kill(Player wasKilledBy)
     {
       WasKilledBy = wasKilledBy;
-      IsAlive = false;
       //Tell the user they have been killed!
       Program.BotMessage(Id, wasKilledBy.role.Name + " Death");
+      Kill();
     }
 
     public void Kill()
     {
       IsAlive = false;
+      CommandVars.PlayersInGame.Remove(this);
     }
 
     public async void SendMessage(string message, IReplyMarkup markup = null)

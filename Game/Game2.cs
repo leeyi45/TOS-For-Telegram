@@ -24,7 +24,7 @@ namespace QuizBot
       Stopwatch = new System.Diagnostics.Stopwatch();
       Messages = new Dictionary<int, Tuple<int, int>>();
       Joined = new List<Player>();
-      settings = new Settings(QuizBot.Settings.AllSettings);
+      settings = new Settings(QuizBot.Settings.AllSettings, this);
       Parsers = new Dictionary<string, Action<Callback>>();
       CommandContainer = new GameCommands(this);
 
@@ -38,12 +38,12 @@ namespace QuizBot
       BotMessage("InstanceCreated");
     }
 
-    private Game(string groupName, int group, Settings settings)
+    private Game(string groupName, int group, System.Xml.Linq.XElement settings)
     {
       Stopwatch = new System.Diagnostics.Stopwatch();
       Messages = new Dictionary<int, Tuple<int, int>>();
       Joined = new List<Player>();
-      this.settings = settings;
+      this.settings = new Settings(settings, this);
       Parsers = new Dictionary<string, Action<Callback>>();
       CurrentGroup = group;
       GroupName = groupName;
@@ -158,10 +158,7 @@ namespace QuizBot
       }
 
       Joined = hasroles;
-      foreach (var each in hasroles)
-      {
-        each.OnAssignRole();
-      }
+      hasroles.ForEach(x => x.OnAssignRole());
       GamePhase = GamePhase.Running;
       BotMessage("RolesAssigned");
       RunGame();
@@ -169,11 +166,32 @@ namespace QuizBot
 
     private void ObtainNicknames()
     {
-      foreach (var each in Joined)
+      Joined.ForEach(x =>
       {
-        BotMessage(each.Id, "GetNickname");
+        BotMessage(x.Id, "GetNickname");
+        x.GettingNickname = true;
+      });
+    }
+
+    public void ProcessNicknames(Message msg)
+    {
+      var player = GetPlayer(msg.From.Id);
+      if (player.Nickname != null)
+      {
+        BotMessage(msg.From.Id, "ChangedNickname", msg.Text);
       }
-      CommandVars.GettingNicknames = true;
+      else
+      {
+        BotMessage(msg.From.Id, "GotNickname", msg.Text);
+      }
+      player.Nickname = msg.Text;
+      var count = Joined.Count(x => string.IsNullOrWhiteSpace(x.Nickname));
+      if (count == 0)
+      {
+        GameStart.Start();
+        Joined.ForEach(x => x.GettingNickname = false);
+      }
+      else Program.BotMessage("NicknamesLeft", count);
     }
 
     private GameCommands CommandContainer;
@@ -199,6 +217,7 @@ namespace QuizBot
       GameMessages = GameData.Messages;
       Protocols = GameData.Protocols;
       Roles = GameData.Roles;
+      Rolelist = GameData.RoleLists[settings.CurrentRoleList];
       BotMessage("Refreshed");
     }
 
@@ -228,10 +247,18 @@ namespace QuizBot
       [Command(Trigger = "join", InGroupOnly = true, GameStartOnly = true)]
       private void Join(Message msg, string[] args)
       {
-        var player = msg.From;
-        if (parent.HasJoined(player) && parent.GamePhase == GamePhase.Joining)
-        { //Joined already
-          parent.BotMessage("AlreadyJoin");
+        var player = (Player)msg.From;
+        if(CommandVars.PlayersInGame.Contains(player))
+        {
+          if(CommandVars.PlayersInGame.Where(x => x == player).ToArray()[0].GroupCode != parent.CurrentGroup)
+          {
+            parent.BotMessage("AlreadyInGame");
+            return;
+          }
+          else if (parent.GamePhase == GamePhase.Joining)
+          {
+            parent.BotMessage("AlreadyJoin");
+          }
         }
         else if (parent.GamePhase == GamePhase.Running || parent.GamePhase == GamePhase.Assigning)
         { //Game is running
@@ -244,10 +271,12 @@ namespace QuizBot
             parent.BotMessage("MaxPlayersReached");
             return;
           }
+          player.GroupCode = parent.CurrentGroup;
           parent.BotMessage("PlayerJoin", player.Username, parent.PlayerCount + 1,
             parent.settings.MinPlayers, parent.settings.MaxPlayers);
           parent.BotMessage(player.Id, "JoinGameSuccess", msg.Chat.Title);
           parent.Joined.Add(player);
+          CommandVars.PlayersInGame.Add(player);
 
           if (parent.PlayerCount >= parent.settings.MinPlayers)
           {
@@ -370,8 +399,15 @@ namespace QuizBot
           case 2:
             {
               SettingDetail prop;
-              try { prop = parent.settings.SetPropertyValue[args[1]]; }
-              catch(KeyNotFoundException)
+              try
+              {
+                prop = parent.settings.SetPropertyValue[args[1]];
+                if(!string.IsNullOrWhiteSpace(prop.ExtraMessage))
+                {
+                  parent.BotNormalMessage(prop.ExtraMessage);
+                }
+              }
+              catch (KeyNotFoundException)
               {
                 output = new StringBuilder("Unrecognized Config Option: " + args[1]);
                 break;
@@ -381,8 +417,20 @@ namespace QuizBot
             }
           case 3:
             {
+              if(parent.GameStarted)
+              {
+                parent.BotMessage("RunningGameConfig", args[1]);
+                return;
+              }
               SettingDetail prop;
-              try { prop = parent.settings.SetPropertyValue[args[1]]; }
+              try
+              {
+                prop = parent.settings.SetPropertyValue[args[1]];
+                if (!string.IsNullOrWhiteSpace(prop.ExtraMessage))
+                {
+                  parent.BotNormalMessage(prop.ExtraMessage);
+                }
+              }
               catch (KeyNotFoundException)
               {
                 output = new StringBuilder("Unrecognized Config Option: " + args[1]);
@@ -394,9 +442,9 @@ namespace QuizBot
                 output = new StringBuilder(args[2] + " is an invalid value for " + prop.DisplayName);
                 break;
               }
-              catch (InitException) when (prop.Name == "CurrentRoleList")
-              { //Will only ever happen when attempting to set rolelist
-                output = new StringBuilder(args[2] + " is not a valid role list!");
+              catch (ConfigException e)
+              {
+                output = new StringBuilder(e.Message);
                 break;
               }
               output = new StringBuilder("Set the value of " + prop.DisplayName + " to " + args[2]);

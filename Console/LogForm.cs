@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -96,7 +97,7 @@ namespace QuizBot
             }
             else
             {
-              selectedCommand += 1;
+              selectedCommand++;
               commandBox.Text = pastCommands[selectedCommand];
             }
             commandBox.SelectionStart = commandBox.Text.Length;
@@ -119,7 +120,7 @@ namespace QuizBot
             }
             else
             {
-              selectedCommand -= 1;
+              selectedCommand--;
               commandBox.Text = pastCommands[selectedCommand];
             }
             commandBox.SelectionStart = commandBox.Text.Length;
@@ -154,6 +155,11 @@ namespace QuizBot
     private void StopButton_Click(object sender, EventArgs e)
     {
       StopBot();
+    }
+
+    private void ReloadBotButton_Click(object sender, EventArgs e)
+    {
+      Program.TryToBot(true);
     }
     #endregion
 
@@ -263,14 +269,13 @@ namespace QuizBot
     public void DebugMenu(string input)
     {
       if (string.IsNullOrWhiteSpace(input)) return;
-      input.ToLower();
       string[] args = input.Split(' ');
       try
       {
         LogLine(CommandContainer.ConsoleCommands[args[0]](args));
       }
       catch (KeyNotFoundException) { LogLine("Unknown command: " + args[0]); }
-      catch (ArgumentException e) { LogLine("Unknown argument: " + e); }
+      catch (InvalidCommandException e) { LogLine("Unknown argument: " + e); }
     }
 
     private class AllCommands
@@ -280,10 +285,10 @@ namespace QuizBot
         this.parent = parent;
         ConsoleCommands = AddCommands();
         Metadata = AddMetadata();
-        Data = new Dictionary<string, object>();
-        Data.Add("messages", GameData.Messages);
-        Data.Add("protocols", GameData.Protocols);
-        Data.Add("commands", ConsoleCommands.Keys.ToList());
+        CreateListCommand("messages", GameData.Messages);
+        CreateListCommand("protocols", GameData.Protocols);
+        CreateListCommand("commands", ConsoleCommands.Keys.ToList());
+        CreateListCommand("instances", Commands.GameInstances.Keys);
       }
 
       private LogForm parent;
@@ -322,7 +327,30 @@ namespace QuizBot
         return metadata;
       }
 
-      private Dictionary<string, object> Data;
+      private void CreateListCommand(string text, IEnumerable thing)
+      {
+        ConsoleCommands.Add(text, new CommandDelegate((args) =>
+        {
+          var output = new StringBuilder(text.ToUpperFirst() + ":");
+          output.AppendLine();
+          if (thing is Dictionary<string, string>)
+          {
+            foreach (var each in (thing as Dictionary<string, string>))
+            {
+              output.AppendLine(each.Key + ": " + each.Value);
+            }
+          }
+          else
+          { 
+            foreach (var each in thing)
+            {
+              output.AppendLine(each.ToString());
+            }
+          }
+          output.AppendLine();
+          return output.ToString();
+        }));
+      }
 
       #region Commands
       [ConsoleCommand("say")]
@@ -419,6 +447,7 @@ namespace QuizBot
               try { return "The value of " + args[1] + " is: " + Settings.GetPropertyValue(args[1]); }
               catch (KeyNotFoundException) { return "Unrecognised argument: " + args[1]; }
             }
+            /*
           case 3:
             {
               try
@@ -428,10 +457,10 @@ namespace QuizBot
               }
               catch (KeyNotFoundException) { return "Unrecognised argument: " + args[1]; }
               catch (ArgumentException) { return args[2] + " is an invalid value for " + args[1]; }
-            }
+            }*/
           default:
             {
-              return "Only 2 to 3 arguments are accepted";
+              return "Only 1 to 2 argument(s) are accepted";
             }
         }
       }
@@ -524,45 +553,6 @@ namespace QuizBot
         return output.ToString();
       }
 
-      [ConsoleCommand("protocols")]
-      private string Protocols(string[] args)
-      {
-        StringBuilder output = new StringBuilder("Protocols:");
-        output.AppendLine();
-        foreach (var each in (from each in GameData.Protocols
-                              select each.Key + ": " + each.Value))
-        {
-          output.AppendLine(each);
-        }
-        return output.ToString();
-      }
-
-      [ConsoleCommand("list")]
-      private string List(string[] args)
-      {
-        try { return concater(args[1].ToLower()); }
-        catch (IndexOutOfRangeException)
-        {
-          return concater(Data.Keys);
-        }
-        catch (KeyNotFoundException)
-        {
-          return "Invalid argument " + args[1];
-        }
-      }
-
-      [ConsoleCommand("instances")]
-      private string Instances(string[] args)
-      {
-        var output = new StringBuilder("Current instances:");
-        output.AppendLine();
-        foreach(var each in Commands.GameInstances.Keys)
-        {
-          output.AppendLine(each.ToString());
-        }
-        return output.ToString();
-      }
-
       [ConsoleCommand("test")]
       private string Test(string[] args)
       {
@@ -570,45 +560,6 @@ namespace QuizBot
         return "";
       }
       #endregion
-
-      private string concater(string text)
-      {
-        StringBuilder output;
-        var thing = Data[text];
-        if (thing is Dictionary<string, string>)
-        {
-          output = new StringBuilder(text + ":");
-          output.AppendLine();
-          foreach (var each in (from each in (Data[text] as Dictionary<string, string>)
-                                select each.Key + ": " + each.Value))
-          {
-            output.AppendLine(each);
-          }
-        }
-        else
-        {
-          output = new StringBuilder();
-          output.AppendLine();
-          foreach (var each in thing as IEnumerable<string>)
-          {
-            output.AppendLine(each);
-          }
-        }
-        output.AppendLine();
-        return output.ToString();
-      }
-
-      private string concater(IEnumerable<string> it)
-      {
-        var output = new StringBuilder();
-        output.AppendLine();
-        foreach (var each in it)
-        {
-          output.AppendLine(each);
-        }
-        output.AppendLine();
-        return output.ToString();
-      }
 
       #region Metadata
       [ConsoleCommand]
@@ -628,12 +579,6 @@ namespace QuizBot
       private string[] RoleLists()
       {
         return GameData.RoleLists.Keys.ToArray();
-      }
-
-      [ConsoleCommand]
-      private string[] List()
-      {
-        return Data.Keys.ToArray();
       }
       #endregion
 
@@ -673,11 +618,6 @@ namespace QuizBot
       public string TrueStateText { get; set; } = "Loaded";
 
       public string FalseStateText { get; set; } = "Not Loaded";
-    }
-
-    private void ReloadBotButton_Click(object sender, EventArgs e)
-    {
-      Program.TryToBot(true);
     }
   }
 }

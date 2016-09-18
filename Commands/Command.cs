@@ -45,20 +45,16 @@ namespace QuizBot
 		public static void Parse(Message msg)
 		{
 			//remove the slash as necessary
-			string cmd = msg.Text.ToLower().Substring(1, msg.Text.Length - 1);
+			string cmd = msg.Text.ToLower().Trim().Substring(1, msg.Text.Length - 1);
 			if (string.IsNullOrWhiteSpace(cmd)) return;
 
 			string[] args = cmd.Split(' ');
 			//Remove the @quiztestbot
 			if (args[0].Contains(BotUsername)) args[0] = args[0].Replace("@" + BotUsername, "");
-      //Program.PrintWait("the arg is " + args[0]);
 
-      //Check stuff
       Command attribute;
-
       if(!AllCommands.TryGetValue(args[0], out attribute))
-      {
-        //Check for game instance
+      { //Check for game instance
         if(GameInstances.Keys.Contains(msg.Chat.Id))
         { //Game Instance exists
           if(!GameInstances[msg.Chat.Id].AllCommands.TryGetValue(args[0], out attribute))
@@ -499,10 +495,10 @@ namespace QuizBot
         Program.BotMessage(msg.From.Id, "GotNickname", msg.Text);
       }
       player.Nickname = msg.Text;
-      var count = Joined.Count(x => x.Nickname == null);
+      var count = Joined.Count(x => string.IsNullOrWhiteSpace(x.Nickname));
       if(count == 0)
       {
-        CommandVars.GettingNicknames = false;
+        //CommandVars.GettingNicknames = new List<Player>();
       }
       else Program.BotMessage("NicknamesLeft", count);
     }

@@ -11,7 +11,7 @@ namespace QuizBot
   {
     public static bool GetUserId { get; set; } = false;
 
-    public static bool GettingNicknames { get; set; } = false;
+    public static List<Player> PlayersInGame { get; set; } = new List<Player>();
 
     public static bool GettingConfigOption { get; set; } = false;
 
@@ -89,7 +89,7 @@ namespace QuizBot
   /// </summary>
   static class Settings
   {
-    [SettingDetail("Max Player Count")]
+    [SettingDetail("Max Player Count", 2)]
     /// <summary>
     /// The maximum number of players allowed per game
     /// </summary>
@@ -98,7 +98,7 @@ namespace QuizBot
       get { return Properties.Settings.Default.Max_Users; }
     }
 
-    [SettingDetail("Min Player Count", "Recommended not to change")]
+    [SettingDetail("Min Player Count", 2, ExtraMessage = "Not recommended to change")]
     /// <summary>
     /// The minimum number of players allowed per game
     /// </summary>
@@ -107,7 +107,7 @@ namespace QuizBot
       get { return Properties.Settings.Default.Min_Users; }
     }
 
-    [SettingDetail("Join Time", "Not currently in use")]
+    [SettingDetail("Join Time", 20, ExtraMessage = "Not Currently In Use")]
     /// <summary>
     /// The amount of time the join phase is allocated, in seconds
     /// </summary>
@@ -124,7 +124,7 @@ namespace QuizBot
       get { return Properties.Settings.Default.Join_Time * 1000; }
     }
 
-    [SettingDetail("Night Duration")]
+    [SettingDetail("Night Duration", 20)]
     /// <summary>
     /// The amount of time the night time phase is allocated, in seconds
     /// </summary>
@@ -133,7 +133,7 @@ namespace QuizBot
       get { return Properties.Settings.Default.Night_Cycle; }
     }
 
-    [SettingDetail("Day Duration")]
+    [SettingDetail("Day Duration", 20)]
     /// <summary>
     /// The amount of time the day time phase is allocated, in seconds
     /// </summary>
@@ -142,7 +142,7 @@ namespace QuizBot
       get { return Properties.Settings.Default.Day_Cycle; }
     }
 
-    [SettingDetail("Lynch Duration")]
+    [SettingDetail("Lynch Duration", 20)]
     /// <summary>
     /// The amount of time the lynch phase is allocated, in seconds
     /// </summary>
@@ -206,6 +206,10 @@ namespace QuizBot
     /// </summary>
     public static int SettingCount { get; private set; }
 
+    /// <summary>
+    /// Integer value indicating the smallest amount of time permissible between messages
+    /// in milliseconds
+    /// </summary>
     public static int MaxMessage
     {
       get { return Properties.Settings.Default.MaxMessage; }
@@ -238,6 +242,15 @@ namespace QuizBot
       DisplayName = displayName;
       OnSelect = onselect;
       ExtraMessage = extramsg;
+      MinValue = -1;
+      MaxValue = -1;
+    }
+
+    public SettingDetail(string displayName, int minValue, int maxValue = -1)
+    {
+      DisplayName = displayName;
+      MinValue = minValue;
+      MaxValue = maxValue;
     }
 
     /// <summary>
@@ -245,6 +258,9 @@ namespace QuizBot
     /// </summary>
     public string DisplayName { get; set; }
 
+    /// <summary>
+    /// Name of the underlying PropertyInfo
+    /// </summary>
     public string Name { get { return Info.Name; } }
 
     /// <summary>
@@ -259,14 +275,27 @@ namespace QuizBot
 
     public PropertyInfo Info { get; set; }
 
-    public void SetValue(object val)
-    {
-      Info.SetValue(null, Convert.ChangeType(val, Info.PropertyType));
-    }
+    public int MinValue { get; set; }
+
+    public int MaxValue { get; set; }
+
+    public void SetValue(object val) { SetValue(null, val); }
 
     public void SetValue(object target, object val)
     {
-      Info.SetValue(target, Convert.ChangeType(val, Info.PropertyType));
+      var value = Convert.ChangeType(val, Info.PropertyType);
+      if (Info.PropertyType == typeof(int))
+      {
+        if (MinValue != -1 && (int)value < MinValue)
+        {
+          throw new ConfigException(value + " is too small for " + DisplayName);
+        }
+        else if (MaxValue != -1 && (int)value > MaxValue)
+        {
+          throw new ConfigException(value + " is too large for " + DisplayName);
+        }
+      }
+      Info.SetValue(target, value);
     }
 
     public object GetValue(object target)
