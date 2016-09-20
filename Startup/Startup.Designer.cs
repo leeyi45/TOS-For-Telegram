@@ -32,7 +32,7 @@ namespace QuizBot
     private Label InfoLabel;
     private Label ExtraInfo;
     private RichTextBox richTextBox1;
-    private Button CancelButton;
+    private new Button CancelButton;
 
     private void InitializeComponent()
     {

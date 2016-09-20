@@ -32,7 +32,7 @@ namespace QuizBot
         #region Voting time
         Stopwatch.Reset();
         VoteCount = GameData.Alive.ToDictionary(x => x.Id, x => 0);
-        Program.BotMessage("VotingStart", settings.LynchTime);
+        BotMessage("VotingStart", settings.LynchTime);
         while (true)
         {
           if(Stopwatch.ElapsedMilliseconds == settings.LynchTime * 1000)
@@ -133,7 +133,7 @@ namespace QuizBot
       foreach(var player in GetPlayers("investigator"))
       {
         if (player.IsRoleBlocked) continue;
-        Program.BotMessage("InvestResult", GameData.InvestResults[player.ActionTarget.role.InvestResult]);
+        BotMessage("InvestResult", GameData.InvestResults[player.ActionTarget.role.InvestResult]);
       }
     }
 
@@ -168,7 +168,7 @@ namespace QuizBot
         else output.Append(dead.Username + " apparently committed suicide.");
         output.AppendLine(" He/she was the " + dead.role.Name + "\n");
       }
-      Program.BotMessage(output.ToString());
+      BotNormalMessage(output.ToString());
     }
 
     private void DoNightCycle()

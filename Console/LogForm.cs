@@ -165,8 +165,15 @@ namespace QuizBot
 
     public void Log(string text, bool timestamp = true)
     {
-      if (timestamp) logBox.AppendText(DateTime.Now.ToString("[HH:mm:ss] ") + text);
-      else logBox.AppendText(text);
+      if (timestamp) text = DateTime.Now.ToString("[HH:mm:ss] ") + text;
+      if(InvokeRequired)
+      {
+        logBox.Invoke(new Action<string>(logBox.AppendText), text);
+      }
+      else
+      {
+        logBox.AppendText(text);
+      }
     }
 
     public void LogLine(string text, bool timestamp = true)
@@ -231,6 +238,8 @@ namespace QuizBot
     private void OnFormShow(object sender, EventArgs e)
     {
       UpdateLabels();
+      //Automatically start the bot
+      StartBot(false);
     }
 
     #region Stuff for the console
@@ -272,9 +281,12 @@ namespace QuizBot
       string[] args = input.Split(' ');
       try
       {
-        LogLine(CommandContainer.ConsoleCommands[args[0]](args));
+        if(CommandContainer.ConsoleCommands.Keys.Contains(args[0]))
+        {
+          LogLine(CommandContainer.ConsoleCommands[args[0]](args));
+        }
+        else LogLine("Unknown command: " + args[0]);
       }
-      catch (KeyNotFoundException) { LogLine("Unknown command: " + args[0]); }
       catch (InvalidCommandException e) { LogLine("Unknown argument: " + e); }
     }
 
@@ -285,10 +297,13 @@ namespace QuizBot
         this.parent = parent;
         ConsoleCommands = AddCommands();
         Metadata = AddMetadata();
-        CreateListCommand("messages", GameData.Messages);
-        CreateListCommand("protocols", GameData.Protocols);
-        CreateListCommand("commands", ConsoleCommands.Keys.ToList());
-        CreateListCommand("instances", Commands.GameInstances.Keys);
+        //List commands
+        CreateListCommand("messages", GameData.Messages.Select(x => x.Key + ": " + x.Value));
+        CreateListCommand("protocols", GameData.Protocols.Select(x => x.Key + ": " + x.Value));
+        CreateListCommand("instances", Commands.GameInstances
+                                       .Select(each => each.Value.GroupName + ": " + each.Key));
+        //Initialize This Last
+        CreateListCommand("commands", ConsoleCommands.Keys);
       }
 
       private LogForm parent;
@@ -302,7 +317,7 @@ namespace QuizBot
         var output = new Dictionary<string, CommandDelegate>();
         foreach (var method in typeof(AllCommands).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance))
         {
-          var attribute = method.GetCustomAttribute(typeof(ConsoleCommand)) as ConsoleCommand;
+          var attribute = method.GetCustomAttribute<ConsoleCommand>();
           if (attribute != null && !attribute.IsMetaData)
           {
             output.Add(attribute.Trigger, (CommandDelegate)Delegate.CreateDelegate(
@@ -317,7 +332,7 @@ namespace QuizBot
         var metadata = new Dictionary<string, CommandMetadata>();
         foreach (var each in typeof(AllCommands).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance))
         {
-          var attri = each.GetCustomAttribute(typeof(ConsoleCommand)) as ConsoleCommand;
+          var attri = each.GetCustomAttribute<ConsoleCommand>();
           if (attri != null && attri.IsMetaData)
           {
             metadata.Add(each.Name, (CommandMetadata)Delegate.CreateDelegate(typeof(CommandMetadata), this,
@@ -327,25 +342,15 @@ namespace QuizBot
         return metadata;
       }
 
-      private void CreateListCommand(string text, IEnumerable thing)
+      private void CreateListCommand(string text, IEnumerable<string> thing)
       {
         ConsoleCommands.Add(text, new CommandDelegate((args) =>
         {
           var output = new StringBuilder(text.ToUpperFirst() + ":");
           output.AppendLine();
-          if (thing is Dictionary<string, string>)
+          foreach (var each in thing)
           {
-            foreach (var each in (thing as Dictionary<string, string>))
-            {
-              output.AppendLine(each.Key + ": " + each.Value);
-            }
-          }
-          else
-          { 
-            foreach (var each in thing)
-            {
-              output.AppendLine(each.ToString());
-            }
+            output.AppendLine(each);
           }
           output.AppendLine();
           return output.ToString();
@@ -369,12 +374,21 @@ namespace QuizBot
       [ConsoleCommand("parseSay")]
       private string parseSay(string[] args)
       {
-        string[] otherargs = new string[args.Length - 3];
-        Array.Copy(args, 3, otherargs, 0, args.Length - 3);
+        string[] otherargs;
         try
         {
           ParseMode mode;
-          if (!Enum.TryParse(args[2], out mode)) mode = ParseMode.Html;
+          if (!Enum.TryParse(args[2], out mode))
+          {
+            mode = ParseMode.Html;
+            otherargs = new string[args.Length - 2];
+            Array.Copy(args, 2, otherargs, 0, args.Length - 2);
+          }
+          else
+          {
+            otherargs = new string[args.Length - 3];
+            Array.Copy(args, 3, otherargs, 0, args.Length - 3);
+          }
 
           Program.Bot.SendTextMessageAsync(Chats.chats[args[1].ToLower()],
              string.Join(" ", otherargs), parseMode: mode);
@@ -565,8 +579,7 @@ namespace QuizBot
       [ConsoleCommand]
       private string[] Config()
       {
-        return (from each in Settings.AllSettings
-                select each.Name).ToArray();
+        return Settings.AllSettings.Select(each => each.Name).ToArray();
       }
 
       [ConsoleCommand]

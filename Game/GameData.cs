@@ -162,7 +162,7 @@ namespace QuizBot
             AllowSelf = truevals[3],
             Unique = falsevals[0]
           }, each, "role: " + name);
-          Log("\"" + name + "\" registered", logtoconsole);
+          Log("Role \"" + name + "\" registered", logtoconsole);
         }
         catch (InitException e) when (!logtoconsole)
         {
@@ -315,17 +315,10 @@ namespace QuizBot
       RoleLists = new Dictionary<string, Dictionary<Wrapper, int>>();
       InvestResults = new Dictionary<int, string>();
 
-      if (!GDExtensions.Exists(Files.Roles) && logtoconsole)
+      try { GDExtensions.Exists(Files.Roles); }
+      catch(InitException e) when (!logtoconsole)
       {
-        if (logtoconsole)
-        {
-          InitialErr("Missing roles.xml", new InitException("Missing Roles.xml!"));
-        }
-        else
-        {
-          throw new InitException("Missing Roles.xml!");
-        }
-        return;
+        InitialErr("Missing roles.xml", e);
       }
 
       var doc = GDExtensions.SafeLoad(Files.Roles);
@@ -358,7 +351,7 @@ namespace QuizBot
         CommandVars.messagesLoaded = false;
         Messages = new Dictionary<string, string>();
         retry:
-        if (!GDExtensions.Exists(Files.Messages)) throw new InitException("Missing Messages.xml");
+        GDExtensions.Exists(Files.Messages);
         var doc = GDExtensions.SafeLoad(Files.Messages);
 
         foreach (var each in doc.Root.Elements("string"))
@@ -403,7 +396,7 @@ namespace QuizBot
         CommandVars.protocolsLoaded = false;
         Protocols = new Dictionary<string, string>();
         retry:
-        if (!GDExtensions.Exists(Files.Protocols)) throw new InitException("Missing Protocols.xml");
+        GDExtensions.Exists(Files.Protocols);
         var doc = GDExtensions.SafeLoad(Files.Protocols);
 
         foreach (var each in doc.Root.Elements("protocol"))
@@ -450,7 +443,7 @@ namespace QuizBot
       {
         var propname = (Files)Enum.Parse(typeof(Files), each.Key);
         var filename = Enum.GetName(typeof(Files), propname);
-        if (!GDExtensions.Exists(propname)) throw new InitException("Missing " + filename + "!");
+        GDExtensions.Exists(propname);
         Log("Loading " + filename, logtoconsole);
         var doc = GDExtensions.SafeLoad(propname);
         var keyword = each.Key.TrimEnd('s').ToLower();
@@ -568,7 +561,6 @@ namespace QuizBot
     }
     #endregion
 
-    
     public static void ArrangeXML()
     {
       var doc = GDExtensions.SafeLoad(Files.Messages);
@@ -598,6 +590,7 @@ namespace QuizBot
 
   static class GDExtensions
   {
+    #region XElement Handling
     public static bool HasElement(this XElement element, XName name)
     {
       foreach (var each in element.Elements())
@@ -635,6 +628,7 @@ namespace QuizBot
       }
     }
 
+    #region TryGetElementValue
     //Null values are not allowed
     /// <summary>
     /// Returns the value of the element, converted to the specified type
@@ -724,7 +718,9 @@ namespace QuizBot
         throw new InitException(file, "Failed to get " + name, x);
       return output;
     }
+    #endregion
 
+    #region TryGetAttributeValue
     //Null values are not allowed
     /// <summary>
     /// Returns the value of the attribute, converted to the specified type
@@ -776,7 +772,10 @@ namespace QuizBot
       if (!x.TryGetAttribute(name, out output)) throw new InitException(file, "Failed to get " + name, x);
       return output;
     }
+    #endregion
+    #endregion
 
+    #region Dictionaries and Lists
     //Safe add
     /// <summary>
     /// Adds an element to the dictionary, throwing an InitException if a
@@ -800,6 +799,29 @@ namespace QuizBot
       }
     }
 
+    public static Dictionary<T, object> ValuesToObject<T, U>(this Dictionary<T, U> it)
+    {
+      return it.ToDictionary(x => x.Key, x => (object)x.Value);
+    }
+
+    public static Dictionary<T, string> ValuesToString<T, U>(this Dictionary<T, U> it)
+    {
+      return it.ToDictionary(x => x.Key, x => x.Value.ToString());
+    }
+
+    public static bool Contains(this List<Player> list, int Id)
+    {
+      foreach (var each in list)
+      {
+        if (each.Id == Id) return true;
+      }
+      return false;
+    }
+    #endregion
+
+    #region Xml Files
+    private static string[] xmlFiles;
+
     /// <summary>
     /// Loads an XDocumentusing the specified file, handling any Xml Exceptions
     /// </summary>
@@ -808,7 +830,7 @@ namespace QuizBot
     public static XDocument SafeLoad(string uri)
     {
       try { return XDocument.Load(GameData.xmlLocation + uri, LoadOptions.SetLineInfo); }
-      catch(System.Xml.XmlException)
+      catch (System.Xml.XmlException)
       {
         throw new InitException("Xml Error with " + uri);
       }
@@ -830,40 +852,25 @@ namespace QuizBot
 
     public static bool Exists(Files file)
     {
-      return File.Exists(GameData.xmlLocation + xmlFiles[(int)file] + ".xml");
-    }
-
-    public static Dictionary<T, object> ValuesToObject<T, U>(this Dictionary<T, U> it)
-    {
-      return it.ToDictionary(x => x.Key, x => (object)x.Value);
-    }
-
-    public static Dictionary<T, string> ValuesToString<T, U>(this Dictionary<T, U> it)
-    {
-      return it.ToDictionary(x => x.Key, x => x.Value.ToString());
-    }
-
-    public static bool Contains(this List<Player> list, int Id)
-    {
-      foreach (var each in list)
+      var uri = xmlFiles[(int)file] + ".xml";
+      if (!File.Exists(GameData.xmlLocation + uri))
       {
-        if (each.Id == Id) return true;
+        throw new InitException("Missing " + uri + "!");
       }
-      return false;
+      return true;
     }
+
+    public static void LoadXmlFiles()
+    {
+      xmlFiles = Enum.GetNames(typeof(Files));
+    }
+    #endregion
 
     public static string ToUpperFirst(this string it)
     {
       if (string.IsNullOrWhiteSpace(it)) return String.Empty;
       if (it.Length == 1) return it[0].ToString().ToUpper();
-      return it[0].ToString().ToUpper() + it.Substring(1, it.Length-1);
-    }
-
-    private static string[] xmlFiles;
-
-    public static void LoadXmlFiles()
-    {
-      xmlFiles = Enum.GetNames(typeof(Files));
+      return it[0].ToString().ToUpper() + it.Substring(1, it.Length - 1);
     }
   }
 }

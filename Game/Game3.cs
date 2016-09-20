@@ -26,7 +26,7 @@ namespace QuizBot
         CreateProperties();
         foreach (var info in Info)
         {
-          var prop = SetPropertyValue[info.Name];
+          var prop = SetPropertyValue[info.Name.ToString().ToLower()];
           prop.SetValue(this, info.GetValue(null));
         }
         this.parent = parent;
@@ -205,11 +205,16 @@ namespace QuizBot
     public int PlayerCount { get { return Joined.Count; } }
 
     /// <summary>
+    /// Boolean value indicating whether a lobby has been created
+    /// </summary>
+    public bool LobbyCreated { get; set; }
+
+    /// <summary>
     /// Boolean value indicating whether a game has been started
     /// </summary>
     public bool GameStarted
     {
-      get { return GamePhase == GamePhase.Inactive; }
+      get { return (int)GamePhase > 1; }
     }
 
     /// <summary>
@@ -244,7 +249,7 @@ namespace QuizBot
     private async void BotNormalMessage(long id, string text)
     {
      await Program.Bot.SendTextMessageAsync(id, text, 
-        parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
+        parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
     }
 
     private void BotMessage(string key, params object[] args)

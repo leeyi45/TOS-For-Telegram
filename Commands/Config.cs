@@ -110,7 +110,7 @@ namespace QuizBot
       }
     }
 
-    public async static void ParseValue(Message data)
+    public static void ParseValue(Message data)
     {
       var receiving = CommandVars.ReceivingVals[data.From.Id];
       if (receiving.Item1)

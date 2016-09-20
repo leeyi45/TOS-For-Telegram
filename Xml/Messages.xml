@@ -4,7 +4,7 @@
     <value>You have already joined!</value>
   </message>
   <message key="AlreadyInGame">
-    <value>You have already a game in another group!</value>
+    <value>You have already a joined game in another group!</value>
   </message>
   <message key="BeginGame">
     <value>Game started. Please switch over to message the bot to begin</value>
@@ -39,6 +39,9 @@
   <message key="GotNickname">
     <value>The nickname you have chosen is {0}!</value>
   </message>
+	<message key="GroupOnly">
+    <value>This command can only be used in a group!</value>
+  </message>
   <message key="HasInstance">
     <value>Instance data has already been created for this group!</value>
   </message>
@@ -60,17 +63,17 @@
   <message key="JoinSeconds">
     <value>{0} seconds left to /join</value>
   </message>
-  <message key="Leave">
-    <value>{0} has left the game!</value>
-  </message>
   <message key="LeftGame">
     <value>{0} has left the game!</value>
   </message>
   <message key="LobbyCreated">
-    <value>{0} has started created a lobby, /join to join!</value>
+    <value>{0} has created a lobby, /join to join!</value>
   </message>
   <message key="LobbyClosed">
     <value>The lobby has been closed by {0}</value>
+  </message>
+  <message key="LobbyExists">
+    <value>A lobby has already been created, /join to join!</value>
   </message>
   <message key="MaxPlayersReached">
     <value>You cannot join! The maxmimum number of players has been reached!</value>
@@ -126,6 +129,9 @@
   <message key="Refreshed">
     <value>This instance has been refreshed!</value>
   </message>
+  <message key="RestartBot">
+    <value>Restarting bot....</value>
+  </message>
   <message key="RoleNotFound">
     <value>Role "{0}" not found!</value>
   </message>
@@ -149,6 +155,9 @@
   </message>
   <message key="Serial Killer PublicDeath">
     <value>{0} was brutally stabbed by the serial killer last night!</value>
+  </message>
+  <message key="StopBot">
+    <value>Stopping bot...</value>
   </message>
   <message key="TimeLeft">
     <value>{0} seconds left to /join!</value>

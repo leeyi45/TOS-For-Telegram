@@ -4,6 +4,8 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Windows.Forms;
 using System.Threading;
+using System.Text;
+using System.Diagnostics;
 using System.Xml.Linq;
 using Newtonsoft.Json;
 using Telegram.Bot;
@@ -23,13 +25,21 @@ namespace QuizBot
     [STAThread]
 		static void Main(string[] notused)
     {
-      MessageCount = new Dictionary<int, Telegram.Bot.Types.Message>();
-      startup = new Startup();
       Application.ApplicationExit += OnClosing;
-      GameData.StartTime = DateTime.Now.AddHours(-8);
-      Application.EnableVisualStyles();
-      try { Application.Run(startup); }
-      finally { OnClosing(null, null); }
+      //Even if there's an error it should pick right back up and restart itself
+      while (true)
+      {
+        try
+        { 
+          MessageCount = new Dictionary<int, Telegram.Bot.Types.Message>();
+          GameData.StartTime = DateTime.UtcNow;
+          Application.EnableVisualStyles();
+          startup = new Startup();
+          Application.Run(startup);
+        }
+        catch (Exception e) { LogError(e); }
+        finally { OnClosing(null, null); }
+      }
 		}
 
     public static Dictionary<string, Action<Callback>> Parsers { get; set; }
@@ -71,7 +81,7 @@ namespace QuizBot
           Bot.SendTextMessageAsync(message.From.Id, Commands.ProcessUserId(message));
         }
 
-        if (Commands.BlockedPeople.Contains(message.From.Id.ToString())) return;
+        if (Commands.BlockedPeople?.Contains(message.From.Id.ToString()) ?? false) return;
 
         try
         {
@@ -85,10 +95,13 @@ namespace QuizBot
         ConsoleLog("Message \"" + msgtext + "\" received from " + message.From.FirstName + " " + message.From.LastName);
 
         //If it is a command
-        if (msgtext.StartsWith("/"))
+        if (message.Entities.Count > 0)
         {
-          //Send to the command processor
-          Commands.Parse(message);
+          if (message.Entities.First().Type == MessageEntityType.BotCommand)
+          {
+            //Send to the command processor
+            Commands.Parse(message);
+          }
         }
       }
       finally
@@ -164,7 +177,11 @@ namespace QuizBot
     #region Console logging
     public static void ConsoleLog(string text)
 		{
-      try { startup.ConsoleForm?.Invoke(new Action(() => { startup.ConsoleForm.LogLine(text); })); }
+      try
+      {
+        startup.ConsoleForm?.Invoke(new Action(() => startup.ConsoleForm.LogLine(text)));
+        //startup.ConsoleForm.LogLine(text);
+      }
       catch(InvalidOperationException) { }
 		}
 
@@ -207,29 +224,14 @@ namespace QuizBot
 
     #region BotMessage
     /// <summary>
-    /// Send a message using a message with the specified key
-    /// </summary>
-    /// <param name="key">Message key</param>
-    /// <param name="args">Message arguments</param>
-    public async static void BotMessage(string key, params object[] args)
-    {
-      try
-      {
-        await Bot.SendTextMessageAsync(GameData.CurrentGroup, string.Format(GameData.Messages[key], args),
-    parseMode: ParseMode.Markdown);
-      }
-      catch (Telegram.Bot.Exceptions.ApiRequestException) { }
-    }
-
-    /// <summary>
     /// Send a message to the specified group using a message with specified key
     /// </summary>
     /// <param name="id">Group id</param>
     /// <param name="key">Message Key</param>
     /// <param name="args">Message Arguments</param>
-    public async static void BotMessage(long id, string key, params object[] args)
+    public static void BotMessage(long id, string key, params object[] args)
     {
-      try { await Bot.SendTextMessageAsync(id, string.Format(GameData.Messages[key], args), parseMode: ParseMode.Markdown); }
+      try { BotNormalMessage(id, string.Format(GameData.Messages[key], args)); }
       catch(KeyNotFoundException)
       {
         ConsoleLog("Unknown message key : " + key);
@@ -237,20 +239,11 @@ namespace QuizBot
       catch (Exception) { }
     }
 
-    public async static void BotNormalMessage(string message)
-    {
-      try
-      {
-        await Bot.SendTextMessageAsync(GameData.CurrentGroup, message, parseMode: ParseMode.Markdown);
-      }
-      catch (Telegram.Bot.Exceptions.ApiRequestException) { }
-    }
-
     public async static void BotNormalMessage(long Id, string message)
     {
       try
       {
-        await Bot.SendTextMessageAsync(Id, message, parseMode: ParseMode.Markdown);
+        await Bot.SendTextMessageAsync(Id, message, parseMode: ParseMode.Html);
       }
       catch (Telegram.Bot.Exceptions.ApiRequestException) { }
     }
@@ -271,14 +264,15 @@ namespace QuizBot
 
     public static void OnClosing(object sender, EventArgs e)
     { //Closing logic
-      var dataFile = XDocument.Load(GameData.xmlLocation + @"UserData.xml");
       try
       {
+        var dataFile = GDExtensions.SafeLoad(Files.UserData);
         var element = dataFile.Element("BlockedUsers");
         foreach (var each in Commands.BlockedPeople)
         {
           element.Add(new XElement("Id", each));
         }
+        dataFile.SafeSave(Files.UserData);
       }
       catch { }
 
@@ -299,7 +293,23 @@ namespace QuizBot
         }
         catch { }
       }
-      dataFile.Save(GameData.xmlLocation + @"UserData.xml");
+    }
+
+    public static void LogError(Exception e)
+    {
+      var output = new StringBuilder("[" + DateTime.Now.ToString() + "]\n");
+      var frames = new StackTrace(e).GetFrames().Reverse().ToArray();
+
+      output.AppendLine(e.GetType().FullName + " caught inside " + 
+        frames[0].GetMethod().Name + "() at Line " +
+        frames[0].GetFileLineNumber());
+      for(int i = 1; i < frames.Length; i++)
+      {
+        output.AppendLine("  through " + frames[i].GetMethod().Name + "() at Line " + 
+          frames[i].GetFileLineNumber());
+      }
+      output.AppendLine();
+      System.IO.File.AppendAllText("Debug.txt", output.ToString());
     }
   }
 }

@@ -15,7 +15,7 @@ namespace QuizBot
 	public class Commands
 	{
     #region Command Registration
-    public static Dictionary<string, Command> AllCommands = new Dictionary<string, Command>();
+    public static Dictionary<string, Command> AllCommands;
 
 		public delegate void CommandDelegate(Message msg, string[] args);
 
@@ -24,6 +24,7 @@ namespace QuizBot
 		public static void InitializeCommands()
 		{
       //Just means I don't have to add the functions myself cause I'm lazy af
+      AllCommands = new Dictionary<string, Command>();
       Log("Registering commands", false);
       foreach(var method in typeof(Commands).GetMethods(BindingFlags.NonPublic | BindingFlags.Static))
       {
@@ -103,14 +104,14 @@ namespace QuizBot
     [Command(Trigger = "ping", InGroupOnly = true)]
     private static void Ping(Message msg, string[] args)
     {
-      var ts = DateTime.UtcNow - msg.Date;
+      var ts = msg.Date - DateTime.UtcNow;
       var send = DateTime.UtcNow;
-      var message = "*PingInfo*\n" + "Time to receive ping message: " + ts.ToString("fff'.'ff") + "ms";
+      var message = "*PingInfo*\n" + "Time to receive ping message: " + ts.TotalMilliseconds + "ms";
       var result = Program.Bot.SendTextMessageAsync(msg.Chat.Id, message,
         parseMode: ParseMode.Markdown).Result;
       ts = DateTime.UtcNow - send;
       Program.Bot.EditMessageTextAsync(msg.Chat.Id, result.MessageId, message + "\nTime to send ping message: " +
-        ts.ToString("fff'.'ff") + "ms", parseMode: ParseMode.Markdown);
+        ts.TotalMilliseconds + "ms", parseMode: ParseMode.Markdown);
     }
 
     [Command(Trigger = "listroles")]
@@ -310,6 +311,13 @@ namespace QuizBot
       try { BlockedPeople.Remove(args[1]); }
       catch (IndexOutOfRangeException) { Program.BotMessage(msg.Chat.Id, "BlockError"); }
     }
+
+    [Command(Trigger = "stopbot", DevOnly = true)]
+    private static void Stop(Message msg, string[] args)
+    {
+      Program.BotMessage(msg.Chat.Id, "StopBot");
+      Program.startup.ConsoleForm.StopBot();
+    }
     #endregion
 
     /*
@@ -442,7 +450,7 @@ namespace QuizBot
 
       try
       {
-        if (attribute.GameStartOnly && !GameInstances[msg.Chat.Id].GameStarted)
+        if (attribute.GameStartOnly && !GameInstances[msg.Chat.Id].LobbyCreated)
         {
           throw new KeyNotFoundException();
         }
@@ -482,7 +490,8 @@ namespace QuizBot
       doc.Save(xmlLocation + WerewolfFile);
       return "User " + forward.Username + " has been registered!";
     }
-
+    
+    /*
     public static void ProcessNicknames(Message msg)
     {
       var player = Player.GetPlayer(msg.From.Id);
@@ -501,7 +510,7 @@ namespace QuizBot
         //CommandVars.GettingNicknames = new List<Player>();
       }
       else Program.BotMessage("NicknamesLeft", count);
-    }
+    }*/
 
     public static Dictionary<long, Game> GameInstances { get; set; }
 

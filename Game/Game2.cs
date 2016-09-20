@@ -191,7 +191,7 @@ namespace QuizBot
         GameStart.Start();
         Joined.ForEach(x => x.GettingNickname = false);
       }
-      else Program.BotMessage("NicknamesLeft", count);
+      else BotMessage("NicknamesLeft", count);
     }
 
     private GameCommands CommandContainer;
@@ -248,7 +248,7 @@ namespace QuizBot
       private void Join(Message msg, string[] args)
       {
         var player = (Player)msg.From;
-        if(CommandVars.PlayersInGame.Contains(player))
+        if(CommandVars.PlayersInGame.Contains(player.Id))
         {
           if(CommandVars.PlayersInGame.Where(x => x == player).ToArray()[0].GroupCode != parent.CurrentGroup)
           {
@@ -260,10 +260,7 @@ namespace QuizBot
             parent.BotMessage("AlreadyJoin");
           }
         }
-        else if (parent.GamePhase == GamePhase.Running || parent.GamePhase == GamePhase.Assigning)
-        { //Game is running
-          parent.BotMessage("GameRunningJoin");
-        }
+        else if (parent.GameStarted) parent.BotMessage("GameRunningJoin");
         else if (parent.GamePhase == GamePhase.Joining)
         { //Join the player thanks
           if (parent.PlayerCount == parent.settings.MaxPlayers)
@@ -288,21 +285,23 @@ namespace QuizBot
       [Command(Trigger = "closelobby", InGroupOnly = true, GameStartOnly = true)]
       private void CloseLobby(Message msg, string[] args)
       {
-        if ((int)parent.GamePhase > 1) parent.BotMessage("GameBegun");
-        else
+        if (parent.GameStarted) parent.BotMessage("GameBegun");
+        else if (parent.GamePhase == GamePhase.Joining)
         {
           parent.GamePhase = GamePhase.Inactive;
           parent.Joined.Clear();
           parent.BotMessage("LobbyClosed", msg.From.Username);
+          parent.LobbyCreated = false;
         }
       }
 
       [Command(Trigger = "createlobby", InGroupOnly = true)]
       private void CreateLobby(Message msg, string[] args)
       {
-        if (parent.GameStarted) parent.BotMessage(msg.Chat.Id, "RunningGameStart");
-        else
+        if (parent.GamePhase == GamePhase.Inactive)
         {
+          var player = (Player)msg.From;
+          player.GroupCode = parent.CurrentGroup;
           parent.Rolelist = GameData.RoleLists[parent.settings.CurrentRoleList];
           parent.Roles = GameData.Roles;
           parent.CurrentGroup = msg.Chat.Id;
@@ -310,8 +309,14 @@ namespace QuizBot
           parent.Protocols = GameData.Protocols;
           parent.Alignments = GameData.Alignments;
           parent.GamePhase = GamePhase.Joining;
-          parent.BotMessage("LobbyCreated", msg.From.Username);
+          parent.LobbyCreated = true;
+          parent.BotMessage("LobbyCreated", player.Username);
+          CommandVars.PlayersInGame.Add(player);
+          parent.Joined.Add(player);
+          parent.BotMessage(player.Id, "JoinGameSuccess", msg.Chat.Title);
         }
+        else if (parent.LobbyCreated) parent.BotMessage("LobbyExists");
+        else parent.BotMessage("GameBegun");
       }
 
       [Command(Trigger = "leave", InGroupOnly = true, GameStartOnly = true)]
@@ -370,7 +375,7 @@ namespace QuizBot
       [Command(Trigger = "players", GameStartOnly = true)]
       private void Players(Message msg, string[] args)
       {
-        var output = new StringBuilder("*Players: *" + parent.AliveCount + "/" + parent.PlayerCount + "\n\n");
+        var output = new StringBuilder("<strong>Players:</strong> " + parent.AliveCount + "/" + parent.PlayerCount + "\n\n");
         foreach (var each in parent.Joined)
         {
           output.Append(each.Username);
@@ -417,7 +422,7 @@ namespace QuizBot
             }
           case 3:
             {
-              if(parent.GameStarted)
+              if((int)parent.GamePhase > 1)
               {
                 parent.BotMessage("RunningGameConfig", args[1]);
                 return;
