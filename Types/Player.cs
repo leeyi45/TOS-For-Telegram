@@ -151,30 +151,6 @@ namespace QuizBot
       Program.BotMessage(Id, "You are the " + role.Name + "!\n", role.Name + "Assign");
     }
 
-    public static Player GetPlayer(long Id, bool dead = false)
-    {
-      List<Player> searchFrom;
-      if (!dead) searchFrom = Joined;
-      else searchFrom = Alive;
-
-      try { return searchFrom.Where(x => x.Id == Id).ToArray()[0]; }
-      catch(IndexOutOfRangeException) { return null; }
-    }
-
-    public static Player GetPlayer(Player test, bool dead = false)
-    {
-      System.Collections.Generic.List<Player> searchFrom;
-      if (!dead) searchFrom = Alive;
-      else searchFrom = Joined;
-
-      if (!searchFrom.Contains(test)) return null;
-      else
-      {
-        try { return searchFrom.Where(x => x == test).ToArray()[0]; }
-        catch(IndexOutOfRangeException) { return null; }
-      }
-    }
-
     public static bool IsGroupAdmin(Update update)
     {
       return IsGroupAdmin(update.Message.From.Id, update.Message.Chat.Id);
@@ -194,15 +170,15 @@ namespace QuizBot
       }
     }
 
-    public static bool HasJoined(Player x)
-    {
-      return Joined.Contains(x);
-    }
-
     #region Operators
     public static implicit operator Player(User x)
     {
       return new Player(x);
+    }
+
+    public static implicit operator long(Player x)
+    {
+      return x.Id;
     }
 
     public static bool operator ==(Player rhs, Player lhs)

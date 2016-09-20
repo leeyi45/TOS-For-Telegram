@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Xml.Linq;
 using System.Text;
@@ -154,7 +155,7 @@ namespace QuizBot
       }
     }
 
-    private DoTheGame GameStart;
+    private BackgroundWorker GameStart;
 
     /// <summary>
     /// The current roles registered

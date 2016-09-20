@@ -13,6 +13,7 @@ namespace QuizBot
   {
     private void RunGame()
     {
+      GamePhase = GamePhase.Running;
       while (true)
       {
         #region Night Time
@@ -31,7 +32,7 @@ namespace QuizBot
         AnnounceDeaths();
         #region Voting time
         Stopwatch.Reset();
-        VoteCount = GameData.Alive.ToDictionary(x => x.Id, x => 0);
+        VoteCount = Alive.ToDictionary(x => x.Id, x => 0);
         BotMessage("VotingStart", settings.LynchTime);
         while (true)
         {
@@ -56,7 +57,7 @@ namespace QuizBot
     {
       foreach(var player in GetPlayers("doctor"))
       {
-        Player.GetPlayer(player.ActionTarget).Healed = true;
+        GetPlayer(player.ActionTarget).Healed = true;
       }
     }
 
@@ -72,7 +73,7 @@ namespace QuizBot
         { //Escort visiting SK kills them
           player.Kill(player.ActionTarget);
         }
-        Player.GetPlayer(player.ActionTarget).IsRoleBlocked = true;
+        GetPlayer(player.ActionTarget).IsRoleBlocked = true;
       }
 
       foreach (var player in GetPlayers("consort"))
@@ -85,13 +86,13 @@ namespace QuizBot
         { 
           player.Kill(player.ActionTarget);
         }
-        Player.GetPlayer(player.ActionTarget).IsRoleBlocked = true;
+        GetPlayer(player.ActionTarget).IsRoleBlocked = true;
       }
     }
 
     private void AnnounceRB()
     {
-      foreach (var player in GameData.Alive.Where(x => x.role != "serial killer"))
+      foreach (var player in Alive.Where(x => x.role != "serial killer"))
       { //SK cannot be rbed
         if(player.IsRoleBlocked) Program.BotMessage(player.Id, "Roleblocked");
       }
@@ -158,7 +159,7 @@ namespace QuizBot
     private void AnnounceDeaths()
     { //Announce all the deaths
       StringBuilder output = new StringBuilder("");
-      foreach(var dead in GameData.Joined.Where(x => !x.IsAlive))
+      foreach(var dead in Joined.Where(x => !x.IsAlive))
       {
         if (dead.WasKilledBy != null)
         {
@@ -174,7 +175,7 @@ namespace QuizBot
     private void DoNightCycle()
     {
       // Step 1: Send the users their options
-      foreach(var player in GameData.Alive.Where(x => x.role.HasNightAction))
+      foreach(var player in Alive.Where(x => x.role.HasNightAction))
       {
         Program.BotMessage(player.Id, "Instruct", player.role.Instruction);
         Program.Bot.SendTextMessageAsync(player.Id, "", replyMarkup: 
@@ -184,7 +185,7 @@ namespace QuizBot
 
     private void DoLynchCycle()
     {
-      foreach(var player in GameData.Alive)
+      foreach(var player in Alive)
       {
         var message = Program.Bot.SendTextMessageAsync(player.Id, "Who would you like to lynch?", replyMarkup:
           GetMarkup(player, CurrentGroup + Protocols["Vote"], false)).Result;
@@ -215,7 +216,7 @@ namespace QuizBot
     #region Lynch Stuff
     public void ParseVoteChoice(Callback data)
     {
-      BotMessage(data.From, "VoteReceived", Player.GetPlayer(int.Parse(data.Data)).Username);
+      BotMessage(data.From, "VoteReceived", GetPlayer(int.Parse(data.Data)).Username);
       VoteCount[int.Parse(data.Data)]++;
     }
 
@@ -242,10 +243,10 @@ namespace QuizBot
 
     private System.Diagnostics.Stopwatch Stopwatch;
 
-    public static InlineKeyboardMarkup GetMarkup(Player self, string protocol, bool allowSelf = true, 
+    public InlineKeyboardMarkup GetMarkup(Player self, string protocol, bool allowSelf = true, 
       bool allowOthers = true)
     {
-      var markup = new InlineKeyboardButton[GameData.AliveCount][];
+      var markup = new InlineKeyboardButton[AliveCount][];
       int i = 0;
       if (!allowOthers)
       {
@@ -253,7 +254,7 @@ namespace QuizBot
       }
       else
       {
-        foreach (var player in GameData.Alive)
+        foreach (var player in Alive)
         {
           if (!allowSelf && player == self) continue;
           markup[i] = new[] { new InlineKeyboardButton(player.Name, new Callback(self.Id, protocol, player.Id.ToString())) };
@@ -268,33 +269,5 @@ namespace QuizBot
     }
 
     public Dictionary<string, Action<Callback>> Parsers { get; private set; }
-
-    public class DoTheGame
-    {
-      public DoTheGame(ThreadStart stuff)
-      {
-        DoStuff = stuff;
-        thread = new Thread(DoWork);
-      }
-
-      public ThreadStart DoStuff;
-
-      private Thread thread;
-
-      private void DoWork()
-      {
-        OnStart(this, EventArgs.Empty);
-        DoStuff();
-        OnFinish(this, EventArgs.Empty);
-      }
-
-      public void Start() { thread.Start(); }
-
-      public void Abort() { thread.Abort(); }
-
-      public event EventHandler OnFinish;
-
-      public event EventHandler OnStart;
-    }
   }
 }

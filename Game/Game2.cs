@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using Telegram.Bot.Types;
 using System.Reflection;
+using System.ComponentModel;
 
 namespace QuizBot
 {
@@ -28,8 +29,9 @@ namespace QuizBot
       Parsers = new Dictionary<string, Action<Callback>>();
       CommandContainer = new GameCommands(this);
 
-      GameStart = new DoTheGame(StartRolesAssign);
-      GameStart.OnFinish += OnGameFinish;
+      GameStart = new BackgroundWorker();
+      GameStart.DoWork += StartRolesAssign;
+      GameStart.RunWorkerCompleted += OnGameFinish;
 
       Parsers.Add(Protocols["NightActions"], new Action<Callback>(ParseNightAction));
       Parsers.Add(Protocols["Vote"], new Action<Callback>(ParseVoteChoice));
@@ -50,9 +52,9 @@ namespace QuizBot
       CommandContainer = new GameCommands(this);
       Parsers = new Dictionary<string, Action<Callback>>();
       Protocols = GameData.Protocols;
-      GameMessages = GameData.Messages;
-      GameStart = new DoTheGame(StartRolesAssign);
-      GameStart.OnFinish += OnGameFinish;
+      GameStart = new BackgroundWorker();
+      GameStart.DoWork += StartRolesAssign;
+      GameStart.RunWorkerCompleted += OnGameFinish;
 
       Parsers.Add(Protocols["NightActions"], new Action<Callback>(ParseNightAction));
       Parsers.Add(Protocols["Vote"], new Action<Callback>(ParseVoteChoice));
@@ -69,8 +71,9 @@ namespace QuizBot
       Parsers = new Dictionary<string, Action<Callback>>();
       Protocols = GameData.Protocols;
       GameMessages = GameData.Messages;
-      GameStart = new DoTheGame(StartRolesAssign);
-      GameStart.OnFinish += OnGameFinish;
+      GameStart = new BackgroundWorker();
+      GameStart.DoWork += StartRolesAssign;
+      GameStart.RunWorkerCompleted += OnGameFinish;
 
       Parsers.Add(Protocols["NightActions"], new Action<Callback>(ParseNightAction));
       Parsers.Add(Protocols["Vote"], new Action<Callback>(ParseVoteChoice));
@@ -88,13 +91,13 @@ namespace QuizBot
       catch (IndexOutOfRangeException) { return false; }
     }
 
-    private void StartRolesAssign()
+    private void StartRolesAssign(object sender, DoWorkEventArgs e)
     {
       var noroles = Joined;
       var hasroles = new List<Player>();
       var random = new Random();
       int totaltoassign = 0;
-      GameData.GamePhase = GamePhase.Assigning;
+      GamePhase = GamePhase.Assigning;
       foreach (var each in Rolelist) { totaltoassign += each.Value; }
 
       int[] randoms = random.Next(totaltoassign, 0, noroles.Count);
@@ -159,7 +162,6 @@ namespace QuizBot
 
       Joined = hasroles;
       hasroles.ForEach(x => x.OnAssignRole());
-      GamePhase = GamePhase.Running;
       BotMessage("RolesAssigned");
       RunGame();
     }
@@ -188,7 +190,7 @@ namespace QuizBot
       var count = Joined.Count(x => string.IsNullOrWhiteSpace(x.Nickname));
       if (count == 0)
       {
-        GameStart.Start();
+        GameStart.RunWorkerAsync();
         Joined.ForEach(x => x.GettingNickname = false);
       }
       else BotMessage("NicknamesLeft", count);
@@ -203,7 +205,7 @@ namespace QuizBot
       get { return CommandContainer.AllCommands; }
     }
 
-    private void OnGameFinish(object sender, EventArgs e)
+    private void OnGameFinish(object sender, RunWorkerCompletedEventArgs e)
     {
       if(RefreshQueued)
       {
@@ -361,7 +363,7 @@ namespace QuizBot
         parent.BotMessage("BeginGame");
 
         if (parent.settings.UseNicknames) parent.ObtainNicknames();
-        else parent.GameStart.Start();
+        else parent.GameStart.RunWorkerAsync();
       }
 
       [Command(Trigger = "say", InPrivateOnly = true, GameStartOnly = true)]

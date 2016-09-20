@@ -461,28 +461,6 @@ namespace QuizBot
     #endregion
 
     #region The Properties of Data
-    /// <summary>
-    /// The number of players currently in the game
-    /// </summary>
-    public static int PlayerCount { get { return Joined.Count; } }
-
-    /// <summary>
-    /// Boolean value indicating whether a game has been started
-    /// </summary>
-    public static bool GameStarted {
-      get { return GamePhase == GamePhase.Inactive; }
-    }
-
-    /// <summary>
-    /// The current phase the game is going through
-    /// </summary>
-    public static GamePhase GamePhase { get; set; } = GamePhase.Inactive;
-
-    /// <summary>
-    /// The current group the game is running on
-    /// </summary>
-    public static long CurrentGroup { get; set; }
-
     //This time is actually moved back by 8 hours to GMT
     /// <summary>
     /// The time which the bot was started
@@ -491,19 +469,6 @@ namespace QuizBot
 
     //Need this to remove stuff for the commands
     public static string BotUsername { get; set; } = "@quiztestbot";
-
-    /// <summary>
-    /// The number of players currently alive
-    /// </summary>
-    public static int AliveCount
-    {
-      get { return Alive.Count; }
-    }
-
-    /// <summary>
-    /// Boolean value indicatiing if the mayor has revealed himself
-    /// </summary>
-    public static bool HasRevealed { get; set; }
     #endregion
 
     #region The Dictionaries of Data
@@ -521,11 +486,6 @@ namespace QuizBot
     /// List of all the alignment currently registered
     /// </summary>
     public static List<Alignment> Alignments { get; set; }
-
-    /// <summary>
-    /// List containing all the players who have joined the game
-    /// </summary>
-    public static List<Player> Joined { get; set; } = new List<Player>();
 
     /// <summary>
     /// Dictionary containing all the protocols
@@ -550,14 +510,6 @@ namespace QuizBot
         yield return new KeyValuePair<string, Dictionary<string, string>>("messages", Messages);
         yield return new KeyValuePair<string, Dictionary<string, string>>("protocols", Protocols);
       }
-    }
-
-    /// <summary>
-    /// List containing all the players in the game who are currently alive
-    /// </summary>
-    public static List<Player> Alive
-    {
-      get { return Joined.Where(x => x.IsAlive).ToList(); }
     }
     #endregion
 
