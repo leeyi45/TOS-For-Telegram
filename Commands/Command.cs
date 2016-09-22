@@ -181,7 +181,7 @@ namespace QuizBot
       //GameData.GamePhase = GamePhase.Assigning;
       foreach (var each in Settings.CurrentRoles) { totaltoassign += each.Value; }
 
-      int[] randoms = random.Next(totaltoassign, 0, noroles.Count);
+      int[] randoms = Program.GenerateInts(totaltoassign, 0, noroles.Count);
 
       int i = 0;
       #region Assign the roles
@@ -293,6 +293,10 @@ namespace QuizBot
         catch(ArgumentException)
         {
           output = "Unrecognised argument " + args[1];
+        }
+        catch
+        {
+          output = "An error occured";
         }
         Program.BotNormalMessage(msg.Chat.Id, output);
       }

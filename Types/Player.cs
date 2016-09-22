@@ -28,7 +28,7 @@ namespace QuizBot
       Username = x.Username;
     }
 
-    public Player(int Id, string username, string FirstName, string LastName)
+    public Player(long Id, string username, string FirstName, string LastName)
     {
       this.Id = Id;
       if (string.IsNullOrWhiteSpace(username)) Username = string.Empty;
@@ -54,7 +54,7 @@ namespace QuizBot
       set { username = value; }  
     }
 
-    public int Id { get; private set; }
+    public long Id { get; private set; }
     #endregion
 
     private string username;
@@ -148,7 +148,7 @@ namespace QuizBot
 
     public void OnAssignRole()
     {
-      Program.BotMessage(Id, "You are the " + role.Name + "!\n", role.Name + "Assign");
+      Program.BotNormalMessage(Id, "You are the " + role.Name + "!\n", false);
     }
 
     public static bool IsGroupAdmin(Update update)

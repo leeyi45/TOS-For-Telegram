@@ -16,7 +16,7 @@ namespace QuizBot
 {
 	static class Config
 	{
-    private static InlineKeyboardButton GetButton(string text, int Id, string protocol, string data)
+    private static InlineKeyboardButton GetButton(string text, long Id, string protocol, string data)
     {
       return new InlineKeyboardButton(text, new Callback(Id, protocol, data));
     }
@@ -33,7 +33,7 @@ namespace QuizBot
       Program.ConsoleLog("Sent config markup to " + lol.Username);
     }
 
-    private static InlineKeyboardMarkup GetMarkup(int Id)
+    private static InlineKeyboardMarkup GetMarkup(long Id)
     {
       var keys = Settings.SetPropertyValue.Keys.ToArray();
       var values = Settings.SetPropertyValue.Values.ToArray();
@@ -46,7 +46,7 @@ namespace QuizBot
       return new InlineKeyboardMarkup(buttons);
     }
 
-    private static InlineKeyboardMarkup GetCancel(string protocol, int Id)
+    private static InlineKeyboardMarkup GetCancel(string protocol, long Id)
     {
       return new InlineKeyboardMarkup(new[]
           {
@@ -54,7 +54,7 @@ namespace QuizBot
           });
     }
 
-    private static Dictionary<int, Tuple<string, int>> MessageIds;
+    private static Dictionary<long, Tuple<string, int>> MessageIds;
 
     //private static Dictionary<string, Action> Functions;
 
@@ -65,9 +65,9 @@ namespace QuizBot
 
     public static void Load()
     {
-      MessageIds = new Dictionary<int, Tuple<string, int>>();
+      MessageIds = new Dictionary<long, Tuple<string, int>>();
       //Functions = new Dictionary<string, Action>();
-      CommandVars.ReceivingVals = new Dictionary<int, Tuple<bool, string>>();
+      CommandVars.ReceivingVals = new Dictionary<long, Tuple<bool, string>>();
     }
 
     public async static void Parse(Callback data)

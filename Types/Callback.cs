@@ -13,14 +13,14 @@ namespace QuizBot
 {
   public class Callback
   {
-    public Callback(int playerId, string protocol, string data)
+    public Callback(long playerId, string protocol, string data)
     {
       Protocol = protocol;
       Data = data;
       From = playerId;
     }
 
-    public Callback(int group, int playerId, string protocol, string data)
+    public Callback(int group, long playerId, string protocol, string data)
     {
       Protocol = protocol;
       Data = data;
@@ -41,7 +41,7 @@ namespace QuizBot
     /// <summary>
     /// The Id of the user who sent the callback
     /// </summary>
-    public int From { get; set; }
+    public long From { get; set; }
 
     public int Group { get; set; }
 

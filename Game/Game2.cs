@@ -14,24 +14,11 @@ namespace QuizBot
   {
     public Game(Message msg)
     {
-      Rolelist = GameData.RoleLists[QuizBot.Settings.CurrentRoleList];
-      Roles = GameData.Roles;
       CurrentGroup = msg.Chat.Id;
       GroupName = msg.Chat.Title;
-      GameMessages = GameData.Messages;
-      Protocols = GameData.Protocols;
-      Alignments = GameData.Alignments;
-
-      Stopwatch = new System.Diagnostics.Stopwatch();
-      Messages = new Dictionary<int, Tuple<int, int>>();
-      Joined = new List<Player>();
       settings = new Settings(QuizBot.Settings.AllSettings, this);
-      Parsers = new Dictionary<string, Action<Callback>>();
-      CommandContainer = new GameCommands(this);
-
-      GameStart = new BackgroundWorker();
-      GameStart.DoWork += StartRolesAssign;
-      GameStart.RunWorkerCompleted += OnGameFinish;
+      InitializeGame();
+      SetDetails();
 
       Parsers.Add(Protocols["NightActions"], new Action<Callback>(ParseNightAction));
       Parsers.Add(Protocols["Vote"], new Action<Callback>(ParseVoteChoice));
@@ -42,19 +29,11 @@ namespace QuizBot
 
     private Game(string groupName, int group, System.Xml.Linq.XElement settings)
     {
-      Stopwatch = new System.Diagnostics.Stopwatch();
-      Messages = new Dictionary<int, Tuple<int, int>>();
-      Joined = new List<Player>();
-      this.settings = new Settings(settings, this);
-      Parsers = new Dictionary<string, Action<Callback>>();
       CurrentGroup = group;
       GroupName = groupName;
-      CommandContainer = new GameCommands(this);
-      Parsers = new Dictionary<string, Action<Callback>>();
-      Protocols = GameData.Protocols;
-      GameStart = new BackgroundWorker();
-      GameStart.DoWork += StartRolesAssign;
-      GameStart.RunWorkerCompleted += OnGameFinish;
+      InitializeGame();
+      this.settings = new Settings(settings, this);
+      SetDetails();
 
       Parsers.Add(Protocols["NightActions"], new Action<Callback>(ParseNightAction));
       Parsers.Add(Protocols["Vote"], new Action<Callback>(ParseVoteChoice));
@@ -62,21 +41,32 @@ namespace QuizBot
 
     private Game(Settings settings)
     {
-      Stopwatch = new System.Diagnostics.Stopwatch();
-      Messages = new Dictionary<int, Tuple<int, int>>();
-      Joined = new List<Player>();
+      InitializeGame();
       this.settings = settings;
-      Parsers = new Dictionary<string, Action<Callback>>();
-      CommandContainer = new GameCommands(this);
-      Parsers = new Dictionary<string, Action<Callback>>();
-      Protocols = GameData.Protocols;
-      GameMessages = GameData.Messages;
-      GameStart = new BackgroundWorker();
-      GameStart.DoWork += StartRolesAssign;
-      GameStart.RunWorkerCompleted += OnGameFinish;
+      SetDetails();
 
       Parsers.Add(Protocols["NightActions"], new Action<Callback>(ParseNightAction));
       Parsers.Add(Protocols["Vote"], new Action<Callback>(ParseVoteChoice));
+    }
+
+    private void InitializeGame()
+    {
+      Stopwatch = new System.Diagnostics.Stopwatch();
+      Messages = new Dictionary<int, Tuple<long, int>>();
+      Joined = new List<Player>();
+      Parsers = new Dictionary<string, Action<Callback>>();
+      CommandContainer = new GameCommands(this);
+      GameStart = new GameThread(StartRolesAssign);
+      GameStart.Finished += OnGameFinish;
+    }
+
+    private void SetDetails()
+    {
+      Rolelist = GameData.RoleLists[settings.CurrentRoleList];
+      Roles = GameData.Roles;
+      GameMessages = GameData.Messages;
+      Protocols = GameData.Protocols;
+      Alignments = GameData.Alignments;
     }
 
     public bool HasJoined(Player player)
@@ -91,16 +81,16 @@ namespace QuizBot
       catch (IndexOutOfRangeException) { return false; }
     }
 
-    private void StartRolesAssign(object sender, DoWorkEventArgs e)
+    private void StartRolesAssign()
     {
       var noroles = Joined;
       var hasroles = new List<Player>();
       var random = new Random();
       int totaltoassign = 0;
       GamePhase = GamePhase.Assigning;
-      foreach (var each in Rolelist) { totaltoassign += each.Value; }
+      foreach (var each in Rolelist.Values) { totaltoassign += each; ; }
 
-      int[] randoms = random.Next(totaltoassign, 0, noroles.Count);
+      int[] randoms = Program.GenerateInts(Math.Min(noroles.Count, totaltoassign), 0, noroles.Count);
 
       int i = 0;
       #region Assign the roles
@@ -190,7 +180,7 @@ namespace QuizBot
       var count = Joined.Count(x => string.IsNullOrWhiteSpace(x.Nickname));
       if (count == 0)
       {
-        GameStart.RunWorkerAsync();
+        GameStart.Start();
         Joined.ForEach(x => x.GettingNickname = false);
       }
       else BotMessage("NicknamesLeft", count);
@@ -205,8 +195,15 @@ namespace QuizBot
       get { return CommandContainer.AllCommands; }
     }
 
-    private void OnGameFinish(object sender, RunWorkerCompletedEventArgs e)
+    private void OnGameFinish(object sender, GameThread.GameFinishEventArgs e)
     {
+      if (e.Error != null)
+      {
+        //throw e.Error;
+        Program.LogError(e.Error);
+        BotMessage("Error");
+      }
+
       if(RefreshQueued)
       {
         RefreshGame();
@@ -216,10 +213,7 @@ namespace QuizBot
 
     private void RefreshGame()
     {
-      GameMessages = GameData.Messages;
-      Protocols = GameData.Protocols;
-      Roles = GameData.Roles;
-      Rolelist = GameData.RoleLists[settings.CurrentRoleList];
+      SetDetails();
       BotMessage("Refreshed");
     }
 
@@ -265,21 +259,30 @@ namespace QuizBot
         else if (parent.GameStarted) parent.BotMessage("GameRunningJoin");
         else if (parent.GamePhase == GamePhase.Joining)
         { //Join the player thanks
+
+          //Check if the bot PM is enabled
+          try { parent.BotMessage(player.Id, "JoinGameSuccess", msg.Chat.Title, false); }
+          catch (Exception)
+          {
+            parent.BotMessage("PleaseStartBot", player.Username);
+            return;
+          }
           if (parent.PlayerCount == parent.settings.MaxPlayers)
           {
             parent.BotMessage("MaxPlayersReached");
             return;
           }
+
           player.GroupCode = parent.CurrentGroup;
           parent.BotMessage("PlayerJoin", player.Username, parent.PlayerCount + 1,
             parent.settings.MinPlayers, parent.settings.MaxPlayers);
-          parent.BotMessage(player.Id, "JoinGameSuccess", msg.Chat.Title);
+
           parent.Joined.Add(player);
           CommandVars.PlayersInGame.Add(player);
 
           if (parent.PlayerCount >= parent.settings.MinPlayers)
           {
-            parent.BotMessage("MinPlayersReached");
+            parent.BotMessage("MinPlayersReached", parent.Joined.Count);
           }
         }
       }
@@ -303,6 +306,13 @@ namespace QuizBot
         if (parent.GamePhase == GamePhase.Inactive)
         {
           var player = (Player)msg.From;
+          //Check if the bot PM is enabled
+          try { parent.BotMessage(player.Id, "JoinGameSuccess", msg.Chat.Title, false); }
+          catch (Exception)
+          {
+            parent.BotMessage("PleaseStartBot", player.Username);
+            return;
+          }
           player.GroupCode = parent.CurrentGroup;
           parent.Rolelist = GameData.RoleLists[parent.settings.CurrentRoleList];
           parent.Roles = GameData.Roles;
@@ -315,7 +325,6 @@ namespace QuizBot
           parent.BotMessage("LobbyCreated", player.Username);
           CommandVars.PlayersInGame.Add(player);
           parent.Joined.Add(player);
-          parent.BotMessage(player.Id, "JoinGameSuccess", msg.Chat.Title);
         }
         else if (parent.LobbyCreated) parent.BotMessage("LobbyExists");
         else parent.BotMessage("GameBegun");
@@ -351,7 +360,7 @@ namespace QuizBot
       {
         if (parent.PlayerCount < parent.settings.MinPlayers)
         {
-          parent.BotMessage("NotEnoughPlayers", parent.PlayerCount, parent.settings.MinPlayers);
+          parent.BotMessage("NotEnoughPlayers", parent.settings.MinPlayers, parent.PlayerCount);
           return;
         }
         if ((int)parent.GamePhase > 1)
@@ -363,7 +372,13 @@ namespace QuizBot
         parent.BotMessage("BeginGame");
 
         if (parent.settings.UseNicknames) parent.ObtainNicknames();
-        else parent.GameStart.RunWorkerAsync();
+        else parent.GameStart.Start();
+      }
+
+      [Command(Trigger = "stopgame", InGroupOnly = true, GameStartOnly = true)]
+      private void StopGame(Message msg, string[] args)
+      {
+        parent.QuitGame = true;
       }
 
       [Command(Trigger = "say", InPrivateOnly = true, GameStartOnly = true)]
@@ -380,7 +395,7 @@ namespace QuizBot
         var output = new StringBuilder("<strong>Players:</strong> " + parent.AliveCount + "/" + parent.PlayerCount + "\n\n");
         foreach (var each in parent.Joined)
         {
-          output.Append(each.Username);
+          output.Append(each.Username + "\uD83D\uDE03");
           if (!each.IsAlive) output.Append(": " + each.role.ToString());
           output.AppendLine();
         }
@@ -396,7 +411,7 @@ namespace QuizBot
         {
           case 1:
             {
-              output = new StringBuilder("*Config Options:*\n");
+              output = new StringBuilder("<b>Config Options:</b>\n");
               foreach(var each in parent.settings.AllSettings)
               {
                 output.AppendLine(each.DisplayName + ": " + each.GetValue(parent.settings));
@@ -419,7 +434,7 @@ namespace QuizBot
                 output = new StringBuilder("Unrecognized Config Option: " + args[1]);
                 break;
               }
-              output = new StringBuilder("Config Option: " + prop.GetValue(null).ToString());
+              output = new StringBuilder("Config Option: " + prop.GetValue(parent.settings).ToString());
               break;
             }
           case 3:
@@ -474,10 +489,10 @@ namespace QuizBot
         {
           case 1:
             {
-              output = new StringBuilder("*" + parent.settings.CurrentRoleList + "*" + "\n\n");
+              output = new StringBuilder("<b>Currently Registered Roles</b>\n\n");
               foreach (var each in parent.Roles)
               {
-                output.AppendLine(each.Key + ", Count: " + each.Value.ToString());
+                output.AppendLine(each.Value.ToString());
               }
               break;
             }
@@ -486,7 +501,7 @@ namespace QuizBot
               try
               {
                 var role = parent.Roles[args[1].ToLower()];
-                output = new StringBuilder("*Role Data:*\n\n");
+                output = new StringBuilder("<b>Role Data:</b>\n\n");
                 foreach (var field in typeof(Role).GetProperties(BindingFlags.Instance | BindingFlags.Public))
                 {
                   output.AppendLine(field.Name + ": " + field.GetValue(role).ToString());
@@ -508,6 +523,17 @@ namespace QuizBot
         parent.BotNormalMessage(output.ToString());
       }
 
+      [Command(Trigger = "rolelist")]
+      private void RoleList(Message msg, string[] args)
+      {
+        var output = new StringBuilder("<b>" + parent.settings.CurrentRoleList + "</b>\n");
+        foreach(var each in parent.Rolelist)
+        {
+          output.AppendLine(each.Key.ToString() + ", Count: " + each.Value);
+        }
+        parent.BotNormalMessage(output.ToString());
+      }
+
       [Command(Trigger = "refresh")]
       private void Refresh(Message msg, string[] args)
       {
@@ -524,6 +550,59 @@ namespace QuizBot
           }
         }
         else parent.RefreshGame();
+      }
+    }
+
+    private class GameThread
+    {
+      public GameThread(ThreadStart work)
+      {
+        DoWork = work;
+        thread = new Thread(Work);
+      }
+
+      private ThreadStart DoWork;
+
+      private Thread thread;
+
+      public void OnStart(object sender, EventArgs e)
+      {
+        Started?.Invoke(sender, e);
+      }
+
+      public void OnFinish(object sender, GameFinishEventArgs e)
+      {
+        Finished?.Invoke(sender, e);
+      }
+
+      private void Work()
+      {
+        GameFinishEventArgs args;
+        OnStart(this, EventArgs.Empty);
+        try
+        {
+          DoWork();
+          args = new GameFinishEventArgs();
+        }
+        catch(Exception e) { args = new GameFinishEventArgs(e); }
+        OnFinish(this, args);
+      }
+
+      public void Start() { thread.Start(); }
+
+      public event EventHandler Started;
+
+      public event GameFinishEventHandler Finished;
+
+      public delegate void GameFinishEventHandler(object sender, GameFinishEventArgs e);
+
+      public class GameFinishEventArgs : EventArgs
+      {
+        public GameFinishEventArgs(Exception e) { Error = e; }
+
+        public GameFinishEventArgs() { }
+
+        public Exception Error;
       }
     }
   }

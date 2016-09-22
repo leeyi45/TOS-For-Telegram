@@ -761,7 +761,7 @@ namespace QuizBot
       return it.ToDictionary(x => x.Key, x => x.Value.ToString());
     }
 
-    public static bool Contains(this List<Player> list, int Id)
+    public static bool Contains(this List<Player> list, long Id)
     {
       foreach (var each in list)
       {

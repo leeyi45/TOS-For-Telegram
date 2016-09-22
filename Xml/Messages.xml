@@ -18,8 +18,11 @@
   <message key="ChosenTarget">
     <value>You have chosen {0}</value>
   </message>
-  <message key="ForceGameEnd">
-    <value>Game has been forcefully ended by {0}!</value>
+  <message key="Error">
+    <value>The game has encountered an error!</value>
+  </message>
+  <message key="GameEnded">
+    <value>Game has ended!</value>
   </message>
   <message key="GameRunningJoin">
     <value>You cannot join now, a game is already in progress!</value>
@@ -85,7 +88,7 @@
     <value>The Mafia ordered the assasination of {0}, and was found dead in his house in the morning!</value>
   </message>
   <message key="MinPlayersReached">
-    <value>{0} players have joined! /begin to begin the game!</value>
+    <value>{0} players have joined! /startgame to begin the game!</value>
   </message>
   <message key="NicknamesLeft">
     <value>Waiting for {0} player(s) to choose their nickname!</value>

@@ -104,7 +104,7 @@ namespace QuizBot
       this.Controls.Add(this.progressBar1);
       this.Name = "Startup";
       this.Text = "Loading";
-      this.Shown += new System.EventHandler(this.DoTheLoading);
+      this.Shown += new System.EventHandler(this.OnShow);
       this.ResumeLayout(false);
       this.PerformLayout();
     }

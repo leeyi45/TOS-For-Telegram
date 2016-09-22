@@ -91,7 +91,7 @@ namespace QuizBot
       }
     }
 
-    private void DoTheLoading(object sender, EventArgs e)
+    private void OnShow(object sender, EventArgs e)
     {
       Activate();
       worker.RunWorkerAsync();

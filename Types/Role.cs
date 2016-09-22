@@ -33,6 +33,11 @@ namespace QuizBot
     {
       get { return "Random " + team.ToString(); }
     }
+
+    public override string ToString()
+    {
+      return Name;
+    }
   }
 
   /// <summary>

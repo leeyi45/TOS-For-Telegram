@@ -15,7 +15,7 @@ namespace QuizBot
 
     public static bool GettingConfigOption { get; set; } = false;
 
-    public static Dictionary<int, Tuple<bool, string>> ReceivingVals { get; set; }
+    public static Dictionary<long, Tuple<bool, string>> ReceivingVals { get; set; }
 
     public static bool Connected
     {

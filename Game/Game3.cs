@@ -155,7 +155,7 @@ namespace QuizBot
       }
     }
 
-    private BackgroundWorker GameStart;
+    private GameThread GameStart;
 
     /// <summary>
     /// The current roles registered
@@ -178,6 +178,8 @@ namespace QuizBot
     public string GroupName { get; private set; }
 
     public bool RefreshQueued { get; set; }
+
+    public bool QuitGame { get; set; } = false;
 
     /// <summary>
     /// List of the all the players that joined this game instance
@@ -247,9 +249,9 @@ namespace QuizBot
       BotNormalMessage(CurrentGroup, text);
     }
 
-    private async void BotNormalMessage(long id, string text)
+    private void BotNormalMessage(long id, string text)
     {
-     await Program.Bot.SendTextMessageAsync(id, text, 
+      Program.Bot.SendTextMessageAsync(id, text, 
         parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
     }
 

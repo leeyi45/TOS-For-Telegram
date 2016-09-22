@@ -593,6 +593,18 @@ namespace QuizBot
       {
         return GameData.RoleLists.Keys.ToArray();
       }
+
+      [ConsoleCommand]
+      private string[] Say()
+      {
+        return Chats.chats.Keys.ToArray();
+      }
+
+      [ConsoleCommand]
+      private string[] parseSay()
+      {
+        return Chats.chats.Keys.ToArray();
+      }
       #endregion
 
     }

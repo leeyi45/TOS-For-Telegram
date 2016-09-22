@@ -92,6 +92,7 @@
       <OnAssign>You may choose a person each night to distract them from performing their role</OnAssign>
       <Invest>1</Invest>
       <Instruct>roleblock</Instruct>
+			<AllowSelf>False</AllowSelf>
     </Role>
     
 		<Role>

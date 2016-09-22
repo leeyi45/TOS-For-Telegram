@@ -11,11 +11,13 @@ config - Admin command, open up configuration options
 ping - Send the ping message
 roles - Shows the roles available in the currently selected role list
 restart - Restarts the bot
-listroles - Lists all the currently registered roles
+roles - Lists all the currently registered roles
+rolelist - Shows the roles in the current rolelist
 players - List all players
 version - Shows information about the current version
 say - Sends a message to the group
 startgame - Begins the game once the minimum number of players has been reached
+reload - Reloads the specified xml document
 stopbot - Stops the bot
 block - Blocks a user with the given ID
 unblock - Unblocks the user with the given ID

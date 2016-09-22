@@ -22,22 +22,29 @@ namespace QuizBot
     //public static LogForm ConsoleForm;
     public static Startup startup { get; set; }
 
+    static bool RestartRequired = true;
+
     [STAThread]
 		static void Main(string[] notused)
     {
       Application.ApplicationExit += OnClosing;
+      Application.EnableVisualStyles();
       //Even if there's an error it should pick right back up and restart itself
       while (true)
       {
         try
-        { 
-          MessageCount = new Dictionary<int, Telegram.Bot.Types.Message>();
-          GameData.StartTime = DateTime.UtcNow;
-          Application.EnableVisualStyles();
-          startup = new Startup();
-          Application.Run(startup);
+        {
+          if (RestartRequired)
+          {
+            MessageCount = new Dictionary<int, Telegram.Bot.Types.Message>();
+            GameData.StartTime = DateTime.UtcNow;
+            RestartRequired = false;
+            startup = new Startup();
+            Application.Run(startup);
+          }
+          if (!Application.MessageLoop) break;
         }
-        catch (Exception e) { LogError(e); }
+        catch (Exception e) { LogError(e); RestartRequired = true; }
         finally { OnClosing(null, null); }
       }
 		}
@@ -204,9 +211,11 @@ namespace QuizBot
 			return x.FirstName + " " + x.LastName;
 		}
 
-    public static int[] Next(this Random random, int count, int min, int max, bool replace = false)
+    public static int[] GenerateInts(int count, int min, int max, bool replace = false)
     {
+      var random = new Random();
       int[] output = new int[count];
+      for(int i = 0; i < output.Length; i++) { output[i] = -1; }
       int x;
       for(int i = 0; i < count; i++)
       {
@@ -239,13 +248,13 @@ namespace QuizBot
       catch (Exception) { }
     }
 
-    public async static void BotNormalMessage(long Id, string message)
+    public async static void BotNormalMessage(long Id, string message, bool handle = true)
     {
       try
       {
         await Bot.SendTextMessageAsync(Id, message, parseMode: ParseMode.Html);
       }
-      catch (Telegram.Bot.Exceptions.ApiRequestException) { }
+      catch (Telegram.Bot.Exceptions.ApiRequestException) when (handle) { }
     }
 
     public async static void EditBotMessage(long id, int messageId, string key, params object[] args)
@@ -298,7 +307,7 @@ namespace QuizBot
     public static void LogError(Exception e)
     {
       var output = new StringBuilder("[" + DateTime.Now.ToString() + "]\n");
-      var frames = new StackTrace(e).GetFrames().Reverse().ToArray();
+      var frames = new StackTrace(e, true).GetFrames().Reverse().ToArray();
 
       output.AppendLine(e.GetType().FullName + " caught inside " + 
         frames[0].GetMethod().Name + "() at Line " +

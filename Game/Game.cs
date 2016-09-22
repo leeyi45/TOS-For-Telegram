@@ -16,6 +16,11 @@ namespace QuizBot
       GamePhase = GamePhase.Running;
       while (true)
       {
+        if (QuitGame)
+        {
+          EndGame();
+          break;
+        }
         #region Night Time
         DoNightCycle();
         Stopwatch.Start();
@@ -189,7 +194,7 @@ namespace QuizBot
       {
         var message = Program.Bot.SendTextMessageAsync(player.Id, "Who would you like to lynch?", replyMarkup:
           GetMarkup(player, CurrentGroup + Protocols["Vote"], false)).Result;
-        Messages.Add(Messages.Count, new Tuple<int, int>(player.Id, message.MessageId));
+        Messages.Add(Messages.Count, new Tuple<long, int>(player.Id, message.MessageId));
       }
     }
 
@@ -220,7 +225,7 @@ namespace QuizBot
       VoteCount[int.Parse(data.Data)]++;
     }
 
-    private bool GetLynch(out int output)
+    private bool GetLynch(out long output)
     {
       int value = VoteCount.Values.Max();
       var values = VoteCount.Where(x => x.Value == value).ToArray();
@@ -236,9 +241,9 @@ namespace QuizBot
       }
     }
 
-    private Dictionary<int, int> VoteCount;
+    private Dictionary<long, int> VoteCount;
 
-    private Dictionary<int, Tuple<int, int>> Messages;
+    private Dictionary<int, Tuple<long, int>> Messages;
     #endregion
 
     private System.Diagnostics.Stopwatch Stopwatch;
@@ -269,5 +274,13 @@ namespace QuizBot
     }
 
     public Dictionary<string, Action<Callback>> Parsers { get; private set; }
+
+    private void EndGame()
+    {
+      GamePhase = GamePhase.Inactive;
+      LobbyCreated = false;
+      QuitGame = false;
+      BotMessage("GameEnded");
+    }
   }
 }
