@@ -22,7 +22,7 @@ namespace QuizBot
     //public static LogForm ConsoleForm;
     public static Startup startup { get; set; }
 
-    static bool RestartRequired = true;
+    public static bool RestartRequired = true;
 
     [STAThread]
 		static void Main(string[] notused)
@@ -295,10 +295,12 @@ namespace QuizBot
             var element = new XElement("Instance");
             element.Add(new XElement("CurrentGroup", each.CurrentGroup));
             element.Add(new XElement("Name", each.GroupName));
+            element.Add(new XElement("PrivateID", each.PrivateID));
             element.Add(each.settings.ToXElement());
             instances.Root.Add(element);
           }
-          instances.Save(GameData.xmlLocation + "InstanceData.xml");
+          instances.SafeSave(Files.InstanceData);
+          //instances.Save(GameData.xmlLocation + "InstanceData.xml");
         }
         catch { }
       }

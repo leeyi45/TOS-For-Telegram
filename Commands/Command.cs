@@ -79,15 +79,6 @@ namespace QuizBot
     #endregion
 
     #region Commands
-    /*
-    [Command(Trigger = "config", GroupAdminOnly = true)]
-    private static void Config(Message msg, string[] args)
-    {
-      //Send the config menu to the player
-      Program.BotMessage(msg.Chat.Id, "SentConfig", msg.From.GetName());
-      QuizBot.Config.SendInline(msg.From, msg.Chat.Title);
-    }*/
-
     [Command(Trigger = "createinstance", InGroupOnly = true)]
     private static void CreateInstance(Message msg, string[] args)
     {

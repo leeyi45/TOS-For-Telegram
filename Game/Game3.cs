@@ -173,14 +173,6 @@ namespace QuizBot
 
     private Dictionary<string, string> Protocols;
 
-    public Settings settings { get; private set; }
-
-    public string GroupName { get; private set; }
-
-    public bool RefreshQueued { get; set; }
-
-    public bool QuitGame { get; set; } = false;
-
     /// <summary>
     /// List of the all the players that joined this game instance
     /// </summary>
@@ -242,6 +234,31 @@ namespace QuizBot
     /// Boolean value indicatiing if the mayor has revealed himself
     /// </summary>
     public bool HasRevealed { get; set; }
+
+    /// <summary>
+    /// The settings container for this instance
+    /// </summary>
+    public Settings settings { get; private set; }
+
+    /// <summary>
+    /// The name of the Group on which this instance was created
+    /// </summary>
+    public string GroupName { get; private set; }
+
+    /// <summary>
+    /// Boolean value indicating if a refresh request has been queued
+    /// </summary>
+    public bool RefreshQueued { get; set; }
+
+    /// <summary>
+    /// The ID this program uses to identify the instances
+    /// </summary>
+    public int PrivateID { get; set; }
+
+    /// <summary>
+    /// Boolean value indicating if the game should exit
+    /// </summary>
+    public bool QuitGame { get; set; } = false;
     #endregion
 
     private void BotNormalMessage(string text)
@@ -268,18 +285,19 @@ namespace QuizBot
     public static void LoadInstances()
     {
       Commands.GameInstances = new Dictionary<long, Game>();
-      var doc = GDExtensions.SafeLoad("InstanceData.xml");
+      var doc = GDExtensions.SafeLoad(Files.InstanceData);
       foreach(var each in doc.Root.Elements("Instance"))
       {
-        int group;
+        int group, privId;
         string name;
         try
         {
           group = each.TryGetElementValue<int>(instanceFile, "CurrentGroup");
-          name = each.TryGetElementValue("InstanceData.xml", "Name");
+          name = each.TryGetElementValue(instanceFile, "Name");
+          privId = each.TryGetElementValue<int>(instanceFile, "PrivateID");
         }
         catch(InitException) { continue; } 
-        Commands.GameInstances.Add(group, new Game(name, group, each.Element("Settings")));
+        Commands.GameInstances.Add(group, new Game(name, group, privId, each.Element("Settings")));
       }
     }
   }

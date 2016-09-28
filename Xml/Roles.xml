@@ -204,10 +204,12 @@
     </Role>
 	</Roles>
 	
-  <!-- Please ensure the stuff used below have been defined above -->
+  <!-- Please ensure the stuff used below have been defined 
+			If there is no count defined, the count is assumed to be 1
+	-->
 	<Rolelists>
 		<Rolelist Name="Default">
-      <Role Name = "Sheriff" Count="2"/>
+      <Role Name = "Sheriff"/>
       <Role Name = "Doctor"/>
       <Role Name = "Investigator"/>
 			<Role Name = "Mafioso"/>

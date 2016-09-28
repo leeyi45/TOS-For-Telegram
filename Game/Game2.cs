@@ -17,6 +17,7 @@ namespace QuizBot
       CurrentGroup = msg.Chat.Id;
       GroupName = msg.Chat.Title;
       settings = new Settings(QuizBot.Settings.AllSettings, this);
+      PrivateID = Commands.GameInstances.Count + 1;
       InitializeGame();
       SetDetails();
 
@@ -27,13 +28,14 @@ namespace QuizBot
       BotMessage("InstanceCreated");
     }
 
-    private Game(string groupName, int group, System.Xml.Linq.XElement settings)
+    private Game(string groupName, int group, int privateId, System.Xml.Linq.XElement settings)
     {
       CurrentGroup = group;
       GroupName = groupName;
       InitializeGame();
       this.settings = new Settings(settings, this);
       SetDetails();
+      PrivateID = privateId;
 
       Parsers.Add(Protocols["NightActions"], new Action<Callback>(ParseNightAction));
       Parsers.Add(Protocols["Vote"], new Action<Callback>(ParseVoteChoice));
@@ -214,6 +216,7 @@ namespace QuizBot
     private void RefreshGame()
     {
       SetDetails();
+      GroupName = Program.Bot.GetChatAsync(CurrentGroup).Result.Title;
       BotMessage("Refreshed");
     }
 

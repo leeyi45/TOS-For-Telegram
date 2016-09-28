@@ -368,11 +368,7 @@ namespace QuizBot
             switch (ErrorShow(e.Message))
             {
               case DialogResult.Ignore: { continue; }
-              case DialogResult.Retry:
-                {
-                 // doc = XDocument.Load(Files.Messages, LoadOptions.SetLineInfo);
-                  goto retry;
-                }
+              case DialogResult.Retry: { goto retry; }
               case DialogResult.Abort: { Application.Exit(); break; }
             }
           }

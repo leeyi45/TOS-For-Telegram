@@ -65,8 +65,7 @@ namespace QuizBot
         try { each.Value(); }
         catch (InitException ex)
         {
-          switch (MessageBox.Show(ex.Message, "Error",
-            MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Error, MessageBoxDefaultButton.Button3))
+          switch (GameData.ErrorShow(ex.Message))
           {
             case DialogResult.Retry: { goto retry; }
             case DialogResult.Abort: { Application.Exit(); break; }
