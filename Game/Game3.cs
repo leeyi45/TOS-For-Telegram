@@ -220,7 +220,7 @@ namespace QuizBot
     /// <summary>
     /// The current group the game is running on
     /// </summary>
-    public long CurrentGroup { get; set; }
+    public long CurrentGroup { get; private set; }
 
     /// <summary>
     /// The number of players currently alive
@@ -253,7 +253,7 @@ namespace QuizBot
     /// <summary>
     /// The ID this program uses to identify the instances
     /// </summary>
-    public int PrivateID { get; set; }
+    public int PrivateID { get; private set; }
 
     /// <summary>
     /// Boolean value indicating if the game should exit
@@ -284,7 +284,7 @@ namespace QuizBot
 
     public static void LoadInstances()
     {
-      Commands.GameInstances = new Dictionary<long, Game>();
+      Commands.GameInstances = new InstanceList();
       var doc = GDExtensions.SafeLoad(Files.InstanceData);
       foreach(var each in doc.Root.Elements("Instance"))
       {
@@ -297,7 +297,7 @@ namespace QuizBot
           privId = each.TryGetElementValue<int>(instanceFile, "PrivateID");
         }
         catch(InitException) { continue; } 
-        Commands.GameInstances.Add(group, new Game(name, group, privId, each.Element("Settings")));
+        Commands.GameInstances.Add(new Game(name, group, privId, each.Element("Settings")));
       }
     }
   }

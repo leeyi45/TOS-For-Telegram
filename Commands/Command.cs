@@ -56,7 +56,7 @@ namespace QuizBot
       Command attribute;
       if(!AllCommands.TryGetValue(args[0], out attribute))
       { //Check for game instance
-        if(GameInstances.Keys.Contains(msg.Chat.Id))
+        if(GameInstances.Contains(msg.Chat.Id))
         { //Game Instance exists
           if(!GameInstances[msg.Chat.Id].AllCommands.TryGetValue(args[0], out attribute))
           { //No such command in game instance
@@ -82,13 +82,13 @@ namespace QuizBot
     [Command(Trigger = "createinstance", InGroupOnly = true)]
     private static void CreateInstance(Message msg, string[] args)
     {
-      if(GameInstances.Keys.Contains(msg.Chat.Id))
+      if(GameInstances.Contains(msg.Chat.Id))
       {
         Program.BotMessage(msg.Chat.Id, "HasInstance");
       }
       else
       {
-        GameInstances.Add(msg.Chat.Id, new Game(msg));
+        GameInstances.Add(new Game(msg));
       }
     }
 
@@ -507,7 +507,7 @@ namespace QuizBot
       else Program.BotMessage("NicknamesLeft", count);
     }*/
 
-    public static Dictionary<long, Game> GameInstances { get; set; }
+    public static InstanceList GameInstances { get; set; }
 
     public static List<string> BlockedPeople { get; set; }
 	}

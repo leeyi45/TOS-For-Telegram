@@ -301,7 +301,7 @@ namespace QuizBot
         CreateListCommand("messages", GameData.Messages.Select(x => x.Key + ": " + x.Value));
         CreateListCommand("protocols", GameData.Protocols.Select(x => x.Key + ": " + x.Value));
         CreateListCommand("instances", Commands.GameInstances
-                                       .Select(each => each.Value.GroupName + ": " + each.Key));
+                                       .Select(each => each.GroupName + ": " + each.CurrentGroup));
         //Initialize This Last
         CreateListCommand("commands", ConsoleCommands.Keys);
       }

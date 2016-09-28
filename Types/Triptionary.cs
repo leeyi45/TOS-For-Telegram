@@ -100,4 +100,87 @@ namespace QuizBot
     }
     #endregion
   }
+
+  public class InstanceList : IEnumerable<Game>
+  {
+    public InstanceList()
+    {
+      store = new Dictionary<int, Game>();
+      ids = new List<long>();
+    }
+
+    private Dictionary<int, Game> store;
+
+    private List<long> ids;
+
+    public Game this[int index]
+    {
+      get { return store[index]; }
+      set { store[index] = value; }
+    }
+
+    public Game this[long id]
+    {
+      get { return store.Values.First(x => x.CurrentGroup == id); }
+      set
+      {
+        var instance = store.Values.First(x => x.CurrentGroup == id);
+        instance = value;
+      }
+    }
+
+    public List<long> IDs { get { return ids; } }
+
+    public int Count { get { return store.Count; } }
+
+    public void Add(Game instance)
+    {
+      store.Add(instance.PrivateID, instance);
+      IDs.Add(instance.CurrentGroup);
+    }
+
+    #region Remove
+    public bool Remove(Game instance)
+    {
+      ids.Remove(instance.CurrentGroup);
+      return store.Remove(instance.PrivateID);
+    }
+
+    public bool Remove(int PrivateId)
+    {
+      return Remove(PrivateId);
+    }
+
+    public bool Remove(long GroupId)
+    {
+      return Remove(store.Values.First(x => x.PrivateID == GroupId));
+    }
+    #endregion
+
+    #region Contains
+    public bool Contains(Game instance) { return store.Values.Contains(instance); }
+
+    public bool Contains(int privateId)
+    {
+      try { return this[privateId] == null; }
+      catch { return false; }
+    }
+
+    public bool Contains(long instanceId) { return ids.Contains(instanceId); }
+    #endregion
+
+    public IEnumerator<Game> GetEnumerator() { return store.Values.GetEnumerator(); }
+
+    IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
+
+    public int GenerateNewPrivateId()
+    {
+      int i = -1;
+      while(true)
+      {
+        i++;
+        if (!store.ContainsKey(i)) return i;
+      }
+    }
+  }
 }

@@ -17,7 +17,7 @@ namespace QuizBot
       CurrentGroup = msg.Chat.Id;
       GroupName = msg.Chat.Title;
       settings = new Settings(QuizBot.Settings.AllSettings, this);
-      PrivateID = Commands.GameInstances.Count + 1;
+      PrivateID = Commands.GameInstances.GenerateNewPrivateId();
       InitializeGame();
       SetDetails();
 

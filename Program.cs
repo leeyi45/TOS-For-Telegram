@@ -290,7 +290,7 @@ namespace QuizBot
         try
         {
           var instances = new XDocument(new XElement("Instances"));
-          foreach (var each in Commands.GameInstances.Values)
+          foreach (var each in Commands.GameInstances)
           {
             var element = new XElement("Instance");
             element.Add(new XElement("CurrentGroup", each.CurrentGroup));
